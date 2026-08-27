@@ -108,7 +108,7 @@ function statusChip(ev) {
 let dayOffset = 0;
 const S_CACHE = { matches: null, news1: null, news2: null };
 
-function matchCard(ev) {
+function matchCard(ev, i = 0) {
   const cls = classify(ev);
   const hs = ev.strHomeScore ?? ev.intHomeScore;
   const as = ev.strAwayScore ?? ev.intAwayScore;
@@ -118,7 +118,7 @@ function matchCard(ev) {
     ? `<div class="score">${esc(hs)} – ${esc(as)}</div>`
     : `<div class="score vs">${kickoff ? nptTime(kickoff) : 'vs'}</div>`;
   const badge = (url) => url ? `<img src="${esc(url)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
-  return `<div class="match ${cls === 'live' ? 'live' : ''}">
+  return `<div class="match ${cls === 'live' ? 'live' : ''}" style="--i:${i}">
     <div class="match-top">
       <span class="league">${esc(ev.strLeague || '')}${ev.strCountry ? ' · ' + esc(ev.strCountry) : ''}</span>
       ${statusChip(ev)}
@@ -145,8 +145,8 @@ function renderMatches(cfg) {
     return;
   }
   $('matches-body').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">`
-    + events.map(matchCard).join('') + `</div>`;
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;flex:1">`
+    + events.map((ev, i) => matchCard(ev, i)).join('') + `</div>`;
 }
 
 async function loadMatches(cfg) {
@@ -211,11 +211,11 @@ function renderNews(which) {
     body.innerHTML = `<div class="error-msg">⚠️ ${st('failed')}…</div>`;
     return;
   }
-  body.innerHTML = items.slice(0, 10).map(i =>
-    `<a class="news-item" href="${esc(i.link)}" target="_blank" rel="noopener">
+  body.innerHTML = `<div class="news-list">` + items.slice(0, 12).map((i, idx) =>
+    `<a class="news-item" style="--i:${idx}" href="${esc(i.link)}" target="_blank" rel="noopener">
        <div class="t">${esc(i.title)}</div>
        <div class="m"><b>${esc(i.source || 'News')}</b> · ${timeAgo(Date.parse(i.pubDate) || Date.now())}</div>
-     </a>`).join('');
+     </a>`).join('') + `</div>`;
 }
 
 async function loadNews(cfg, which) {
@@ -263,6 +263,44 @@ function tickClock() {
     timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
 }
 
+/* ---------- language switch animation ---------- */
+function rippleFrom(btn) {
+  const r = btn.getBoundingClientRect();
+  const c = document.createElement('div');
+  c.className = 'lang-ripple';
+  c.style.left = (r.left + r.width / 2) + 'px';
+  c.style.top = (r.top + r.height / 2) + 'px';
+  document.body.appendChild(c);
+  setTimeout(() => c.remove(), 900);
+}
+function playLangWave() {
+  const els = [document.querySelector('header'), document.querySelector('nav.pages'),
+               ...document.querySelectorAll('main .card')];
+  els.forEach((el, i) => {
+    if (!el) return;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'langSwap .55s cubic-bezier(.22,1,.36,1) both';
+    el.style.animationDelay = (i * 0.06) + 's';
+  });
+}
+
+/* ---------- parallax ---------- */
+function initParallax() {
+  const el = document.querySelector('.brand .ball') || document.querySelector('.brand svg');
+  if (!el || !matchMedia('(pointer:fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let tx = 0, ty = 0, cx = 0, cy = 0;
+  addEventListener('mousemove', (e) => {
+    tx = (e.clientX / innerWidth - 0.5) * 2;
+    ty = (e.clientY / innerHeight - 0.5) * 2;
+  }, { passive: true });
+  (function loop() {
+    cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
+    el.style.transform = `translate(${(cx * 7).toFixed(2)}px, ${(cy * 5).toFixed(2)}px) rotate(${(cx * 4).toFixed(2)}deg)`;
+    requestAnimationFrame(loop);
+  })();
+}
+
 /* ---------- init ---------- */
 function initSportPage(cfg) {
   $('prev-day').addEventListener('click', () => { if (dayOffset > -14) { dayOffset--; loadMatches(cfg); } });
@@ -273,10 +311,11 @@ function initSportPage(cfg) {
   });
   $('refresh-news1').addEventListener('click', () => loadNews(cfg, 1));
   $('refresh-news2').addEventListener('click', () => loadNews(cfg, 2));
-  if ($('lang-en')) $('lang-en').addEventListener('click', () => setSportLang(cfg, 'en'));
-  if ($('lang-ne')) $('lang-ne').addEventListener('click', () => setSportLang(cfg, 'ne'));
+  if ($('lang-en')) $('lang-en').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setSportLang(cfg, 'en'); playLangWave(); });
+  if ($('lang-ne')) $('lang-ne').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setSportLang(cfg, 'ne'); playLangWave(); });
 
   setSportLang(cfg, S_LANG);
+  initParallax();
   tickClock();
   setInterval(tickClock, 1000);
 

@@ -22,18 +22,24 @@
     background:
       radial-gradient(1200px 500px at 80% -10%, rgba(224,52,78,.12), transparent 60%),
       radial-gradient(900px 420px at 10% -10%, rgba(47,111,237,.12), transparent 60%),
-      var(--bg);
+      linear-gradient(160deg,#070b16 0%,#0a1020 40%,#0d1730 70%,#070b16 100%);
+    background-size:auto,auto,300% 300%;
+    animation:bgShift 26s ease-in-out infinite;
     color:var(--text); min-height:100vh; overflow-x:hidden;
   }
+  @keyframes bgShift{0%,100%{background-position:0 0,0 0,0% 50%}50%{background-position:0 0,0 0,100% 50%}}
+  @keyframes hueDrift{from{filter:blur(90px) hue-rotate(0deg)}to{filter:blur(90px) hue-rotate(45deg)}}
   /* ---- animated background orbs ---- */
   body::before, body::after{
     content:""; position:fixed; border-radius:50%; pointer-events:none; z-index:0;
     filter:blur(90px); opacity:.22;
   }
   body::before{ width:540px;height:540px; left:-140px; top:-140px;
-    background:radial-gradient(circle,#e0344e,transparent 70%); animation:drift1 20s ease-in-out infinite alternate;}
+    background:radial-gradient(circle,#e0344e,transparent 70%);
+    animation:drift1 20s ease-in-out infinite alternate, hueDrift 14s ease-in-out infinite alternate;}
   body::after{ width:640px;height:640px; right:-180px; bottom:-180px;
-    background:radial-gradient(circle,#2f6fed,transparent 70%); animation:drift2 26s ease-in-out infinite alternate;}
+    background:radial-gradient(circle,#2f6fed,transparent 70%);
+    animation:drift2 26s ease-in-out infinite alternate, hueDrift 18s ease-in-out infinite alternate;}
   @keyframes drift1{to{transform:translate(150px,110px) scale(1.18)}}
   @keyframes drift2{to{transform:translate(-150px,-90px) scale(1.12)}}
   header, nav.pages, .ticker, main, footer{position:relative; z-index:1}
@@ -181,18 +187,134 @@
   .rate-row .val{font-weight:700; font-variant-numeric:tabular-nums}
   .rate-row .val small{color:var(--muted); font-weight:400; margin-left:3px}
   .rate-src{font-size:11px; color:var(--muted)}
-  .wx-now{display:flex; align-items:center; gap:16px}
-  .wx-now .big{font-size:46px; font-weight:800; font-variant-numeric:tabular-nums}
-  .wx-now .em{font-size:42px}
-  .wx-desc{color:#c9d2ee; font-size:14px}
-  .wx-meta{color:var(--muted); font-size:12.5px; margin-top:3px}
-  .wx-days{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:auto; padding-top:8px}
+  /* ---- animated weather scene ---- */
+  @keyframes popIn{from{opacity:0; transform:translateY(12px) scale(.95)} to{opacity:1; transform:none}}
+  @keyframes floaty{50%{transform:translateY(-6px)}}
+  @keyframes fall{to{transform:translateY(210px)}}
+  @keyframes fallsway{50%{transform:translate(9px,100px)} 100%{transform:translate(-5px,210px)}}
+  @keyframes twinkle{0%,100%{opacity:.15; transform:scale(.8)} 50%{opacity:.95; transform:scale(1.15)}}
+  @keyframes driftCloud{from{left:-35%} to{left:110%}}
+  @keyframes breathe{50%{transform:scale(1.07)}}
+  @keyframes flash{0%,86%,94%,100%{opacity:0} 88%,92%{opacity:1}}
+  @keyframes fogmove{0%{transform:translateX(-10%)} 50%{transform:translateX(55%)} 100%{transform:translateX(-10%)}}
+  @keyframes drawLine{to{stroke-dashoffset:0}}
+  @keyframes fillbar{from{width:0} to{width:var(--w)}}
+  @keyframes shimmerX{from{transform:translateX(-100%)} to{transform:translateX(100%)}}
+  .wx-scene{position:relative; overflow:hidden; border-radius:14px; padding:16px; min-height:136px;
+    display:flex; align-items:center; gap:16px; border:1px solid rgba(255,255,255,.08);
+    animation:fadeIn .5s ease both}
+  .wx-scene.sunny{background:linear-gradient(135deg,#1d4f9e,#2f6fed 55%,#3f8cff)}
+  .wx-scene.night{background:linear-gradient(135deg,#0a0f2c,#1a2350)}
+  .wx-scene.cloudy{background:linear-gradient(135deg,#2c3e5d,#46587a)}
+  .wx-scene.cloudy-night{background:linear-gradient(135deg,#141a35,#2a3355)}
+  .wx-scene.rain{background:linear-gradient(135deg,#1e2c4a,#31456b)}
+  .wx-scene.snow{background:linear-gradient(135deg,#28324e,#4a5a7d)}
+  .wx-scene.storm{background:linear-gradient(135deg,#141830,#2c2f55)}
+  .wx-scene.fog{background:linear-gradient(135deg,#2b3242,#4a5261)}
+  .fx{position:absolute; inset:0; pointer-events:none}
+  .fx.rain i{position:absolute; top:-18%; width:2px; height:15px; border-radius:2px;
+    background:linear-gradient(transparent, rgba(170,215,255,.85)); animation:fall linear infinite}
+  .fx.snow i{position:absolute; top:-12%; width:5px; height:5px; border-radius:50%;
+    background:rgba(255,255,255,.9); animation:fallsway linear infinite}
+  .fx.stars i{position:absolute; width:2.5px; height:2.5px; border-radius:50%; background:#fff;
+    animation:twinkle 2.6s ease-in-out infinite}
+  .fx.clouds i{position:absolute; height:16px; border-radius:20px; background:rgba(255,255,255,.15);
+    filter:blur(2px); animation:driftCloud linear infinite}
+  .fx.clouds .c1{width:74px; top:16%; animation-duration:16s}
+  .fx.clouds .c2{width:105px; top:44%; animation-duration:22s; animation-delay:-7s}
+  .fx.clouds .c3{width:58px; top:70%; animation-duration:18s; animation-delay:-12s}
+  .fx.sun .core{position:absolute; right:13%; top:18%; width:46px; height:46px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #ffe9a3, #f5c542 60%, #f0a500);
+    box-shadow:0 0 36px 12px rgba(245,197,66,.45); animation:breathe 4s ease-in-out infinite}
+  .fx.sun .rays{position:absolute; right:calc(13% - 15px); top:calc(18% - 15px); width:76px; height:76px; border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,225,130,.4) 0 7deg, transparent 7deg 30deg);
+    -webkit-mask:radial-gradient(circle, transparent 32%, #000 34% 60%, transparent 63%);
+    mask:radial-gradient(circle, transparent 32%, #000 34% 60%, transparent 63%);
+    animation:spin 24s linear infinite}
+  .fx.moon i{position:absolute; right:14%; top:16%; width:42px; height:42px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #ffffff, #c9d4ec 75%);
+    box-shadow:0 0 28px 8px rgba(215,228,255,.35); animation:breathe 5s ease-in-out infinite}
+  .fx.bolt i{position:absolute; left:22%; top:6%; width:16px; height:38px; background:#ffe066;
+    clip-path:polygon(60% 0, 18% 55%, 45% 55%, 28% 100%, 86% 42%, 55% 42%);
+    filter:drop-shadow(0 0 8px rgba(255,224,102,.8)); opacity:0; animation:flash 5.5s infinite}
+  .fx.fogfx i{position:absolute; left:-10%; height:11px; border-radius:10px;
+    background:rgba(255,255,255,.17); filter:blur(4px); animation:fogmove 12s ease-in-out infinite}
+  .fx.fogfx i:nth-child(1){top:24%; width:70%}
+  .fx.fogfx i:nth-child(2){top:50%; width:58%; animation-delay:-4s}
+  .fx.fogfx i:nth-child(3){top:72%; width:76%; animation-delay:-8s}
+  .wx-emoji{font-size:46px; animation:floaty 3.5s ease-in-out infinite;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.35)); position:relative; z-index:1}
+  .wx-main{position:relative; z-index:1; flex:1}
+  .wx-now{display:flex; align-items:center; gap:14px}
+  .wx-now .big{font-size:46px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;
+    text-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .wx-desc{color:#eaf1ff; font-size:14px; font-weight:600}
+  .wx-meta{color:rgba(255,255,255,.75); font-size:12px; margin-top:3px}
+  .wx-gauges{display:flex; gap:9px; margin-top:10px; flex-wrap:wrap}
+  .gauge{flex:1; min-width:96px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    border-radius:10px; padding:8px 10px; backdrop-filter:blur(4px)}
+  .gauge .k{font-size:10px; color:var(--muted); letter-spacing:.5px; text-transform:uppercase}
+  .gauge .v{font-size:13px; font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;
+    font-variant-numeric:tabular-nums}
+  .fan{display:inline-block; animation:spin linear infinite}
+  .hum-track{height:6px; border-radius:4px; background:rgba(255,255,255,.1); margin-top:7px; overflow:hidden}
+  .hum-fill{height:100%; border-radius:4px; background:linear-gradient(90deg,#4aa3ff,#7cc4ff);
+    animation:fillbar 1.2s var(--ease) both; position:relative; overflow:hidden}
+  .hum-fill::after{content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent); animation:shimmerX 2.2s infinite}
+  .wx-hourly{margin-top:10px}
+  .wx-hourly .k{font-size:10px; color:var(--muted); letter-spacing:.6px; text-transform:uppercase; margin-bottom:4px}
+  .wx-hourly svg.chart{width:100%; height:74px; display:block}
+  .wx-hourly .area{opacity:0; animation:fadeIn .8s .9s ease both}
+  .wx-hourly .line{fill:none; stroke:#7cc4ff; stroke-width:2.5; stroke-linecap:round;
+    stroke-dasharray:1; stroke-dashoffset:1; animation:drawLine 1.8s .25s var(--ease) forwards;
+    filter:drop-shadow(0 0 6px rgba(124,196,255,.5))}
+  .wx-hourly .pt{fill:#bfe0ff; opacity:0; animation:fadeIn .4s ease both}
+  .wx-hours{display:flex; justify-content:space-between; font-size:10px; color:var(--muted);
+    font-variant-numeric:tabular-nums; margin-top:2px}
+  .wx-days{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:auto; padding-top:10px}
   .wx-day{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px;
-          padding:8px 2px; text-align:center; font-size:11px; transition:transform .3s var(--ease), border-color .3s}
-  .wx-day:hover{transform:translateY(-3px); border-color:rgba(47,111,237,.4)}
+          padding:8px 2px; text-align:center; font-size:11px;
+          transition:transform .3s var(--ease), border-color .3s, background .3s;
+          animation:popIn .5s var(--ease) both; animation-delay:calc(.4s + var(--i) * .07s)}
+  .wx-day:hover{transform:translateY(-4px) scale(1.04); border-color:rgba(47,111,237,.5); background:rgba(47,111,237,.08)}
   .wx-day .d{color:var(--muted)} .wx-day .e{font-size:18px; margin:3px 0}
   .wx-day .t{font-variant-numeric:tabular-nums} .wx-day .t b{color:#fff}
   .wx-day .p{color:#6ea8ff; font-size:10px}
+
+  /* ---- extra polish: shimmer, glow, ripple, aurora ---- */
+  @keyframes goldShimmer{from{background-position:220% 0} to{background-position:-220% 0}}
+  @keyframes sweep{0%{left:-70%} 55%,100%{left:140%}}
+  @keyframes aqiPulse{0%,100%{box-shadow:0 8px 24px rgba(0,0,0,.3)} 50%{box-shadow:0 8px 24px rgba(0,0,0,.3), 0 0 26px 3px var(--aqi-c,#fff)}}
+  @keyframes ripple{to{box-shadow:0 0 0 12px rgba(255,255,255,0)}}
+  @keyframes aurora{from{transform:translateX(-16%) rotate(8deg)} to{transform:translateX(16%) rotate(8deg)}}
+  .metal{position:relative; overflow:hidden}
+  .metal::after{content:""; position:absolute; top:0; left:-70%; width:45%; height:100%; pointer-events:none;
+    background:linear-gradient(105deg,transparent, rgba(255,255,255,.10), transparent);
+    animation:sweep 5s ease-in-out infinite}
+  .metal.gold-m::after{background:linear-gradient(105deg,transparent, rgba(255,235,170,.15), transparent)}
+  .metal.gold-m .usd span{background:linear-gradient(100deg,#f5c542 25%,#fff3c4 42%,#f5c542 60%);
+    background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:goldShimmer 3.6s linear infinite}
+  .metal.silver-m .usd span{background:linear-gradient(100deg,#c9d2e0 25%,#ffffff 42%,#c9d2e0 60%);
+    background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:goldShimmer 4.4s linear infinite}
+  .nepse-top .val.up{color:#eafff2; text-shadow:0 0 26px rgba(46,204,113,.4)}
+  .nepse-top .val.down{color:#ffeef0; text-shadow:0 0 26px rgba(224,52,78,.4)}
+  .aqi-badge{animation:aqiPulse 2.8s ease-in-out infinite}
+  .mag{position:relative}
+  .mag::after{content:""; position:absolute; inset:0; border-radius:12px;
+    box-shadow:0 0 0 0 rgba(255,255,255,.35); animation:ripple 2.6s ease-out infinite}
+  .wx-scene.night::after, .wx-scene.cloudy-night::after{content:""; position:absolute; inset:-40%; pointer-events:none;
+    background:linear-gradient(120deg,transparent 30%, rgba(90,120,255,.14) 45%, rgba(150,90,255,.12) 55%, transparent 70%);
+    animation:aurora 9s ease-in-out infinite alternate}
+
+  /* ---- language switch animation ---- */
+  @keyframes langSwap{from{opacity:0; transform:translateY(16px) scale(.985); filter:blur(6px)} to{opacity:1; transform:none; filter:blur(0)}}
+  .lang-ripple{position:fixed; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%;
+    background:radial-gradient(circle, rgba(224,52,78,.45), rgba(224,52,78,0) 70%);
+    pointer-events:none; z-index:99; transform:scale(0); animation:rippleBurst .8s ease-out forwards}
+  @keyframes rippleBurst{to{transform:scale(90); opacity:0}}
   .aqi-flex{display:flex; align-items:center; gap:18px; flex:1}
   .aqi-badge{min-width:96px; text-align:center; border-radius:15px; padding:14px 15px; color:#08130c;
     box-shadow:0 8px 24px rgba(0,0,0,.3)}
@@ -441,6 +563,7 @@ const I18N = {
     loadingGold: "Loading gold & silver prices…",
     loadingGeneric: "Loading…",
     feelsLike: "feels like", humidity: "Humidity", todayDay: "Today",
+    wind: "Wind", hourly24: "Next 24 hours", rainChance: "Rain chance",
     quakesNone: "No magnitude 3.5+ earthquakes near Nepal in the last 7 days.",
     events: "events", strong: "Strong",
     agoS: "s ago", agoM: "m ago", agoH: "h ago", agoD: "d ago",
@@ -489,6 +612,7 @@ const I18N = {
     loadingGold: "सुन–चाँदीको मूल्य लोड हुँदैछ…",
     loadingGeneric: "लोड हुँदैछ…",
     feelsLike: "महसुस", humidity: "आर्द्रता", todayDay: "आज",
+    wind: "हावा", hourly24: "आगामी २४ घण्टा", rainChance: "वर्षा सम्भावना",
     quakesNone: "पछिल्लो ७ दिनमा नेपाल नजिक ३.५+ म्याग्निच्युडका भूकम्प छैनन्।",
     events: "घटना", strong: "शक्तिशाली",
     agoS: "सेकेन्ड अघि", agoM: "मिनेट अघि", agoH: "घण्टा अघि", agoD: "दिन अघि",
@@ -532,6 +656,7 @@ const DIRECT = {
   weather: (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
     + `?latitude=${lat}&longitude=${lon}`
     + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m'
+    + '&hourly=temperature_2m,weather_code,precipitation_probability'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
     + '&timezone=Asia%2FKathmandu&forecast_days=7',
   air: (lat, lon) => 'https://air-quality-api.open-meteo.com/v1/air-quality'
@@ -744,7 +869,7 @@ function renderNepse() {
   st.className = 'chip ' + (open ? 'open' : 'closed');
   $('nepse-body').innerHTML =
     `<div class="nepse-top">
-       <div class="val"><span data-count="${idx.currentValue}" data-decimals="2">${fmtNum(idx.currentValue)}</span></div>
+       <div class="val ${chgCls}"><span data-count="${idx.currentValue}" data-decimals="2">${fmtNum(idx.currentValue)}</span></div>
        <div class="chg ${chgCls}">${sign}${fmtNum(idx.change)} (${sign}${fmtNum(idx.perChange)}%)</div>
        <span class="chip ${chgCls}">${up ? '▲' : '▼'} ${t('today')}</span>
      </div>
@@ -825,30 +950,93 @@ function cityCoords() {
   const [lat, lon, name] = $('city-select').value.split(',');
   return { lat, lon, name };
 }
+function wxCond(code, isDay) {
+  if (code === 0 || code === 1) return isDay ? 'sunny' : 'night';
+  if (code === 2 || code === 3) return isDay ? 'cloudy' : 'cloudy-night';
+  if (code === 45 || code === 48) return 'fog';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+  if (code >= 95) return 'storm';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+  return isDay ? 'cloudy' : 'cloudy-night';
+}
+function wxSceneFX(cond) {
+  const seq = (n) => Array.from({ length: n }, (_, i) => i);
+  let fx = '';
+  if (cond === 'rain' || cond === 'storm')
+    fx += '<div class="fx rain">' + seq(26).map(i => `<i style="left:${(i * 3.9 + 2) % 100}%;animation-delay:${((i * 0.23) % 1).toFixed(2)}s;animation-duration:${(0.7 + (i % 5) * 0.1).toFixed(2)}s"></i>`).join('') + '</div>';
+  if (cond === 'snow')
+    fx += '<div class="fx snow">' + seq(18).map(i => `<i style="left:${(i * 5.7 + 2) % 100}%;animation-delay:${((i * 0.53) % 3).toFixed(2)}s;animation-duration:${(3 + (i % 4) * 0.8).toFixed(2)}s"></i>`).join('') + '</div>';
+  if (cond === 'night' || cond === 'cloudy-night')
+    fx += '<div class="fx stars">' + seq(16).map(i => `<i style="left:${(i * 13 + 5) % 95}%;top:${(i * 17 + 8) % 55}%;animation-delay:${((i * 0.4) % 2).toFixed(2)}s"></i>`).join('') + '</div>';
+  if (['cloudy', 'cloudy-night', 'rain', 'storm', 'fog'].includes(cond))
+    fx += '<div class="fx clouds"><i class="c1"></i><i class="c2"></i><i class="c3"></i></div>';
+  if (cond === 'sunny') fx += '<div class="fx sun"><i class="rays"></i><i class="core"></i></div>';
+  if (cond === 'night') fx += '<div class="fx moon"><i></i></div>';
+  if (cond === 'storm') fx += '<div class="fx bolt"><i></i></div>';
+  if (cond === 'fog') fx += '<div class="fx fogfx"><i></i><i></i><i></i></div>';
+  return fx;
+}
+function wxHourly(d) {
+  if (!d.hourly || !d.hourly.time) return '';
+  const nowIso = d.current.time || '';
+  let start = d.hourly.time.findIndex(tm => tm >= nowIso);
+  if (start < 0) start = 0;
+  const hrs = d.hourly.time.slice(start, start + 24);
+  const temps = d.hourly.temperature_2m.slice(start, start + 24);
+  if (temps.length < 2) return '';
+  const w = 600, h = 74, pad = 6;
+  const min = Math.min(...temps), max = Math.max(...temps), span = (max - min) || 1;
+  const pts = temps.map((v, i) => [pad + i * (w - 2 * pad) / (temps.length - 1), h - pad - (v - min) / span * (h - 2 * pad)]);
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const dots = pts.filter((_, i) => i % 6 === 0)
+    .map((p, k) => `<circle class="pt" style="animation-delay:${(0.5 + k * 0.25).toFixed(2)}s" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6"/>`).join('');
+  const labels = [0, 6, 12, 18, 23].map(i => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hour12: false }).format(new Date(hrs[Math.min(i, hrs.length - 1)])) + ':00');
+  return `<div class="wx-hourly"><div class="k">${t('hourly24')}</div>
+    <svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <defs><linearGradient id="wxg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4aa3ff" stop-opacity=".35"/><stop offset="1" stop-color="#4aa3ff" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path class="area" d="${path} L${w - pad},${h} L${pad},${h} Z" fill="url(#wxg)"/>
+      <path class="line" d="${path}" pathLength="1"/>${dots}
+    </svg>
+    <div class="wx-hours">${labels.map(l => `<span>${l}</span>`).join('')}</div></div>`;
+}
 function renderWeather() {
   const c0 = state.cache.weather;
   if (!c0) return;
   const d = c0.d;
   const c = d.current;
-  let [desc, em] = (WMO[LANG] || WMO.en)[c.weather_code] || ['—', '❔'];
-  if (!c.is_day && c.weather_code <= 1) em = '🌙';
+  const [desc, em] = (WMO[LANG] || WMO.en)[c.weather_code] || ['—', '❔'];
+  const cond = wxCond(c.weather_code, c.is_day);
+  const windDur = Math.max(0.5, 5 - c.wind_speed_10m / 12);
   const days = (d.daily.time || []).map((tm, i) => {
     const [, e2] = (WMO[LANG] || WMO.en)[d.daily.weather_code[i]] || ['—', '❔'];
     const dayName = i === 0 ? t('todayDay') : new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en', { weekday: 'short', timeZone: TZ }).format(new Date(tm));
-    return `<div class="wx-day"><div class="d">${dayName}</div><div class="e">${e2}</div>
+    return `<div class="wx-day" style="--i:${i}"><div class="d">${dayName}</div><div class="e">${e2}</div>
       <div class="t"><b>${Math.round(d.daily.temperature_2m_max[i])}°</b> ${Math.round(d.daily.temperature_2m_min[i])}°</div>
       <div class="p">💧${d.daily.precipitation_probability_max?.[i] ?? '–'}%</div></div>`;
   }).join('');
   $('weather-body').innerHTML =
-    `<div class="wx-now">
-       <div class="em">${em}</div>
-       <div>
-         <div class="big">${Math.round(c.temperature_2m)}°C</div>
+    `<div class="wx-scene ${cond}">${wxSceneFX(cond)}
+       <div class="wx-emoji">${em}</div>
+       <div class="wx-main">
+         <div class="wx-now">
+           <div class="big"><span data-count="${Math.round(c.temperature_2m)}" data-decimals="0" data-suffix="°C">${Math.round(c.temperature_2m)}°C</span></div>
+         </div>
          <div class="wx-desc">${desc} · ${t('feelsLike')} ${Math.round(c.apparent_temperature)}°C</div>
-         <div class="wx-meta">💧 ${t('humidity')} ${c.relative_humidity_2m}% · 💨 ${Math.round(c.wind_speed_10m)} km/h · 🌧️ ${c.precipitation} mm</div>
+         <div class="wx-meta">🌧️ ${c.precipitation} mm</div>
+         <div class="wx-gauges">
+           <div class="gauge"><div class="k">${t('humidity')}</div><div class="v">💧 ${c.relative_humidity_2m}%</div>
+             <div class="hum-track"><div class="hum-fill" style="--w:${c.relative_humidity_2m}%"></div></div></div>
+           <div class="gauge"><div class="k">${t('wind')}</div>
+             <div class="v"><span class="fan" style="animation-duration:${windDur.toFixed(2)}s">🌀</span> ${Math.round(c.wind_speed_10m)} km/h</div></div>
+           <div class="gauge"><div class="k">${t('rainChance')}</div><div class="v">☔ ${d.daily.precipitation_probability_max?.[0] ?? '–'}%</div></div>
+         </div>
        </div>
      </div>
+     ${wxHourly(d)}
      <div class="wx-days">${days}</div>`;
+  animateCounts($('weather-body'));
 }
 async function refreshWeather() {
   const { lat, lon, name } = cityCoords();
@@ -877,7 +1065,7 @@ function renderAir() {
   const [label, color] = aqiInfo(c.us_aqi);
   $('air-body').innerHTML =
     `<div class="aqi-flex">
-       <div class="aqi-badge" style="background:${color}">
+       <div class="aqi-badge" style="--aqi-c:${color};background:${color}">
          <div class="n">${Math.round(c.us_aqi)}</div><div class="l">US AQI</div>
        </div>
        <div class="aqi-detail">
@@ -1061,8 +1249,29 @@ function setLang(lang) {
   // re-stamp updated labels (stamps store text; simplest: refresh modules' stamps on next auto-refresh)
   Object.keys(state.cache).forEach(() => {});
 }
-$('lang-en').addEventListener('click', () => setLang('en'));
-$('lang-ne').addEventListener('click', () => setLang('ne'));
+/* ---- language switch animation ---- */
+function rippleFrom(btn) {
+  const r = btn.getBoundingClientRect();
+  const c = document.createElement('div');
+  c.className = 'lang-ripple';
+  c.style.left = (r.left + r.width / 2) + 'px';
+  c.style.top = (r.top + r.height / 2) + 'px';
+  document.body.appendChild(c);
+  setTimeout(() => c.remove(), 900);
+}
+function playLangWave() {
+  const els = [document.querySelector('header'), document.querySelector('nav.pages'),
+               document.querySelector('.ticker'), ...document.querySelectorAll('main .card')];
+  els.forEach((el, i) => {
+    if (!el) return;
+    el.style.animation = 'none';
+    void el.offsetWidth; // restart
+    el.style.animation = 'langSwap .55s cubic-bezier(.22,1,.36,1) both';
+    el.style.animationDelay = (i * 0.06) + 's';
+  });
+}
+$('lang-en').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setLang('en'); playLangWave(); });
+$('lang-ne').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setLang('ne'); playLangWave(); });
 
 /* ============ clock ============ */
 function tickClock() {
@@ -1076,6 +1285,22 @@ function tickClock() {
       timeZone: TZ, day: 'numeric', month: 'long', year: 'numeric' }).format(now) + ' (नेपाली)';
   } catch (e) { $('date-ne').textContent = ''; }
 }
+
+/* ============ parallax ============ */
+(function initParallax() {
+  const el = document.querySelector('.brand svg') || document.querySelector('.brand .ball');
+  if (!el || !matchMedia('(pointer:fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let tx = 0, ty = 0, cx = 0, cy = 0;
+  addEventListener('mousemove', (e) => {
+    tx = (e.clientX / innerWidth - 0.5) * 2;
+    ty = (e.clientY / innerHeight - 0.5) * 2;
+  }, { passive: true });
+  (function loop() {
+    cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
+    el.style.transform = `translate(${(cx * 7).toFixed(2)}px, ${(cy * 5).toFixed(2)}px) rotate(${(cx * 4).toFixed(2)}deg)`;
+    requestAnimationFrame(loop);
+  })();
+})();
 
 /* ============ boot ============ */
 const MODULES = { gold: refreshGold, nepse: refreshNepse, rates: refreshRates, weather: refreshWeather,

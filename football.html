@@ -18,12 +18,16 @@
     background:
       radial-gradient(1200px 500px at 80% -10%, rgba(46,204,113,.12), transparent 60%),
       radial-gradient(900px 420px at 10% -10%, rgba(47,111,237,.10), transparent 60%),
-      var(--bg);
+      linear-gradient(160deg,#070b16 0%,#0a1020 40%,#0d1730 70%,#070b16 100%);
+    background-size:auto,auto,300% 300%;
+    animation:bgShift 26s ease-in-out infinite;
     color:var(--text); min-height:100vh; overflow-x:hidden;
   }
+  @keyframes bgShift{0%,100%{background-position:0 0,0 0,0% 50%}50%{background-position:0 0,0 0,100% 50%}}
+  @keyframes hueDrift{from{filter:blur(90px) hue-rotate(0deg)}to{filter:blur(90px) hue-rotate(45deg)}}
   body::before, body::after{content:""; position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(90px); opacity:.2}
-  body::before{width:520px;height:520px; left:-140px; top:-140px; background:radial-gradient(circle,#2ecc71,transparent 70%); animation:drift1 20s ease-in-out infinite alternate}
-  body::after{width:620px;height:620px; right:-170px; bottom:-170px; background:radial-gradient(circle,#2f6fed,transparent 70%); animation:drift2 26s ease-in-out infinite alternate}
+  body::before{width:520px;height:520px; left:-140px; top:-140px; background:radial-gradient(circle,#2ecc71,transparent 70%); animation:drift1 20s ease-in-out infinite alternate, hueDrift 14s ease-in-out infinite alternate}
+  body::after{width:620px;height:620px; right:-170px; bottom:-170px; background:radial-gradient(circle,#2f6fed,transparent 70%); animation:drift2 26s ease-in-out infinite alternate, hueDrift 18s ease-in-out infinite alternate}
   @keyframes drift1{to{transform:translate(150px,110px) scale(1.18)}}
   @keyframes drift2{to{transform:translate(-150px,-90px) scale(1.12)}}
   header, nav.pages, main, footer{position:relative; z-index:1}
@@ -32,6 +36,13 @@
   @keyframes softPulse{0%,100%{opacity:.55}50%{opacity:1}}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
   @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes popIn{from{opacity:0; transform:translateY(12px) scale(.95)} to{opacity:1; transform:none}}
+  @keyframes scorePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  @keyframes langSwap{from{opacity:0; transform:translateY(16px) scale(.985); filter:blur(6px)} to{opacity:1; transform:none; filter:blur(0)}}
+  .lang-ripple{position:fixed; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%;
+    background:radial-gradient(circle, rgba(224,52,78,.45), rgba(224,52,78,0) 70%);
+    pointer-events:none; z-index:99; transform:scale(0); animation:rippleBurst .8s ease-out forwards}
+  @keyframes rippleBurst{to{transform:scale(90); opacity:0}}
   @keyframes fadeIn{from{opacity:0} to{opacity:1}}
 
   header{display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;
@@ -94,7 +105,8 @@
   .day-nav .label{font-size:13px; color:#e6eafb; font-weight:700; min-width:150px; text-align:center}
 
   .match{border:1px solid rgba(255,255,255,.06); border-radius:13px; padding:13px; background:rgba(255,255,255,.02);
-         display:flex; flex-direction:column; gap:9px; transition:transform .3s var(--ease), border-color .3s, background .3s}
+         display:flex; flex-direction:column; gap:9px; transition:transform .3s var(--ease), border-color .3s, background .3s, box-shadow .3s;
+         animation:popIn .55s var(--ease) both; animation-delay:calc(var(--i,0)*80ms)}
   .match:hover{transform:translateY(-3px); border-color:rgba(46,204,113,.45)}
   .match.live{border-color:rgba(224,52,78,.6); background:rgba(224,52,78,.05)}
   .match-top{display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted)}
@@ -112,11 +124,14 @@
   .score.vs{font-size:13px; color:var(--muted); font-weight:600}
   .match-bot{display:flex; justify-content:space-between; font-size:11px; color:var(--muted)}
 
-  .news-item{display:block; padding:10px 0; border-bottom:1px dashed rgba(255,255,255,.08)}
-  .news-item:last-child{border-bottom:none}
+  .news-list{display:flex; flex-direction:column; gap:9px; flex:1}
+  .news-item{display:flex; flex-direction:column; gap:4px; padding:11px 12px; border:1px solid rgba(255,255,255,.06);
+    border-radius:12px; background:rgba(255,255,255,.02); transition:transform .3s var(--ease), border-color .3s, background .3s;
+    animation:popIn .5s var(--ease) both; animation-delay:calc(var(--i,0)*60ms)}
+  .news-item:hover{transform:translateX(4px); border-color:__BORDER__; background:rgba(255,255,255,.04)}
   .news-item .t{font-size:13.5px; line-height:1.45; color:#e6eafb; transition:color .2s}
   .news-item:hover .t{color:#fff}
-  .news-item .m{font-size:11px; color:var(--muted); margin-top:3px}
+  .news-item .m{font-size:11px; color:var(--muted); margin-top:2px}
   .news-item .m b{color:#a9b4d6; font-weight:600}
   footer{max-width:1240px; margin:0 auto; padding:6px 22px 40px; color:#5c6580; font-size:12px; line-height:1.7}
   footer b{color:#8b94b0}
