@@ -328,7 +328,8 @@
   @keyframes rippleBurst{to{transform:scale(26); opacity:0}}
   /* air quality — gauge + bars */
   .air-wrap{flex:1; display:flex; flex-direction:column; gap:12px}
-  .aqi-top{display:flex; align-items:center; gap:18px}
+  .metal .usd span, .nepse-top .val span, .wx-now .big span{font-variant-numeric:tabular-nums; display:inline-block}
+  .aqi-top{display:flex; align-items:center; gap:18px; flex:1}
   .aqi-gauge{position:relative; width:168px; flex:0 0 auto}
   .aqi-gauge svg{width:100%; display:block; overflow:visible}
   .aqi-center{position:absolute; left:0; right:0; bottom:-4px; text-align:center}
@@ -362,6 +363,10 @@
   .quake .q-place{font-size:13.5px; color:#e6eafb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .quake .q-time{font-size:11.5px; color:var(--muted); margin-top:2px}
   .quake a.q-link{font-size:11px; color:var(--accent2)}
+  .q-legend{margin-top:auto; display:flex; gap:16px; align-items:center; padding-top:10px;
+    border-top:1px dashed rgba(255,255,255,.08); font-size:10.5px; color:var(--muted)}
+  .q-legend i{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px}
+  .q-legend .q-src{margin-left:auto}
 
   .analysis-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; flex:1}
   @media (max-width:900px){.analysis-grid{grid-template-columns:1fr}}
@@ -743,7 +748,10 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtNum = (n, d = 2) => Number(n).toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-/* Count-up animation for numbers marked with data-count */
+/* Count-up animation for numbers marked with data-count.
+   Values tick from the PREVIOUS value to the new one (cached globally),
+   so periodic refreshes glide instead of resetting to 0 and jumping. */
+const COUNT_CACHE = {};
 function animateCounts(root) {
   if (!root) return;
   root.querySelectorAll('[data-count]').forEach(el => {
@@ -752,14 +760,17 @@ function animateCounts(root) {
     const decimals = parseInt(el.dataset.decimals || '0', 10);
     const prefix = el.dataset.prefix || '';
     const suffix = el.dataset.suffix || '';
-    const from = parseFloat(el.dataset.last || '0');
+    const key = el.dataset.key || (prefix + '|' + suffix + '|' + decimals);
+    const from = COUNT_CACHE[key] ?? 0;
+    COUNT_CACHE[key] = target;
     if (from === target) { el.textContent = prefix + fmtNum(target, decimals) + suffix; return; }
-    const start = performance.now(), dur = 900;
+    el.textContent = prefix + fmtNum(from, decimals) + suffix;
+    const start = performance.now(), dur = 700;
     function frame(now) {
       const p = Math.min(1, (now - start) / dur);
       const eased = 1 - Math.pow(1 - p, 3);
       el.textContent = prefix + fmtNum(from + (target - from) * eased, decimals) + suffix;
-      if (p < 1) requestAnimationFrame(frame); else el.dataset.last = target;
+      if (p < 1) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   });
@@ -854,8 +865,8 @@ function renderGold() {
         `<span class="chip ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '▲' : '▼'} Rs ${fmtNum(Math.abs(chg), 0)}${pct != null ? ' (' + (chg >= 0 ? '+' : '−') + Math.abs(pct).toFixed(2) + '%)' : ''}</span>`;
       return `<div class="metal ${cls}">
         <div class="m-head"><div class="name">${emoji} ${t(labelKey)}</div>${chgChip}</div>
-        <div class="usd"><span data-count="${tola.price}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(tola.price, 0)}</span><small> ${t('perTola')}</small></div>
-        <div class="npr"><span data-count="${kg}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(kg, 0)}</span><small> ${t('perKg')}</small></div>
+        <div class="usd"><span data-key="${labelKey}-tola" data-count="${tola.price}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(tola.price, 0)}</span><small> ${t('perTola')}</small></div>
+        <div class="npr"><span data-key="${labelKey}-kg" data-count="${kg}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(kg, 0)}</span><small> ${t('perKg')}</small></div>
         ${ten ? `<div class="spot">Rs ${fmtNum(ten.price, 0)} ${t('per10g')} · ${t('vsYesterday')} ${chg != null ? (chg >= 0 ? '+' : '−') + 'Rs ' + fmtNum(Math.abs(chg), 0) : '—'}</div>` : ''}
         <div class="spark" id="spark-${labelKey}"></div>
         <div style="font-size:10px;color:var(--muted)">${t('trend30')}</div>
@@ -933,7 +944,7 @@ function renderNepse() {
   st.className = 'chip ' + (open ? 'open' : 'closed');
   $('nepse-body').innerHTML =
     `<div class="nepse-top">
-       <div class="val ${chgCls}"><span data-count="${idx.currentValue}" data-decimals="2">${fmtNum(idx.currentValue)}</span></div>
+       <div class="val ${chgCls}"><span data-key="nepse-idx" data-count="${idx.currentValue}" data-decimals="2">${fmtNum(idx.currentValue)}</span></div>
        <div class="chg ${chgCls}">${sign}${fmtNum(idx.change)} (${sign}${fmtNum(idx.perChange)}%)</div>
        <span class="chip ${chgCls}">${up ? '▲' : '▼'} ${t('today')}</span>
      </div>
@@ -1085,7 +1096,7 @@ function renderWeather() {
        <div class="wx-emoji">${em}</div>
        <div class="wx-main">
          <div class="wx-now">
-           <div class="big"><span data-count="${Math.round(c.temperature_2m)}" data-decimals="0" data-suffix="°C">${Math.round(c.temperature_2m)}°C</span></div>
+           <div class="big"><span data-key="wx-temp" data-count="${Math.round(c.temperature_2m)}" data-decimals="0" data-suffix="°C">${Math.round(c.temperature_2m)}°C</span></div>
          </div>
          <div class="wx-desc">${desc} · ${t('feelsLike')} ${Math.round(c.apparent_temperature)}°C</div>
          <div class="wx-meta">🌧️ ${c.precipitation} mm</div>
@@ -1153,9 +1164,9 @@ function renderAir() {
            <div class="pm-row"><div class="k"><span>PM10</span><b>${c.pm10?.toFixed(1) ?? '–'} µg/m³</b></div>
              <div class="pm-track"><div class="pm-fill" style="--w:${pm(c.pm10,150)}%; background:${color}"></div></div></div>
            <div class="aqi-who">PM2.5 <b>${(c.pm2_5 != null ? (c.pm2_5 / 15).toFixed(1) : '–')}</b> ${t('whoLine')}</div>
-           <div class="aqi-advice" style="border-color:${color}">${t('aqiTips')[aqiIdx]}</div>
          </div>
        </div>
+       <div class="aqi-advice" style="border-color:${color}">${t('aqiTips')[aqiIdx]}</div>
      </div>`;
 }
 async function refreshAir() {
@@ -1212,7 +1223,13 @@ function renderQuakes() {
        <div class="qsum"><div class="n">7</div><div class="k">${t('days')}</div></div>
      </div>
      <svg class="seismo" viewBox="0 0 600 34" preserveAspectRatio="none"><path d="${seismoPath()}" pathLength="1"/></svg>
-     ${rows}`;
+     ${rows}
+     <div class="q-legend">
+       <span><i style="background:#f1c40f"></i>3.5–4.9</span>
+       <span><i style="background:#e67e22"></i>5.0–5.9</span>
+       <span><i style="background:#e0344e"></i>6.0+</span>
+       <span class="q-src">USGS · M3.5+ · within 800 km</span>
+     </div>`;
 }
 async function refreshQuakes() {
   try {
