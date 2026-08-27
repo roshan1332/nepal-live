@@ -21,10 +21,11 @@ const S_I18N = {
     noSoccer: 'No football matches scheduled for this day in the feed. Try another day, or check the news below.',
     noCricket: 'No cricket matches scheduled for this day in the feed. Try another day, or check the news below.',
     tagline: 'Matches, scores & news — Nepal Live Sports',
-    navDash: '🏠 Dashboard', navFoot: '⚽ Football Live', navCricket: '🏏 Cricket Live',
+    navDash: 'Dashboard', navFoot: 'Football Live', navCricket: 'Cricket Live',
     matches: "Today's Matches", worldNewsF: 'World Football News', nepalNewsF: 'Nepal Football News',
     worldNewsC: 'World Cricket News', nepalNewsC: 'Nepal Cricket News',
     prev: '‹ Prev', next: 'Next ›',
+    credit: 'Made by <b>Roshan Mainali</b>',
     footerSoccer: '<b>Sources:</b> TheSportsDB (fixtures & scores) · Google News. Matches auto-refresh every 2 min, news every 5 min. Kick-off times shown in Nepal Time (NPT).',
     footerCricket: '<b>Sources:</b> TheSportsDB (fixtures & scores) · Google News. Matches auto-refresh every 2 min, news every 5 min. Start times shown in Nepal Time (NPT).'
   },
@@ -36,10 +37,11 @@ const S_I18N = {
     noSoccer: 'यो दिनका लागि फिडमा फुटबल खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
     noCricket: 'यो दिनका लागि फिडमा क्रिकेट खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
     tagline: 'खेल, स्कोर र समाचार — नेपाल लाइभ स्पोर्ट्स',
-    navDash: '🏠 ड्यासबोर्ड', navFoot: '⚽ फुटबल लाइभ', navCricket: '🏏 क्रिकेट लाइभ',
+    navDash: 'ड्यासबोर्ड', navFoot: 'फुटबल लाइभ', navCricket: 'क्रिकेट लाइभ',
     matches: 'आजका खेलहरू', worldNewsF: 'विश्व फुटबल समाचार', nepalNewsF: 'नेपाल फुटबल समाचार',
     worldNewsC: 'विश्व क्रिकेट समाचार', nepalNewsC: 'नेपाल क्रिकेट समाचार',
     prev: '‹ अघिल्लो', next: 'अर्को ›',
+    credit: 'निर्माता: <b>रोशन मैनाली</b>',
     footerSoccer: '<b>स्रोतहरू:</b> द स्पोर्ट्स डीबी (खेल तालिका र स्कोर) · गुगल न्यूज। खेल हरेक २ मिनेटमा ताजा हुन्छन्, समाचार हरेक ५ मिनेटमा। सुरु समय नेपाल समय (NPT) मा।',
     footerCricket: '<b>स्रोतहरू:</b> द स्पोर्ट्स डीबी (खेल तालिका र स्कोर) · गुगल न्यूज। खेल हरेक २ मिनेटमा ताजा हुन्छन्, समाचार हरेक ५ मिनेटमा। सुरु समय नेपाल समय (NPT) मा।'
   }
@@ -135,43 +137,44 @@ function matchCard(ev, i = 0) {
   </div>`;
 }
 
-function renderMatches(cfg) {
-  const date = kathmanduDateISO(dayOffset);
-  $('day-label').textContent = nptDay(date) + ' · ' + date;
-  const events = S_CACHE.matches;
-  if (!events) return;
-  if (!events.length) {
-    $('matches-body').innerHTML = `<div class="loading">😴 ${st(cfg.sport === 'Cricket' ? 'noCricket' : 'noSoccer')}</div>`;
-    return;
-  }
-  $('matches-body').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;flex:1">`
-    + events.map((ev, i) => matchCard(ev, i)).join('') + `</div>`;
+function daySection(title, inner){
+  return `<div class="day-sec"><div class="day-h">${title}</div>${inner}</div>`;
+}
+function subDay(date, events){
+  return `<div class="subday">${nptDay(date)}</div><div class="day-grid">${events.map((ev,i)=>matchCard(ev,i)).join('')}</div>`;
+}
+function renderMatches(cfg){
+  const days = S_CACHE.matches;
+  if(!days) return;
+  const today = kathmanduDateISO(0);
+  const past = days.filter(d=>d.date<today).sort((a,b)=>b.date.localeCompare(a.date));
+  const now  = days.filter(d=>d.date===today);
+  const fut  = days.filter(d=>d.date>today).sort((a,b)=>a.date.localeCompare(b.date));
+  let html='';
+  if(past.length) html += daySection(st('recent'), past.map(d=>subDay(d.date,d.events)).join(''));
+  if(now.length)  html += daySection(st('today'), `<div class="day-grid">${now[0].events.map((ev,i)=>matchCard(ev,i)).join('')}</div>`);
+  if(fut.length)  html += daySection(st('upcomingDays'), fut.map(d=>subDay(d.date,d.events)).join(''));
+  if(!html) html = `<div class="loading">😴 ${st(cfg.sport==='Cricket'?'noCricket':'noSoccer')}</div>`;
+  $('matches-body').innerHTML = html;
 }
 
-async function loadMatches(cfg) {
-  const date = kathmanduDateISO(dayOffset);
-  $('day-label').textContent = nptDay(date) + ' · ' + date;
-  const direct = `https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${cfg.sport}`;
-  try {
+async function loadMatches(cfg){
+  try{
     let d;
-    try {
-      const r = await fetch(`/api/sport?s=${cfg.sport}&d=${date}`, { cache: 'no-store' });
-      if (!r.ok) throw new Error('proxy');
+    try{
+      const r = await fetch(`/api/sport-range?s=${cfg.sport}&past=2&future=10`, { cache:'no-store' });
+      if(!r.ok) throw new Error('proxy');
       d = await r.json();
-    } catch (e) {
-      const r2 = await fetch(direct, { cache: 'no-store' });
-      d = await r2.json();
+    }catch(e){
+      const date = kathmanduDateISO(0);
+      const r2 = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${cfg.sport}`, { cache:'no-store' });
+      const j2 = await r2.json();
+      d = { days: (j2.events && j2.events.length) ? [{ date, events: j2.events }] : [] };
     }
-    let events = d.events || [];
-    const order = { live: 0, ns: 1, off: 2, done: 3 };
-    events = events.slice().sort((a, b) =>
-      order[classify(a)] - order[classify(b)]
-      || String(a.strTimestamp || '').localeCompare(String(b.strTimestamp || '')));
-    S_CACHE.matches = events;
+    S_CACHE.matches = d.days || [];
     renderMatches(cfg);
     stamp('stamp-matches', true);
-  } catch (e) {
+  }catch(e){
     $('matches-body').innerHTML = `<div class="error-msg">⚠️ ${st('failed')}…</div>`;
     stamp('stamp-matches', false);
   }
@@ -238,6 +241,7 @@ function applySportI18n(cfg) {
   if ($('prev-day')) $('prev-day').textContent = st('prev');
   if ($('next-day')) $('next-day').textContent = st('next');
   if ($('sp-footer')) $('sp-footer').innerHTML = cfg.sport === 'Cricket' ? st('footerCricket') : st('footerSoccer');
+  if ($('credit')) $('credit').innerHTML = '♥ ' + st('credit');
 }
 function setSportLang(cfg, lang) {
   S_LANG = lang;
@@ -280,9 +284,14 @@ function playLangWave() {
     if (!el) return;
     el.style.animation = 'none';
     void el.offsetWidth;
-    el.style.animation = 'langSwap .55s cubic-bezier(.22,1,.36,1) both';
-    el.style.animationDelay = (i * 0.06) + 's';
+    el.style.animation = 'langSwap .4s ease-out both';
+    el.style.animationDelay = (i * 0.03) + 's';
   });
+}
+function switchSportLang(cfg, lang, btn) {
+  rippleFrom(btn);
+  setSportLang(cfg, lang);
+  playLangWave();
 }
 
 /* ---------- parallax ---------- */
@@ -303,16 +312,14 @@ function initParallax() {
 
 /* ---------- init ---------- */
 function initSportPage(cfg) {
-  $('prev-day').addEventListener('click', () => { if (dayOffset > -14) { dayOffset--; loadMatches(cfg); } });
-  $('next-day').addEventListener('click', () => { if (dayOffset < 14) { dayOffset++; loadMatches(cfg); } });
   $('refresh-matches').addEventListener('click', (e) => {
     e.currentTarget.classList.add('spinning');
     loadMatches(cfg).finally(() => e.currentTarget.classList.remove('spinning'));
   });
   $('refresh-news1').addEventListener('click', () => loadNews(cfg, 1));
   $('refresh-news2').addEventListener('click', () => loadNews(cfg, 2));
-  if ($('lang-en')) $('lang-en').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setSportLang(cfg, 'en'); playLangWave(); });
-  if ($('lang-ne')) $('lang-ne').addEventListener('click', (e) => { rippleFrom(e.currentTarget); setSportLang(cfg, 'ne'); playLangWave(); });
+  if ($('lang-en')) $('lang-en').addEventListener('click', (e) => switchSportLang(cfg, 'en', e.currentTarget));
+  if ($('lang-ne')) $('lang-ne').addEventListener('click', (e) => switchSportLang(cfg, 'ne', e.currentTarget));
 
   setSportLang(cfg, S_LANG);
   initParallax();

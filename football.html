@@ -38,15 +38,24 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes popIn{from{opacity:0; transform:translateY(12px) scale(.95)} to{opacity:1; transform:none}}
   @keyframes scorePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-  @keyframes langSwap{from{opacity:0; transform:translateY(16px) scale(.985); filter:blur(6px)} to{opacity:1; transform:none; filter:blur(0)}}
-  .lang-ripple{position:fixed; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%;
-    background:radial-gradient(circle, rgba(224,52,78,.45), rgba(224,52,78,0) 70%);
-    pointer-events:none; z-index:99; transform:scale(0); animation:rippleBurst .8s ease-out forwards}
-  @keyframes rippleBurst{to{transform:scale(90); opacity:0}}
+  @keyframes langSwap{from{opacity:.35; transform:translateY(6px)} to{opacity:1; transform:none}}
+  .lang-ripple{position:fixed; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%;
+    background:radial-gradient(circle, rgba(224,52,78,.35), rgba(224,52,78,0) 70%);
+    pointer-events:none; z-index:99; transform:scale(0); animation:rippleBurst .6s ease-out forwards}
+  @keyframes rippleBurst{to{transform:scale(26); opacity:0}}
   @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+  .card-head .ico{display:inline-flex; align-items:center; color:var(--accent)}
+  .ic{width:18px; height:18px; flex:0 0 auto}
+  .nico{display:inline-flex; width:16px; height:16px; margin-right:7px}
+  .nico .ic{width:16px; height:16px}
+  .brand .ball .ic{width:46px; height:46px}
 
-  header{display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;
-         padding:22px 22px 12px; max-width:1240px; margin:0 auto; animation:rise .7s var(--ease) both}
+  header{display:grid; grid-template-columns:1fr auto; gap:22px; align-items:center;
+    width:min(1240px, calc(100% - 44px)); margin:18px auto 0; padding:16px 22px;
+    background:linear-gradient(180deg, var(--glass), rgba(15,20,38,.62));
+    border:1px solid var(--glass-brd); border-radius:20px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 14px 36px rgba(0,0,0,.4); animation:rise .7s var(--ease) both}
   .brand{display:flex; gap:14px; align-items:center}
   .brand .ball{font-size:46px; filter:drop-shadow(0 6px 14px rgba(0,0,0,.4)); transition:transform .4s var(--ease)}
   .brand:hover .ball{transform:translateY(-3px) rotate(-6deg)}
@@ -60,16 +69,18 @@
   .clockbox .date{color:var(--muted); font-size:12px}
   .npt{display:inline-block; margin-left:8px; font-size:10px; color:#06231a; background:var(--accent);
        border-radius:6px; padding:2px 6px; letter-spacing:1px; font-weight:700}
-  .lang-toggle{display:flex; border:1px solid var(--glass-brd); border-radius:10px; overflow:hidden; backdrop-filter:blur(6px)}
+  .lang-toggle{display:flex; border:1px solid var(--glass-brd); border-radius:999px; overflow:hidden; backdrop-filter:blur(6px)}
   .lang-toggle button{background:rgba(255,255,255,.04); color:var(--muted); border:none; padding:7px 14px;
     font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
   .lang-toggle button.active{background:var(--accent); color:#06231a}
   .lang-toggle button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
-  nav.pages{max-width:1240px; margin:8px auto 0; padding:0 22px; display:flex; gap:9px; flex-wrap:wrap; animation:rise .7s var(--ease) .08s both}
-  nav.pages a{padding:9px 17px; border-radius:12px; font-size:13.5px; font-weight:600; color:#c9d2ee;
-    background:var(--glass); border:1px solid var(--glass-brd); backdrop-filter:blur(10px);
-    transition:transform .3s var(--ease), border-color .3s, box-shadow .3s}
-  nav.pages a:hover{border-color:var(--accent); color:#fff; transform:translateY(-2px)}
+  nav.pages{position:sticky; top:10px; z-index:60; width:min(1240px, calc(100% - 44px)); margin:12px auto 0; padding:6px;
+    display:flex; gap:6px; flex-wrap:wrap; background:rgba(14,20,36,.82); border:1px solid var(--glass-brd);
+    border-radius:14px; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    box-shadow:0 10px 26px rgba(0,0,0,.35); animation:rise .7s var(--ease) .08s both}
+  nav.pages a{display:inline-flex; align-items:center; padding:9px 18px; border-radius:10px; font-size:13.5px; font-weight:600;
+    color:var(--muted); background:transparent; border:none; transition:.25s}
+  nav.pages a:hover{color:#fff; background:rgba(255,255,255,.06)}
   nav.pages a.active{background:var(--accent); border-color:transparent; color:#06231a;
     box-shadow:0 6px 20px rgba(46,204,113,.4)}
   main{max-width:1240px; margin:16px auto 30px; padding:0 22px;
@@ -123,6 +134,14 @@
   .score{font-size:23px; font-weight:800; font-variant-numeric:tabular-nums; color:#fff; min-width:64px; text-align:center}
   .score.vs{font-size:13px; color:var(--muted); font-weight:600}
   .match-bot{display:flex; justify-content:space-between; font-size:11px; color:var(--muted)}
+  /* match range sections */
+  .day-sec{margin-bottom:16px}
+  .day-h{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; letter-spacing:1px;
+    text-transform:uppercase; color:var(--accent); margin:2px 0 9px}
+  .day-h::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--accent), transparent)}
+  .subday{font-size:11.5px; color:var(--muted); font-weight:700; margin:10px 0 7px}
+  .day-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px}
+
 
   .news-list{display:flex; flex-direction:column; gap:9px; flex:1}
   .news-item{display:flex; flex-direction:column; gap:4px; padding:11px 12px; border:1px solid rgba(255,255,255,.06);
@@ -133,8 +152,11 @@
   .news-item:hover .t{color:#fff}
   .news-item .m{font-size:11px; color:var(--muted); margin-top:2px}
   .news-item .m b{color:#a9b4d6; font-weight:600}
-  footer{max-width:1240px; margin:0 auto; padding:6px 22px 40px; color:#5c6580; font-size:12px; line-height:1.7}
+  footer{max-width:1240px; margin:0 auto; padding:6px 22px 18px; color:#5c6580; font-size:12px; line-height:1.7}
+  .credit{max-width:1240px; margin:0 auto; padding:2px 22px 30px; text-align:center; color:var(--muted); font-size:12.5px}
+  .credit b{color:var(--accent); font-weight:800; letter-spacing:.3px}
   footer b{color:#8b94b0}
+  @media (max-width:900px){ header{grid-template-columns:1fr; gap:12px} .clockbox{text-align:left} .hdr-right{flex-direction:row; align-items:center; gap:10px} }
   @media (max-width:640px){ .clockbox{text-align:left} #clock{font-size:22px} .hdr-right{align-items:flex-start} }
   @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none !important; transition:none !important} }
 </style>
@@ -143,7 +165,7 @@
 
 <header>
   <div class="brand">
-    <div class="ball">⚽</div>
+    <div class="ball"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z"/><path d="M12 7.6V3.2"/><path d="M16.2 10.6l4-1.3"/><path d="M14.6 15.5l2.5 3.4"/><path d="M9.4 15.5l-2.5 3.4"/><path d="M7.8 10.6l-4-1.3"/></svg></div>
     <div>
       <h1>Football <span class="np">Live</span></h1>
       <div class="tag" id="sp-tagline">Matches, scores &amp; news — Nepal Live Sports</div>
@@ -162,21 +184,16 @@
 </header>
 
 <nav class="pages">
-  <a href="index.html" id="nav-dash">🏠 Dashboard</a>
-  <a href="football.html" class="active" id="nav-foot">⚽ Football Live</a>
-  <a href="cricket.html" id="nav-cricket">🏏 Cricket Live</a>
+  <a href="index.html"><span class="nico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span><span id="nav-dash">Dashboard</span></a>
+  <a href="football.html" class="active"><span class="nico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z"/><path d="M12 7.6V3.2"/><path d="M16.2 10.6l4-1.3"/><path d="M14.6 15.5l2.5 3.4"/><path d="M9.4 15.5l-2.5 3.4"/><path d="M7.8 10.6l-4-1.3"/></svg></span><span id="nav-foot">Football Live</span></a>
+  <a href="cricket.html"><span class="nico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9.4" y="7.6" width="5.2" height="13" rx="2.4"/><line x1="12" y1="7.6" x2="12" y2="3.4"/><circle cx="19" cy="17.6" r="2.7"/></svg></span><span id="nav-cricket">Cricket Live</span></a>
 </nav>
 
 <main>
   <section class="card wide">
     <div class="card-head">
-      <span style="font-size:17px">🗓</span><h2 id="matches-title">Today's Matches</h2>
+      <span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><h2 id="matches-title">Today's Matches</h2>
       <div class="spacer"></div>
-      <div class="day-nav">
-        <button id="prev-day">‹ Prev</button>
-        <span class="label" id="day-label">Today</span>
-        <button id="next-day">Next ›</button>
-      </div>
       <span class="stamp" id="stamp-matches">—</span>
       <button class="rbtn" id="refresh-matches" title="Refresh">↻</button>
     </div>
@@ -185,7 +202,7 @@
 
   <section class="card">
     <div class="card-head">
-      <span style="font-size:17px">🌍</span><h2 id="news1-title">World Football News</h2>
+      <span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></span><h2 id="news1-title">World Football News</h2>
       <div class="spacer"></div>
       <span class="stamp" id="stamp-news1">—</span>
       <button class="rbtn" id="refresh-news1" title="Refresh">↻</button>
@@ -195,7 +212,7 @@
 
   <section class="card">
     <div class="card-head">
-      <span style="font-size:17px">🇳🇵</span><h2 id="news2-title">Nepal Football News</h2>
+      <span class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span><h2 id="news2-title">Nepal Football News</h2>
       <div class="spacer"></div>
       <span class="stamp" id="stamp-news2">—</span>
       <button class="rbtn" id="refresh-news2" title="Refresh">↻</button>
@@ -208,6 +225,8 @@
   <b>Sources:</b> TheSportsDB (fixtures &amp; scores) · Google News.
   Matches auto-refresh every 2 min, news every 5 min. Kick-off times shown in Nepal Time (NPT).
 </footer>
+
+<div class="credit" id="credit"></div>
 
 <script src="sport-page.js"></script>
 <script>

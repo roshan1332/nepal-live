@@ -293,6 +293,29 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, data);
     }
 
+    /* Sport fixtures across a date range (past results + today + upcoming) */
+    if (p === '/api/sport-range') {
+      const sport = u.searchParams.get('s') === 'Cricket' ? 'Cricket' : 'Soccer';
+      const past = Math.min(7, parseInt(u.searchParams.get('past') || '2', 10) || 2);
+      const future = Math.min(14, parseInt(u.searchParams.get('future') || '10', 10) || 10);
+      const data = await cached(`sport-range:${sport}:${past}:${future}`, 180e3, async () => {
+        const todayMs = Date.now();
+        const offsets = [];
+        for (let off = -past; off <= future; off++) offsets.push(off);
+        const results = await Promise.allSettled(offsets.map(async (off) => {
+          const date = new Date(todayMs + off * 864e5).toISOString().slice(0, 10);
+          const r = await fetchURL(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${sport}`);
+          const j = JSON.parse(r.body);
+          return { date, events: j.events || [] };
+        }));
+        const days = [];
+        results.forEach((res) => { if (res.status === 'fulfilled' && res.value.events.length) days.push(res.value); });
+        days.sort((a, b) => a.date.localeCompare(b.date));
+        return { days, fetchedAt: new Date().toISOString() };
+      });
+      return send(res, 200, data);
+    }
+
     /* Latest news aggregated directly from Nepali news websites */
     if (p === '/api/news-nepal') {
       const langFilter = u.searchParams.get('lang'); // optional: en | ne
