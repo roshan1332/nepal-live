@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nepal Live — Real-time Dashboard · नेपाल</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🇳🇵%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#070b16; --panel:#121829; --panel2:#0e1424; --line:#222b45;
+    --text:#e8ecf8; --muted:#8b94b0; --accent:#e0344e; --accent2:#2f6fed;
+    --gold:#f5c542; --green:#2ecc71; --red:#e0344e;
+    --radius:18px;
+    --glass:rgba(22,29,51,.66);
+    --glass-brd:rgba(255,255,255,.08);
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Helvetica Neue",Arial,sans-serif;
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(224,52,78,.12), transparent 60%),
+      radial-gradient(900px 420px at 10% -10%, rgba(47,111,237,.12), transparent 60%),
+      var(--bg);
+    color:var(--text); min-height:100vh; overflow-x:hidden;
+  }
+  /* ---- animated background orbs ---- */
+  body::before, body::after{
+    content:""; position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+    filter:blur(90px); opacity:.22;
+  }
+  body::before{ width:540px;height:540px; left:-140px; top:-140px;
+    background:radial-gradient(circle,#e0344e,transparent 70%); animation:drift1 20s ease-in-out infinite alternate;}
+  body::after{ width:640px;height:640px; right:-180px; bottom:-180px;
+    background:radial-gradient(circle,#2f6fed,transparent 70%); animation:drift2 26s ease-in-out infinite alternate;}
+  @keyframes drift1{to{transform:translate(150px,110px) scale(1.18)}}
+  @keyframes drift2{to{transform:translate(-150px,-90px) scale(1.12)}}
+  header, nav.pages, .ticker, main, footer{position:relative; z-index:1}
+  a{color:inherit; text-decoration:none}
+
+  /* ---- entrance animation ---- */
+  @keyframes rise{from{opacity:0; transform:translateY(20px) scale(.985)} to{opacity:1; transform:none}}
+  @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+
+  header{display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;
+         padding:22px 22px 12px; max-width:1240px; margin:0 auto; animation:rise .7s var(--ease) both}
+  .brand{display:flex; gap:14px; align-items:center}
+  .brand svg{width:54px; height:auto; filter:drop-shadow(0 6px 16px rgba(224,52,78,.45));
+             transition:transform .4s var(--ease)}
+  .brand:hover svg{transform:translateY(-3px) rotate(-2deg)}
+  .brand h1{font-size:27px; letter-spacing:.5px; font-weight:800}
+  .brand h1 .np{background:linear-gradient(120deg,#ff5c72,#e0344e); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .brand .tag{color:var(--muted); font-size:13px; margin-top:2px}
+  .clockbox{text-align:right}
+  #clock{font-size:34px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:1px}
+  #clock .sec{color:var(--accent); font-size:22px}
+  .clockbox .date{color:var(--muted); font-size:12.5px}
+  .clockbox .date-ne{color:#b9c2dd; font-size:12.5px}
+  .npt{display:inline-block; margin-left:8px; font-size:10.5px; color:#fff; background:var(--accent);
+       border-radius:6px; padding:2px 6px; vertical-align:middle; letter-spacing:1px}
+  .hdr-right{display:flex; flex-direction:column; gap:9px; align-items:flex-end}
+  .status{display:flex; align-items:center; gap:8px; font-size:12px; letter-spacing:2px; color:var(--muted)}
+  .dot{width:10px; height:10px; border-radius:50%; background:#7f8aa8; display:inline-block}
+  .dot.live{background:var(--green); box-shadow:0 0 0 0 rgba(46,204,113,.6); animation:pulse 1.6s infinite}
+  .dot.degraded{background:#f1c40f}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+  .lang-toggle{display:flex; border:1px solid var(--glass-brd); border-radius:10px; overflow:hidden; backdrop-filter:blur(6px)}
+  .lang-toggle button{background:rgba(255,255,255,.04); color:var(--muted); border:none; padding:7px 14px;
+    font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
+  .lang-toggle button.active{background:var(--accent); color:#fff}
+  .lang-toggle button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
+
+  nav.pages{max-width:1240px; margin:8px auto 0; padding:0 22px; display:flex; gap:9px; flex-wrap:wrap; animation:rise .7s var(--ease) .08s both}
+  nav.pages a{padding:9px 17px; border-radius:12px; font-size:13.5px; font-weight:600; color:#c9d2ee;
+    background:var(--glass); border:1px solid var(--glass-brd); backdrop-filter:blur(10px);
+    transition:transform .3s var(--ease), border-color .3s, background .3s, box-shadow .3s}
+  nav.pages a:hover{border-color:rgba(224,52,78,.5); color:#fff; transform:translateY(-2px)}
+  nav.pages a.active{background:linear-gradient(135deg,#ff4b62,#e0344e); border-color:transparent; color:#fff;
+    box-shadow:0 6px 20px rgba(224,52,78,.4)}
+
+  .ticker{max-width:1240px; margin:14px auto 16px; padding:0 22px; animation:rise .7s var(--ease) .14s both}
+  .ticker-inner{overflow:hidden; white-space:nowrap; background:var(--glass);
+    border:1px solid var(--glass-brd); border-radius:13px; display:flex; align-items:center; backdrop-filter:blur(10px)}
+  .ticker-label{flex:0 0 auto; background:linear-gradient(135deg,#ff4b62,#e0344e); color:#fff; font-weight:700; font-size:12px;
+    letter-spacing:1.5px; padding:10px 15px; border-radius:12px 0 0 12px}
+  .ticker-view{overflow:hidden; flex:1}
+  .ticker-track{display:inline-block; white-space:nowrap; padding:10px 0; animation:scroll 70s linear infinite}
+  .ticker-track span{color:#cfd6ec; font-size:13px; padding:0 26px}
+  .ticker-track span::before{content:"●"; color:var(--accent); margin-right:26px; font-size:8px; vertical-align:2px}
+  @keyframes scroll{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+  .ticker-inner:hover .ticker-track{animation-play-state:paused}
+
+  main{max-width:1240px; margin:0 auto; padding:0 22px 34px;
+       display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:18px}
+  .card{background:linear-gradient(180deg, var(--glass), rgba(15,20,38,.72));
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--glass-brd); border-radius:var(--radius); padding:19px;
+    display:flex; flex-direction:column; gap:13px; min-height:210px;
+    box-shadow:0 12px 32px rgba(0,0,0,.38);
+    transition:transform .35s var(--ease), box-shadow .35s, border-color .35s;
+    animation:rise .7s var(--ease) both}
+  /* staggered entrance */
+  main .card:nth-child(1){animation-delay:.16s}
+  main .card:nth-child(2){animation-delay:.22s}
+  main .card:nth-child(3){animation-delay:.28s}
+  main .card:nth-child(4){animation-delay:.34s}
+  main .card:nth-child(5){animation-delay:.40s}
+  main .card:nth-child(6){animation-delay:.46s}
+  main .card:nth-child(7){animation-delay:.52s}
+  main .card:nth-child(8){animation-delay:.58s}
+  .card:hover{transform:translateY(-5px); border-color:rgba(224,52,78,.45);
+    box-shadow:0 22px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(224,52,78,.12)}
+  .card.wide{grid-column:1/-1}
+  /* fill vertical gaps: let card bodies stretch to the card height */
+  .card > div:not(.card-head){flex:1; display:flex; flex-direction:column; justify-content:flex-start; min-width:0}
+  .card-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .card-head h2{font-size:14.5px; letter-spacing:.6px; text-transform:uppercase; color:#c9d2ee; font-weight:700}
+  .card-head .ico{font-size:17px}
+  .spacer{flex:1}
+  .stamp{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .stamp.err{color:var(--red)}
+  .rbtn{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted); border-radius:8px;
+        width:28px; height:28px; cursor:pointer; font-size:13px; line-height:1; transition:.25s}
+  .rbtn:hover{color:#fff; border-color:var(--accent); background:rgba(224,52,78,.12); transform:rotate(30deg)}
+  .rbtn.spinning{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  select{background:rgba(255,255,255,.05); color:var(--text); border:1px solid var(--glass-brd);
+         border-radius:8px; padding:4px 8px; font-size:12px; outline:none; cursor:pointer}
+  .loading,.error-msg{color:var(--muted); font-size:13px; padding:14px 2px; animation:fadeIn .5s ease both}
+  @keyframes softPulse{0%,100%{opacity:.55}50%{opacity:1}}
+  .error-msg{color:#f0a3ae}
+  .chip{font-size:10.5px; font-weight:700; letter-spacing:.6px; border-radius:7px; padding:3px 8px}
+  .chip.up{background:rgba(46,204,113,.16); color:var(--green)}
+  .chip.down{background:rgba(224,52,78,.16); color:#ff7b8d}
+  .chip.open{background:rgba(46,204,113,.16); color:var(--green)}
+  .chip.closed{background:rgba(139,148,176,.16); color:var(--muted)}
+
+  /* gold */
+  .gold-grid{display:grid; grid-template-columns:1fr 1fr; gap:13px; flex:1}
+  .metal{border:1px solid rgba(255,255,255,.06); border-radius:13px; padding:15px; background:rgba(255,255,255,.02);
+         transition:transform .3s var(--ease), border-color .3s, background .3s}
+  .metal:hover{transform:translateY(-2px)}
+  .metal.gold-m{border-top:3px solid var(--gold)}
+  .metal.gold-m:hover{background:rgba(245,197,66,.05)}
+  .metal.silver-m{border-top:3px solid #c0c7d4}
+  .metal.silver-m:hover{background:rgba(192,199,212,.05)}
+  .metal .m-head{display:flex; align-items:center; justify-content:space-between; gap:6px}
+  .metal .name{font-size:12px; color:var(--muted); letter-spacing:.8px; font-weight:700}
+  .metal .usd{font-size:26px; font-weight:800; margin-top:7px; font-variant-numeric:tabular-nums}
+  .metal .usd small{font-size:12px; color:var(--muted); font-weight:400}
+  .metal .npr{font-size:15px; margin-top:7px; color:#e6eafb; font-variant-numeric:tabular-nums; font-weight:600}
+  .metal .npr small{color:var(--muted); font-weight:400}
+  .metal .spot{font-size:10.5px; color:var(--muted); margin-top:8px; font-variant-numeric:tabular-nums}
+  .metal .spark{height:34px; margin-top:8px}
+  .gold-note{font-size:11px; color:var(--muted); line-height:1.55}
+
+  /* NEPSE */
+  .nepse-top{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .nepse-top .val{font-size:38px; font-weight:800; font-variant-numeric:tabular-nums}
+  .nepse-top .chg{font-size:15px; font-weight:700; font-variant-numeric:tabular-nums}
+  .chg.up{color:var(--green)} .chg.down{color:#ff7b8d}
+  .nepse-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:9px; margin-top:2px}
+  .nstat{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:11px; padding:9px 11px;
+         transition:border-color .3s, transform .3s var(--ease)}
+  .nstat:hover{border-color:rgba(47,111,237,.4); transform:translateY(-2px)}
+  .nstat .k{font-size:10.5px; color:var(--muted); letter-spacing:.5px}
+  .nstat .v{font-size:13.5px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums}
+  .range-bar{position:relative; height:8px; border-radius:5px; margin:15px 0 4px;
+    background:linear-gradient(90deg,#e0344e,#f1c40f,#2ecc71)}
+  .range-bar .marker{position:absolute; top:-4px; width:4px; height:16px; background:#fff; border-radius:2px;
+    box-shadow:0 0 8px rgba(255,255,255,.8); transition:left .6s var(--ease)}
+  .range-labels{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted)}
+  #nepse-chart{width:100%; height:64px; margin-top:6px}
+
+  .rate-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; flex:1}
+  .rate-row{display:flex; justify-content:space-between; align-items:baseline; padding:7px 2px;
+            border-bottom:1px dashed rgba(255,255,255,.08); font-size:14px; transition:background .2s}
+  .rate-row:hover{background:rgba(255,255,255,.03)}
+  .rate-row .cur{color:#c9d2ee}
+  .rate-row .val{font-weight:700; font-variant-numeric:tabular-nums}
+  .rate-row .val small{color:var(--muted); font-weight:400; margin-left:3px}
+  .rate-src{font-size:11px; color:var(--muted)}
+  .wx-now{display:flex; align-items:center; gap:16px}
+  .wx-now .big{font-size:46px; font-weight:800; font-variant-numeric:tabular-nums}
+  .wx-now .em{font-size:42px}
+  .wx-desc{color:#c9d2ee; font-size:14px}
+  .wx-meta{color:var(--muted); font-size:12.5px; margin-top:3px}
+  .wx-days{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:auto; padding-top:8px}
+  .wx-day{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px;
+          padding:8px 2px; text-align:center; font-size:11px; transition:transform .3s var(--ease), border-color .3s}
+  .wx-day:hover{transform:translateY(-3px); border-color:rgba(47,111,237,.4)}
+  .wx-day .d{color:var(--muted)} .wx-day .e{font-size:18px; margin:3px 0}
+  .wx-day .t{font-variant-numeric:tabular-nums} .wx-day .t b{color:#fff}
+  .wx-day .p{color:#6ea8ff; font-size:10px}
+  .aqi-flex{display:flex; align-items:center; gap:18px; flex:1}
+  .aqi-badge{min-width:96px; text-align:center; border-radius:15px; padding:14px 15px; color:#08130c;
+    box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  .aqi-badge .n{font-size:35px; font-weight:800}
+  .aqi-badge .l{font-size:11px; font-weight:700; letter-spacing:.5px}
+  .aqi-detail{font-size:13px; color:#c9d2ee; line-height:1.7}
+  .aqi-detail small{color:var(--muted)}
+  .quake{display:flex; gap:12px; align-items:center; padding:9px 0; border-bottom:1px dashed rgba(255,255,255,.08)}
+  .quake:last-child{border-bottom:none}
+  .mag{min-width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+       font-weight:800; font-size:16px; color:#0b1020; box-shadow:0 4px 12px rgba(0,0,0,.3)}
+  .quake .q-info{flex:1; min-width:0}
+  .quake .q-place{font-size:13.5px; color:#e6eafb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .quake .q-time{font-size:11.5px; color:var(--muted); margin-top:2px}
+  .quake a.q-link{font-size:11px; color:var(--accent2)}
+
+  .analysis-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; flex:1}
+  @media (max-width:900px){.analysis-grid{grid-template-columns:1fr}}
+  .analysis-col h3{font-size:14px; margin-bottom:8px; display:flex; align-items:center; gap:8px}
+  .analysis-col ul{list-style:none; display:flex; flex-direction:column; gap:9px}
+  .analysis-col li{font-size:13px; line-height:1.55; color:#cfd6ec; padding-left:18px; position:relative}
+  .analysis-col li::before{content:"▸"; position:absolute; left:0; color:var(--accent)}
+  .analysis-col li b{color:#fff}
+  .analysis-col .src{font-size:10.5px; color:#5c6580; margin-top:9px}
+  .mini-headlines{margin-top:auto; border-top:1px dashed rgba(255,255,255,.08); padding-top:9px}
+  .mini-headlines a{display:block; font-size:12px; color:#aeb8d8; padding:4px 0; line-height:1.4; transition:color .2s}
+  .mini-headlines a:hover{color:#fff}
+  .mini-headlines .m{color:#5c6580; font-size:10.5px}
+
+  .news-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:11px; flex:1; align-content:start}
+  .news-item{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:13px;
+             padding:13px; display:flex; flex-direction:column; gap:6px;
+             transition:transform .3s var(--ease), border-color .3s, background .3s}
+  .news-item:hover{border-color:var(--accent); transform:translateY(-3px); background:rgba(224,52,78,.06)}
+  .news-item .t{font-size:13.5px; line-height:1.45; color:#e6eafb}
+  .news-item .m{font-size:11px; color:var(--muted)}
+  .news-item .m b{color:#a9b4d6; font-weight:600}
+  .src-badge{display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px;
+             background:rgba(47,111,237,.16); color:#8fb3ff; letter-spacing:.3px}
+  .news-filters{display:flex; gap:6px}
+  .news-filters button{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted);
+    border-radius:8px; padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
+  .news-filters button.active{background:var(--accent); border-color:var(--accent); color:#fff}
+  .news-filters button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
+  .news-note{font-size:10.5px; color:#5c6580}
+
+  footer{max-width:1240px; margin:0 auto; padding:6px 22px 40px; color:#5c6580; font-size:12px; line-height:1.7}
+  footer b{color:#8b94b0}
+  @media (max-width:640px){
+    .clockbox{text-align:left}
+    #clock{font-size:26px}
+    .rate-grid{grid-template-columns:1fr}
+    .gold-grid{grid-template-columns:1fr}
+    .hdr-right{align-items:flex-start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important; transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <!-- Official flag of Nepal — geometry per the constitutional construction -->
+    <svg viewBox="-17.582 -4.664 71.571 87.246" role="img" aria-label="Flag of Nepal">
+      <use href="#nf-a" stroke="#003893" stroke-width="5.165" stroke-linejoin="round"/>
+      <path id="nf-a" d="M -15,37.5735931288 h 60 L -15,0 v 80 h 60 L -15,20 z" fill="#DC143C"/>
+      <g fill="#fff">
+        <path d="M -11.9502769431,23.4834957055 A 12.8400974233,12.8400974233 0 0,0 11.9502769431,23.4834957055 A 11.9502769431,11.9502769431 0 0,1 -11.9502769431,23.4834957055"/>
+        <g transform="translate(0 29.045) scale(5.56106)">
+          <circle r="1"/>
+          <g id="nf-d"><g id="nf-c"><path id="nf-b" d="M 0.195090322016,-0.980785280403 L 0,-1.388784109750 L -0.195090322016,-0.980785280403" transform="rotate(11.25)"/><use href="#nf-b" transform="rotate(22.5)"/><use href="#nf-b" transform="rotate(45)"/></g><use href="#nf-c" transform="rotate(67.5)"/></g>
+          <use href="#nf-d" transform="scale(-1 1)"/>
+        </g>
+        <g transform="matrix(8.1434 0 0 8.1434 0 58.787)">
+          <circle r="1"/>
+          <g id="nf-g"><g id="nf-f"><path id="nf-e" d="M 0.258819045103,0.965925826289 L 0,1.576749285537 L -0.258819045103,0.965925826289"/><use href="#nf-e" transform="rotate(180)"/></g><use href="#nf-f" transform="rotate(90)"/></g>
+          <use href="#nf-g" transform="rotate(30)"/>
+          <use href="#nf-g" transform="rotate(60)"/>
+        </g>
+      </g>
+    </svg>
+    <div>
+      <h1>Nepal <span class="np">Live</span></h1>
+      <div class="tag" id="tagline">Real-time dashboard · नेपालको प्रत्यक्ष अपडेट</div>
+    </div>
+  </div>
+
+  <div class="clockbox">
+    <div id="clock">--:--<span class="sec">:--</span></div>
+    <div class="date"><span id="date-en">Loading…</span><span class="npt">NPT · UTC+5:45</span></div>
+    <div class="date-ne" id="date-ne"></div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="status"><span class="dot" id="live-dot"></span><span id="status-text">CONNECTING…</span></div>
+    <div class="lang-toggle">
+      <button id="lang-en" data-lang="en">EN</button>
+      <button id="lang-ne" data-lang="ne">नेपाली</button>
+    </div>
+  </div>
+</header>
+
+<nav class="pages">
+  <a href="index.html" class="active" id="nav-dash">🏠 Dashboard</a>
+  <a href="football.html" id="nav-foot">⚽ Football Live</a>
+  <a href="cricket.html" id="nav-cricket">🏏 Cricket Live</a>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-label" id="ticker-label">📰 HEADLINES</div>
+    <div class="ticker-view"><div class="ticker-track" id="ticker"><span>Loading latest Nepal headlines…</span></div></div>
+  </div>
+</div>
+
+<main>
+  <!-- Gold & Silver -->
+  <section class="card" id="card-gold">
+    <div class="card-head">
+      <span class="ico">🪙</span><h2 id="gold-title">Gold &amp; Silver · per Tola / per Kg</h2>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-gold">—</span>
+      <button class="rbtn" data-mod="gold" title="Refresh now">↻</button>
+    </div>
+    <div id="gold-body"><div class="loading">Loading gold &amp; silver prices…</div></div>
+  </section>
+
+  <!-- NEPSE -->
+  <section class="card" id="card-nepse">
+    <div class="card-head">
+      <span class="ico">📈</span><h2 id="nepse-title">NEPSE Index</h2>
+      <span class="chip closed" id="nepse-status">—</span>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-nepse">—</span>
+      <button class="rbtn" data-mod="nepse" title="Refresh now">↻</button>
+    </div>
+    <div id="nepse-body"><div class="loading">Loading NEPSE index…</div></div>
+  </section>
+
+  <!-- Exchange rates -->
+  <section class="card" id="card-rates">
+    <div class="card-head">
+      <span class="ico">💱</span><h2 id="rates-title">Exchange Rates → NPR</h2>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-rates">—</span>
+      <button class="rbtn" data-mod="rates" title="Refresh now">↻</button>
+    </div>
+    <div id="rates-body"><div class="loading">Loading exchange rates…</div></div>
+  </section>
+
+  <!-- Weather -->
+  <section class="card" id="card-weather">
+    <div class="card-head">
+      <span class="ico">🌤</span><h2><span id="weather-title">Weather</span> · <span id="wx-city-name">Kathmandu</span></h2>
+      <div class="spacer"></div>
+      <select id="city-select" title="Choose city">
+        <option value="27.7172,85.3240,Kathmandu">Kathmandu</option>
+        <option value="28.2096,83.9856,Pokhara">Pokhara</option>
+        <option value="26.4453,87.2718,Biratnagar">Biratnagar</option>
+        <option value="28.0500,81.6167,Nepalgunj">Nepalgunj</option>
+        <option value="28.7036,80.5626,Dhangadhi">Dhangadhi</option>
+        <option value="26.7271,85.9250,Janakpur">Janakpur</option>
+      </select>
+      <span class="stamp" id="stamp-weather">—</span>
+      <button class="rbtn" data-mod="weather" title="Refresh now">↻</button>
+    </div>
+    <div id="weather-body"><div class="loading">Loading weather…</div></div>
+  </section>
+
+  <!-- Air quality -->
+  <section class="card" id="card-air">
+    <div class="card-head">
+      <span class="ico">🫁</span><h2><span id="air-title">Air Quality</span> · <span id="aqi-city-name">Kathmandu</span></h2>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-air">—</span>
+      <button class="rbtn" data-mod="air" title="Refresh now">↻</button>
+    </div>
+    <div id="air-body"><div class="loading">Loading air quality…</div></div>
+  </section>
+
+  <!-- Earthquakes -->
+  <section class="card" id="card-quakes">
+    <div class="card-head">
+      <span class="ico">🌏</span><h2 id="quakes-title">Earthquakes (7 days)</h2>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-quakes">—</span>
+      <button class="rbtn" data-mod="quakes" title="Refresh now">↻</button>
+    </div>
+    <div id="quakes-body"><div class="loading">Loading seismic activity near Nepal…</div></div>
+  </section>
+
+  <!-- Market Pulse analysis -->
+  <section class="card wide" id="card-analysis">
+    <div class="card-head">
+      <span class="ico">🧭</span><h2 id="analysis-title">Market Pulse — Why Is It Moving?</h2>
+      <div class="spacer"></div>
+      <span class="stamp" id="analysis-stamp"></span>
+    </div>
+    <div class="analysis-grid" id="analysis-grid"></div>
+  </section>
+
+  <!-- News -->
+  <section class="card wide" id="card-news">
+    <div class="card-head">
+      <span class="ico">📰</span><h2 id="news-title">Latest News from Nepal</h2>
+      <div class="news-filters">
+        <button id="nf-all" data-filter="all">All</button>
+        <button id="nf-en" data-filter="en">English</button>
+        <button id="nf-ne" data-filter="ne">नेपाली</button>
+      </div>
+      <div class="spacer"></div>
+      <span class="stamp" id="stamp-news">—</span>
+      <button class="rbtn" data-mod="news" title="Refresh now">↻</button>
+    </div>
+    <div class="news-note" id="news-note"></div>
+    <div id="news-body"><div class="loading">Loading headlines…</div></div>
+  </section>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+"use strict";
+/* ============ i18n ============ */
+const I18N = {
+  en: {
+    tagline: "Real-time dashboard · Nepal's live updates",
+    navDash: "🏠 Dashboard", navFoot: "⚽ Football Live", navCricket: "🏏 Cricket Live",
+    headlines: "📰 HEADLINES",
+    live: "LIVE", connecting: "CONNECTING…", partial: "PARTIAL LIVE",
+    updated: "Updated", failed: "Failed — retrying",
+    goldTitle: "Gold & Silver · per Tola / per Kg",
+    nepseTitle: "NEPSE Index", ratesTitle: "Exchange Rates → NPR",
+    weatherTitle: "Weather", airTitle: "Air Quality", quakesTitle: "Earthquakes (7 days)",
+    analysisTitle: "Market Pulse — Why Is It Moving?", newsTitle: "Latest News from Nepal",
+    marketOpen: "MARKET OPEN", marketClosed: "MARKET CLOSED", today: "TODAY",
+    open: "OPEN", dayHigh: "DAY HIGH", dayLow: "DAY LOW", turnover: "TURNOVER",
+    transactions: "TRANSACTIONS", scrips: "SCRIPS TRADED", arba: "Arba",
+    gold: "GOLD (Hallmark)", silver: "SILVER",
+    perTola: "/tola", perKg: "/kg", per10g: "/10 g", vsYesterday: "vs yesterday",
+    trend30: "30-day trend (per tola)",
+    officialRate: "Official daily rate of Nepal — Hamro Patro / FEGOD (per tola, 11.6638 g, and per kg).",
+    intlSpotRef: "Int'l spot reference:",
+    loadingGold: "Loading gold & silver prices…",
+    loadingGeneric: "Loading…",
+    feelsLike: "feels like", humidity: "Humidity", todayDay: "Today",
+    quakesNone: "No magnitude 3.5+ earthquakes near Nepal in the last 7 days.",
+    events: "events", strong: "Strong",
+    agoS: "s ago", agoM: "m ago", agoH: "h ago", agoD: "d ago",
+    whyGold: "Why is gold going UP?", whyNepse: "Why is NEPSE not doing well?",
+    goldPoints: [
+      "<b>Fed pivot hopes:</b> Cooler-than-expected US inflation (CPI & PPI) has pushed markets to expect the Federal Reserve to hold or cut rates instead of hiking — lower real yields make zero-yield gold more attractive. This was the immediate spark of the August rally.",
+      "<b>Record central-bank buying:</b> Central banks bought <b>288.9 tonnes in Q2 2026</b> — a quarterly record, up 62% year-on-year (World Gold Council). China leads as countries diversify reserves away from the dollar.",
+      "<b>US debt over $40 trillion:</b> The debt milestone stoked fears about fiat-currency stability and drove investors toward hard assets.",
+      "<b>Safe-haven demand:</b> Ongoing geopolitical tensions keep defensive buying elevated. Gold already hit record highs above $5,000 earlier in 2026; August is a rebound from ~$4,000 back toward $4,500+.",
+      "<b>Nepal angle:</b> The NPR price rises double-fast when global gold rises <i>and</i> the rupee weakens against the dollar — FEGOD's official daily rate also includes import costs & duties."
+    ],
+    nepsePoints: [
+      "<b>Political & governance shock:</b> High-profile arrests right after the new government took office — including former PM KP Sharma Oli and former Home Minister Ramesh Lekhak — spooked investors. NEPSE fell 71 points on the first trading day after the transition, then ~48 more the next day.",
+      "<b>Crackdown uncertainty:</b> Investigations and detentions of prominent businesspeople are repeatedly cited by brokers as a drag on trading activity and confidence.",
+      "<b>Thin turnover:</b> Daily transactions of only ~Rs 3–4 arba aren't enough to sustain rallies — weak confidence → low buying → fragile rallies → more caution (a self-reinforcing loop).",
+      "<b>Banking stress:</b> Commercial-bank non-performing loans rose to ~4.86% in Q1 FY 2082/83, pressuring banking scrips — NEPSE's heaviest sector.",
+      "<b>Liquidity isn't reaching the market:</b> Despite low deposit rates (~3.7%) and ample bank liquidity, investors sit on the sidelines waiting for Nepal Rastra Bank's monetary policy; dividend-season hopes alone no longer lift the market. ~Rs 400 billion of investor wealth evaporated over three months, and rising margin debt in a falling market raises forced-selling risk."
+    ],
+    goldSrc: "Sources: World Gold Council · Bullion Trading LLC · GoldSilver.com · BingX Research · Intellectia (Aug 2026)",
+    nepseSrc: "Sources: Nepal News (EN) · NEPSE Trading · NepInsights (Jun–Aug 2026)",
+    goldHlLabel: "LIVE · GOLD HEADLINES", nepseHlLabel: "LIVE · NEPSE HEADLINES",
+    newsAll: "All", newsEn: "English", newsNe: "नेपाली",
+    newsNote: "From Nepali news websites: OnlineKhabar · Khabarhub · Nagarik News · Setopati",
+    analysisStamp: "Analysis updated 26 Aug 2026 · live headlines below refresh automatically",
+    chartCaption: "Last ~3 months of closing values · official NEPSE feed",
+    footer: "<b>Sources:</b> Hamro Patro / FEGOD (official gold & silver) · gold-api.com (spot reference) · Nepal Stock Exchange official API (NEPSE) · ExchangeRate-API · Open-Meteo weather & air quality · USGS earthquakes · Google News. All widgets auto-refresh — metals & NEPSE every 1 min, weather/air/news every 5 min, earthquakes every 2 min. Times in Nepal Time (NPT, UTC+5:45). Not investment advice."
+  },
+  ne: {
+    tagline: "प्रत्यक्ष-समय ड्यासबोर्ड · नेपालको लाइभ अपडेट",
+    navDash: "🏠 ड्यासबोर्ड", navFoot: "⚽ फुटबल लाइभ", navCricket: "🏏 क्रिकेट लाइभ",
+    headlines: "📰 ताजा समाचार",
+    live: "प्रत्यक्ष", connecting: "जडान हुँदै…", partial: "आंशिक प्रत्यक्ष",
+    updated: "अपडेट", failed: "असफल — पुनः प्रयास हुँदै",
+    goldTitle: "सुन–चाँदी · प्रति तोला / प्रति के.जी.",
+    nepseTitle: "नेप्से सूचकांक", ratesTitle: "विनिमय दर → NPR",
+    weatherTitle: "मौसम", airTitle: "हावाको गुणस्तर", quakesTitle: "भूकम्प (७ दिन)",
+    analysisTitle: "बजार विश्लेषण — किन चलिरहेको छ?", newsTitle: "नेपालका ताजा समाचार",
+    marketOpen: "बजार खुला", marketClosed: "बजार बन्द", today: "आज",
+    open: "खुला", dayHigh: "दैनिक उच्च", dayLow: "दैनिक न्यून", turnover: "कारोबार रकम",
+    transactions: "कारोबार संख्या", scrips: "स्क्रिप कारोबार", arba: "अर्ब",
+    gold: "सुन (हलमार्क)", silver: "चाँदी",
+    perTola: "/तोल", perKg: "/के.जी.", per10g: "/१० ग्राम", vsYesterday: "हिजोभन्दा",
+    trend30: "३० दिने प्रवृत्ति (प्रति तोल)",
+    officialRate: "नेपालको आधिकारिक दैनिक दर — हाम्रोपात्रो / फेगोड (प्रति तोल, ११.६६३८ ग्राम, र प्रति के.जी.)।",
+    intlSpotRef: "अन्तर्राष्ट्रिय दर (सन्दर्भ):",
+    loadingGold: "सुन–चाँदीको मूल्य लोड हुँदैछ…",
+    loadingGeneric: "लोड हुँदैछ…",
+    feelsLike: "महसुस", humidity: "आर्द्रता", todayDay: "आज",
+    quakesNone: "पछिल्लो ७ दिनमा नेपाल नजिक ३.५+ म्याग्निच्युडका भूकम्प छैनन्।",
+    events: "घटना", strong: "शक्तिशाली",
+    agoS: "सेकेन्ड अघि", agoM: "मिनेट अघि", agoH: "घण्टा अघि", agoD: "दिन अघि",
+    whyGold: "सुनको मूल्य किन बढिरहेको छ?", whyNepse: "नेप्से किन कमजोर छ?",
+    goldPoints: [
+      "<b>फेड नीतिमा आशा:</b> अमेरिकी महँगी (CPI र PPI) अपेक्षाभन्दा कम आएपछि बजारले फेडरल रिजर्भले ब्याजदर नबढाई यथावत राख्ने वा घटाउने अपेक्षा गर्न थालेको छ — वास्तविक प्रतिफल घट्दा ब्याज नदिने सुन आकर्षक बन्छ। यही अगस्टको उछालको तत्काल कारण हो।",
+      "<b>केन्द्रीय बैंकको रेकर्ड खरिद:</b> सन् २०२६ को दोस्रो त्रैमासमा केन्द्रीय बैंकहरूले <b>२८८.९ टन</b> सुन किने — त्रैमासिक रेकर्ड, वार्षिक रूपमा ६२% ले बढी (विश्व सुन परिषद्)। डलरबाट भण्डार विविधीकरण गर्न चीन अग्रपंक्तिमा छ।",
+      "<b>अमेरिकी ऋण ४० ट्रिलियन नाघ्यो:</b> ऋणको यो कोशेढुंगाले कागजी मुद्राको स्थिरतामा आशंका जगाउँदै लगानीकर्तालाई सुनजस्ता ठोस सम्पत्तितर्फ डोहोर्‍यायो।",
+      "<b>सुरक्षित सम्पत्तिको माग:</b> जारी भू-राजनीतिक तनावले सुरक्षात्मक खरिद उच्च राखेको छ। सन् २०२६ कै सुरुमा सुन ५,००० डलरमाथिको रेकर्ड उचाइमा पुगेको थियो; अगस्टको उछाल ~४,००० डलरबाट फेरि ४,५००+ तर्फको फर्काइ हो।",
+      "<b>नेपाल सन्दर्भ:</b> विश्वबजारमा सुन बढ्दा <i>र</i> डलरसँग रुपैयाँ कमजोर हुँदा नेपाली मूल्य दोब्बर गतिमा बढ्छ — फेगोडको आधिकारिक दैनिक दरमा आयात खर्च र भन्सार पनि जोडिन्छ।"
+    ],
+    nepsePoints: [
+      "<b>राजनीतिक र सुशासनजन्य धक्का:</b> नयाँ सरकार बनेलगत्तै पूर्वप्रधानमन्त्री केपी शर्मा ओली र पूर्वगृहमन्त्री रमेश लेखकसहितका उच्च तहका गिरफ्तारीले लगानीकर्ता तर्सिए। सरकार गठनपछिको पहिलो कारोबार दिन नेप्से ७१ अंकले, भोलिपल्ट ~४८ अंकले घट्यो।",
+      "<b>अनुसन्धानको अनिश्चितता:</b> चर्चित व्यवसायीमाथिका अनुसन्धान र पक्राउले ब्रोकरहरूका अनुसार कारोबार र लगानीकर्ताको विश्वासमा निरन्तर असर पारिरहेका छन्।",
+      "<b>कमजोर कारोबार रकम:</b> दैनिक ३–४ अर्बको कारोबार रकम दिगो उछालका लागि पर्याप्त छैन — कम विश्वास → कम खरिद → कमजोर उछाल → झन् सावधानी (आफैँ दोहोरिने चक्र)।",
+      "<b>बैंकिंग क्षेत्रको दबाब:</b> वाणिज्य बैंकहरूको खराब कर्जा (एनपीएल) बढेर ~४.८६% पुगेको छ, जसले नेप्सेको सबैभन्दा ठूलो क्षेत्र बैंकिंग स्क्रिपमा दबाब पारेको छ।",
+      "<b>तरलता बजारसम्म पुगेन:</b> निक्षेप दर (~३.७%) कम र बैंकमा तरलता प्रशस्त भए पनि लगानीकर्ता राष्ट्र बैंकको मौद्रिक नीति पर्खेर साइडलाइनमा छन्; लाभांश मौसमको आशाले मात्र बजार उठाउँदैन। तीन महिनामा लगानीकर्ताको सम्पत्ति ~रु. ४ खर्बले घट्यो, र घट्दो बजारमा बढ्दो मार्जिन कर्जले जबरजस्ती बिक्रीको जोखिम बढाउँछ।"
+    ],
+    goldSrc: "स्रोत: विश्व सुन परिषद् · बुलियन ट्रेडिङ · गोल्डसिल्भर · बिङएक्स रिसर्च · इन्टलेक्टिया (अगस्ट २०२६)",
+    nepseSrc: "स्रोत: नेपाल न्यूज (अङ्ग्रेजी) · नेप्से ट्रेडिङ · नेपइनसाइट्स (जुन–अगस्ट २०२६)",
+    goldHlLabel: "प्रत्यक्ष · सुन समाचार", nepseHlLabel: "प्रत्यक्ष · नेप्से समाचार",
+    newsAll: "सबै", newsEn: "English", newsNe: "नेपाली",
+    newsNote: "नेपाली समाचार वेबसाइटबाट: अनलाइनखबर · खबरहब · नागरिक न्यूज · सेतोपाटी",
+    analysisStamp: "विश्लेषण अद्यावधिक: २६ अगस्ट २०२६ · तलका हेडलाइनहरू आफैँ ताजा हुन्छन्",
+    chartCaption: "पछिल्ला ~३ महिनाका बन्द मूल्य · आधिकारिक नेप्से फिड",
+    footer: "<b>स्रोतहरू:</b> हाम्रोपात्रो / फेगोड (आधिकारिक सुन–चाँदी) · gold-api.com (अन्तर्राष्ट्रिय सन्दर्भ) · नेपाल स्टक एक्सचेन्ज आधिकारिक एपीआई (नेप्से) · ExchangeRate-API · Open-Meteo मौसम र हावाको गुणस्तर · USGS भूकम्प · गुगल न्यूज। सबै विजेट आफैँ ताजा हुन्छन् — सुन/नेप्से हरेक १ मिनेट, मौसम/हावा/समाचार हरेक ५ मिनेट, भूकम्प हरेक २ मिनेट। समय नेपाल समय (NPT, UTC+5:45)। लगानी सल्लाह होइन।"
+  }
+};
+let LANG = localStorage.getItem('nlive-lang') || 'en';
+const t = (k) => (I18N[LANG] && I18N[LANG][k]) ?? I18N.en[k] ?? k;
+
+/* ============ config ============ */
+const PROXY = location.protocol.startsWith('http');
+const TZ = 'Asia/Kathmandu';
+const TOLA_G = 11.6638, OZ_G = 31.1034768;
+
+const DIRECT = {
+  rates: 'https://open.er-api.com/v6/latest/USD',
+  spot: 'https://api.gold-api.com/price/XAU',
+  silverSpot: 'https://api.gold-api.com/price/XAG',
+  weather: (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
+    + `?latitude=${lat}&longitude=${lon}`
+    + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+    + '&timezone=Asia%2FKathmandu&forecast_days=7',
+  air: (lat, lon) => 'https://air-quality-api.open-meteo.com/v1/air-quality'
+    + `?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10,us_aqi&timezone=Asia%2FKathmandu`,
+  quakes: () => {
+    const now = new Date(); const week = new Date(now.getTime() - 7 * 864e5);
+    return 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
+      + `&starttime=${week.toISOString().slice(0,19)}&endtime=${now.toISOString().slice(0,19)}`
+      + '&latitude=27.9&longitude=84.1&maxradiuskm=800&minmagnitude=3.5&orderby=time&limit=12';
+  },
+  news: (q) => 'https://api.rss2json.com/v1/api.json?rss_url='
+    + encodeURIComponent(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`)
+};
+
+const INTERVALS = { gold: 60e3, nepse: 60e3, rates: 600e3, weather: 300e3, air: 300e3, quakes: 120e3, news: 300e3 };
+const state = { ok: {}, usdNpr: null, cache: {}, newsFilter: 'all' };
+
+/* ============ helpers ============ */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtNum = (n, d = 2) => Number(n).toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+/* Count-up animation for numbers marked with data-count */
+function animateCounts(root) {
+  if (!root) return;
+  root.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseFloat(el.dataset.count);
+    if (!isFinite(target)) return;
+    const decimals = parseInt(el.dataset.decimals || '0', 10);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    const from = parseFloat(el.dataset.last || '0');
+    if (from === target) { el.textContent = prefix + fmtNum(target, decimals) + suffix; return; }
+    const start = performance.now(), dur = 900;
+    function frame(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = prefix + fmtNum(from + (target - from) * eased, decimals) + suffix;
+      if (p < 1) requestAnimationFrame(frame); else el.dataset.last = target;
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+async function getJSON(proxyPath, directUrl) {
+  if (PROXY && proxyPath) {
+    try {
+      const r = await fetch(proxyPath, { cache: 'no-store' });
+      if (r.ok) return await r.json();
+    } catch (e) { /* fall back to direct */ }
+  }
+  if (!directUrl) throw new Error('no source');
+  const r2 = await fetch(directUrl, { cache: 'no-store' });
+  if (!r2.ok) throw new Error('HTTP ' + r2.status);
+  return await r2.json();
+}
+
+function nptTime(date = new Date(), withSec = true) {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit',
+    ...(withSec ? { second: '2-digit' } : {}), hour12: false }).format(date);
+}
+function nptShort(date) {
+  return new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', { timeZone: TZ, day: 'numeric', month: 'short' }).format(date);
+}
+function timeAgo(ts) {
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  if (s < 90) return Math.round(s) + ' ' + t('agoS');
+  if (s < 5400) return Math.round(s / 60) + ' ' + t('agoM');
+  if (s < 172800) return Math.round(s / 3600) + ' ' + t('agoH');
+  return Math.round(s / 86400) + ' ' + t('agoD');
+}
+function stamp(mod, ok = true, extra = '') {
+  const el = $('stamp-' + mod);
+  if (!el) return;
+  el.textContent = ok ? (t('updated') + ' ' + nptTime() + (extra ? ' · ' + extra : '')) : t('failed');
+  el.classList.toggle('err', !ok);
+}
+function setError(mod, msg) {
+  const el = $(mod + '-body');
+  if (el) el.innerHTML = `<div class="error-msg">⚠️ ${esc(msg)} — ${LANG === 'ne' ? 'पुनः प्रयास हुँदैछ' : 'retrying automatically'}…</div>`;
+}
+function updateStatus() {
+  const dot = $('live-dot'), txt = $('status-text');
+  const vals = Object.values(state.ok);
+  if (vals.length && vals.every(Boolean)) { dot.className = 'dot live'; txt.textContent = t('live'); }
+  else { dot.className = 'dot degraded'; txt.textContent = vals.some(v => v === false) ? t('partial') : t('connecting'); }
+}
+function finish(mod, ok) {
+  state.ok[mod] = ok;
+  updateStatus();
+  const btn = document.querySelector(`.rbtn[data-mod="${mod}"]`);
+  if (btn) btn.classList.remove('spinning');
+}
+function drawSparkline(el, points, current) {
+  const vals = points.concat(current ? [current] : []);
+  if (!el || vals.length < 2) return;
+  const w = 600, h = 64, pad = 4;
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const span = (max - min) || 1;
+  const xy = vals.map((v, i) => [pad + i * (w - 2 * pad) / (vals.length - 1), h - pad - (v - min) / span * (h - 2 * pad)]);
+  const path = xy.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const up = vals[vals.length - 1] >= vals[0];
+  const col = up ? '#2ecc71' : '#e0344e';
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:100%">
+    <path d="${path} L${w - pad},${h} L${pad},${h} Z" fill="${col}" opacity="0.10"/>
+    <path d="${path}" fill="none" stroke="${col}" stroke-width="2"/>
+    <circle cx="${xy[xy.length-1][0]}" cy="${xy[xy.length-1][1]}" r="3" fill="${col}"/>
+  </svg>`;
+}
+
+/* ============ modules ============ */
+
+/* --- Gold & silver: Hamro Patro (official) + intl spot reference --- */
+function renderGold() {
+  const { hp, spot } = state.cache.gold || {};
+  if (!hp && !spot) return;
+  let html = '';
+  if (hp && hp.items && hp.items.length) {
+    const gold = hp.items.find(i => String(i.symbol || i.name).toUpperCase().includes('HALMARK'))
+              || hp.items.find(i => /gold/i.test(i.name));
+    const silver = hp.items.find(i => String(i.symbol || '').toUpperCase().includes('SILVER'));
+    const box = (item, cls, emoji, labelKey) => {
+      if (!item) return '';
+      const tola = (item.prices || []).find(p => /tola/i.test(p.unit));
+      const ten = (item.prices || []).find(p => /10/i.test(p.unit));
+      if (!tola) return '';
+      const chg = tola.prevPrice != null ? tola.price - tola.prevPrice : null;
+      const pct = (chg != null && tola.prevPrice) ? chg / tola.prevPrice * 100 : null;
+      const kg = tola.price / TOLA_G * 1000;
+      const chgChip = chg == null ? '' :
+        `<span class="chip ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '▲' : '▼'} Rs ${fmtNum(Math.abs(chg), 0)}${pct != null ? ' (' + (chg >= 0 ? '+' : '−') + Math.abs(pct).toFixed(2) + '%)' : ''}</span>`;
+      return `<div class="metal ${cls}">
+        <div class="m-head"><div class="name">${emoji} ${t(labelKey)}</div>${chgChip}</div>
+        <div class="usd"><span data-count="${tola.price}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(tola.price, 0)}</span><small> ${t('perTola')}</small></div>
+        <div class="npr"><span data-count="${kg}" data-decimals="0" data-prefix="Rs ">Rs ${fmtNum(kg, 0)}</span><small> ${t('perKg')}</small></div>
+        ${ten ? `<div class="spot">Rs ${fmtNum(ten.price, 0)} ${t('per10g')} · ${t('vsYesterday')} ${chg != null ? (chg >= 0 ? '+' : '−') + 'Rs ' + fmtNum(Math.abs(chg), 0) : '—'}</div>` : ''}
+        <div class="spark" id="spark-${labelKey}"></div>
+        <div style="font-size:10px;color:var(--muted)">${t('trend30')}</div>
+      </div>`;
+    };
+    html = `<div class="gold-grid">${box(gold, 'gold-m', '🥇', 'gold')}${box(silver, 'silver-m', '🥈', 'silver')}</div>`;
+    // sparklines from 30-day history
+    setTimeout(() => {
+      [[gold, 'spark-gold'], [silver, 'spark-silver']].forEach(([it, id]) => {
+        if (!it) return;
+        const tola = (it.prices || []).find(p => /tola/i.test(p.unit));
+        if (tola && tola.history && tola.history.length > 1) drawSparkline($(id), tola.history);
+      });
+    }, 0);
+  } else if (spot) {
+    // fallback: international spot converted to tola/kg
+    const usdNpr = state.usdNpr;
+    const tola = usdNpr ? spot.gold.usdPerOz / OZ_G * TOLA_G * usdNpr : null;
+    const kg = tola ? tola / TOLA_G * 1000 : null;
+    html = `<div class="gold-grid">
+      <div class="metal gold-m">
+        <div class="name">🥇 ${t('gold')}</div>
+        ${tola ? `<div class="usd">Rs ${fmtNum(tola, 0)}<small> ${t('perTola')}</small></div>
+                  <div class="npr">Rs ${fmtNum(kg, 0)}<small> ${t('perKg')}</small></div>` : '<div class="spot">…</div>'}
+      </div>
+      <div class="metal silver-m">
+        <div class="name">🥈 ${t('silver')}</div>
+        ${spot.silver && tola ? `<div class="usd">Rs ${fmtNum(spot.silver.usdPerOz / OZ_G * TOLA_G * usdNpr, 0)}<small> ${t('perTola')}</small></div>
+        <div class="npr">Rs ${fmtNum(spot.silver.usdPerOz / OZ_G * 1000 * usdNpr, 0)}<small> ${t('perKg')}</small></div>` : ''}
+      </div></div>`;
+  }
+  const spotLine = spot ? `<div class="spot" style="margin-top:2px">${t('intlSpotRef')} 🥇 $${fmtNum(spot.gold.usdPerOz)}/oz${spot.silver ? ` · 🥈 $${fmtNum(spot.silver.usdPerOz)}/oz` : ''}</div>` : '';
+  $('gold-body').innerHTML = html + spotLine
+    + `<div class="gold-note">${t('officialRate')}</div>`;
+  animateCounts($('gold-body'));
+}
+async function refreshGold() {
+  try {
+    let hp = null, spot = null;
+    try { hp = await getJSON('/api/gold-hamropatro', null); } catch (e) { /* optional */ }
+    try {
+      spot = await getJSON('/api/gold', DIRECT.spot);
+    } catch (e) { /* optional */ }
+    if (!hp && !spot) throw new Error('no source');
+    state.cache.gold = { hp, spot };
+    renderGold();
+    stamp('gold', true, hp ? 'Hamro Patro' : 'spot');
+    finish('gold', true);
+  } catch (e) { setError('gold', 'Could not load metal prices'); stamp('gold', false); finish('gold', false); }
+}
+
+/* --- NEPSE --- */
+function marketStatusChip() {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+  const get = (tp) => parts.find(p => p.type === tp)?.value;
+  const wd = get('weekday'); const mins = parseInt(get('hour')) * 60 + parseInt(get('minute'));
+  if (wd === 'Sat') return false;
+  const end = wd === 'Fri' ? 12 * 60 + 30 : 15 * 60;
+  return mins >= 11 * 60 && mins < end;
+}
+function renderNepse() {
+  const { d, hist } = state.cache.nepse || {};
+  if (!d) return;
+  const idx = (d.indices || []).find(i => i.index === 'NEPSE Index') || (d.indices || [])[0];
+  if (!idx) return;
+  const sum = Object.fromEntries((d.summary || []).map(s => [s.detail, s.value]));
+  const up = idx.change >= 0;
+  const chgCls = up ? 'up' : 'down';
+  const sign = up ? '+' : '';
+  const lo = idx.fiftyTwoWeekLow, hi = idx.fiftyTwoWeekHigh;
+  const pos = Math.max(0, Math.min(100, (idx.currentValue - lo) / (hi - lo) * 100));
+  const open = marketStatusChip();
+  const st = $('nepse-status');
+  st.textContent = open ? t('marketOpen') : t('marketClosed');
+  st.className = 'chip ' + (open ? 'open' : 'closed');
+  $('nepse-body').innerHTML =
+    `<div class="nepse-top">
+       <div class="val"><span data-count="${idx.currentValue}" data-decimals="2">${fmtNum(idx.currentValue)}</span></div>
+       <div class="chg ${chgCls}">${sign}${fmtNum(idx.change)} (${sign}${fmtNum(idx.perChange)}%)</div>
+       <span class="chip ${chgCls}">${up ? '▲' : '▼'} ${t('today')}</span>
+     </div>
+     <div class="nepse-stats">
+       <div class="nstat"><div class="k">${t('open')}</div><div class="v">${fmtNum(idx.close)}</div></div>
+       <div class="nstat"><div class="k">${t('dayHigh')}</div><div class="v">${fmtNum(idx.high)}</div></div>
+       <div class="nstat"><div class="k">${t('dayLow')}</div><div class="v">${fmtNum(idx.low)}</div></div>
+       <div class="nstat"><div class="k">${t('turnover')}</div><div class="v">Rs ${fmtNum((sum['Total Turnover Rs:'] || 0) / 1e8, 2)} ${t('arba')}</div></div>
+       <div class="nstat"><div class="k">${t('transactions')}</div><div class="v">${Number(sum['Total Transactions'] || 0).toLocaleString('en-IN')}</div></div>
+       <div class="nstat"><div class="k">${t('scrips')}</div><div class="v">${sum['Total Scrips Traded'] || '—'}</div></div>
+     </div>
+     <div>
+       <div class="range-bar"><div class="marker" style="left:${pos}%"></div></div>
+       <div class="range-labels"><span>52-wk low ${fmtNum(lo)}</span><span>52-wk high ${fmtNum(hi)}</span></div>
+     </div>
+     <div id="nepse-chart"></div>
+     <div style="font-size:10.5px;color:var(--muted)">${t('chartCaption')}</div>`;
+  animateCounts($('nepse-body'));
+  if (hist && Array.isArray(hist.content)) {
+    const closes = hist.content
+      .filter(x => x && (x.closingIndex > 0))
+      .sort((a, b) => a.businessDate.localeCompare(b.businessDate))
+      .map(x => x.closingIndex);
+    drawSparkline($('nepse-chart'), closes, idx.currentValue);
+  }
+}
+async function refreshNepse() {
+  try {
+    if (!PROXY) throw new Error('server required');
+    const [d, hist] = await Promise.all([
+      getJSON('/api/nepse', null),
+      getJSON('/api/nepse/history?size=90', null).catch(() => null),
+    ]);
+    state.cache.nepse = { d, hist };
+    renderNepse();
+    stamp('nepse', true, marketStatusChip() ? 'live' : 'close');
+    finish('nepse', true);
+  } catch (e) {
+    setError('nepse', PROXY ? 'Could not load NEPSE data' : 'NEPSE live data needs the Node server (node server.js)');
+    stamp('nepse', false); finish('nepse', false);
+  }
+}
+
+/* --- Exchange rates --- */
+const FLAGS = { USD:'🇺🇸', INR:'🇮🇳', EUR:'🇪🇺', GBP:'🇬🇧', AUD:'🇦🇺', JPY:'🇯🇵', CNY:'🇨🇳', AED:'🇦🇪', SAR:'🇸🇦', KRW:'🇰🇷' };
+function renderRates() {
+  const d = state.cache.rates;
+  if (!d) return;
+  const nprPer = (code) => d.rates.NPR / d.rates[code];
+  const rows = Object.keys(FLAGS).filter(c => d.rates[c]).map(code => {
+    const v = nprPer(code);
+    return `<div class="rate-row"><span class="cur">${FLAGS[code]} ${code}</span>
+      <span class="val">${v.toFixed(v < 10 ? 3 : 2)}<small>NPR</small></span></div>`;
+  }).join('');
+  $('rates-body').innerHTML =
+    `<div class="rate-grid">${rows}</div>
+     <div class="rate-src">Market reference · source updated ${esc(d.time_last_update_utc || 'daily')}</div>`;
+}
+async function refreshRates() {
+  try {
+    const d = await getJSON('/api/rates', DIRECT.rates);
+    if (d.result !== 'success' || !d.rates || !d.rates.NPR) throw new Error('bad payload');
+    state.usdNpr = d.rates.NPR;
+    state.cache.rates = d;
+    renderRates();
+    if (state.cache.gold) renderGold(); // refresh spot NPR conversion
+    stamp('rates', true);
+    finish('rates', true);
+  } catch (e) { setError('rates', 'Could not load exchange rates'); stamp('rates', false); finish('rates', false); }
+}
+
+/* --- Weather --- */
+const WMO = {
+  en:{0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],61:['Light rain','🌦️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],66:['Freezing rain','🌧️'],71:['Light snow','🌨️'],73:['Snow','🌨️'],75:['Heavy snow','❄️'],80:['Rain showers','🌦️'],81:['Showers','🌧️'],82:['Heavy showers','⛈️'],85:['Snow showers','🌨️'],95:['Thunderstorm','⛈️'],96:['Storm + hail','⛈️'],99:['Storm + hail','⛈️']},
+  ne:{0:['सफा आकाश','☀️'],1:['प्रायः सफा','🌤️'],2:['आंशिक बादल','⛅'],3:['बदली','☁️'],45:['कुहिरो','🌫️'],48:['कुहिरो','🌫️'],51:['हल्का झरी','🌦️'],53:['झरी','🌦️'],55:['भारी झरी','🌧️'],61:['हल्का पानी','🌦️'],63:['पानी','🌧️'],65:['भारी पानी','🌧️'],66:['असिना पानी','🌧️'],71:['हल्का हिउँ','🌨️'],73:['हिउँ','🌨️'],75:['भारी हिउँ','❄️'],80:['पानीको झरी','🌦️'],81:['झरी','🌧️'],82:['भारी झरी','⛈️'],85:['हिउँ झरी','🌨️'],95:['आँधीबेहरी','⛈️'],96:['असिनासहित आँधी','⛈️'],99:['असिनासहित आँधी','⛈️']}
+};
+function cityCoords() {
+  const [lat, lon, name] = $('city-select').value.split(',');
+  return { lat, lon, name };
+}
+function renderWeather() {
+  const c0 = state.cache.weather;
+  if (!c0) return;
+  const d = c0.d;
+  const c = d.current;
+  let [desc, em] = (WMO[LANG] || WMO.en)[c.weather_code] || ['—', '❔'];
+  if (!c.is_day && c.weather_code <= 1) em = '🌙';
+  const days = (d.daily.time || []).map((tm, i) => {
+    const [, e2] = (WMO[LANG] || WMO.en)[d.daily.weather_code[i]] || ['—', '❔'];
+    const dayName = i === 0 ? t('todayDay') : new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en', { weekday: 'short', timeZone: TZ }).format(new Date(tm));
+    return `<div class="wx-day"><div class="d">${dayName}</div><div class="e">${e2}</div>
+      <div class="t"><b>${Math.round(d.daily.temperature_2m_max[i])}°</b> ${Math.round(d.daily.temperature_2m_min[i])}°</div>
+      <div class="p">💧${d.daily.precipitation_probability_max?.[i] ?? '–'}%</div></div>`;
+  }).join('');
+  $('weather-body').innerHTML =
+    `<div class="wx-now">
+       <div class="em">${em}</div>
+       <div>
+         <div class="big">${Math.round(c.temperature_2m)}°C</div>
+         <div class="wx-desc">${desc} · ${t('feelsLike')} ${Math.round(c.apparent_temperature)}°C</div>
+         <div class="wx-meta">💧 ${t('humidity')} ${c.relative_humidity_2m}% · 💨 ${Math.round(c.wind_speed_10m)} km/h · 🌧️ ${c.precipitation} mm</div>
+       </div>
+     </div>
+     <div class="wx-days">${days}</div>`;
+}
+async function refreshWeather() {
+  const { lat, lon, name } = cityCoords();
+  $('wx-city-name').textContent = name;
+  try {
+    const d = await getJSON(`/api/weather?lat=${lat}&lon=${lon}`, DIRECT.weather(lat, lon));
+    state.cache.weather = { d };
+    renderWeather();
+    stamp('weather', true);
+    finish('weather', true);
+  } catch (e) { setError('weather', 'Could not load weather'); stamp('weather', false); finish('weather', false); }
+}
+
+/* --- Air quality --- */
+function aqiInfo(v) {
+  const en = ['Good', 'Moderate', 'Unhealthy for sensitive groups', 'Unhealthy', 'Very unhealthy', 'Hazardous'];
+  const ne = ['राम्रो', 'मध्यम', 'संवेदनशील समूहका लागि अस्वस्थ', 'अस्वस्थ', 'अत्यन्त अस्वस्थ', 'खतरनाक'];
+  const i = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
+  const colors = ['#2ecc71', '#f1c40f', '#e67e22', '#e0344e', '#9b59b6', '#7b2d3b'];
+  return [LANG === 'ne' ? ne[i] : en[i], colors[i]];
+}
+function renderAir() {
+  const c0 = state.cache.air;
+  if (!c0) return;
+  const c = c0.d.current;
+  const [label, color] = aqiInfo(c.us_aqi);
+  $('air-body').innerHTML =
+    `<div class="aqi-flex">
+       <div class="aqi-badge" style="background:${color}">
+         <div class="n">${Math.round(c.us_aqi)}</div><div class="l">US AQI</div>
+       </div>
+       <div class="aqi-detail">
+         <b>${label}</b><br>
+         PM2.5 — ${c.pm2_5?.toFixed(1) ?? '–'} µg/m³<br>
+         PM10 — ${c.pm10?.toFixed(1) ?? '–'} µg/m³<br>
+         <small>WHO PM2.5 guideline: 15 µg/m³ (24-h)</small>
+       </div>
+     </div>`;
+}
+async function refreshAir() {
+  const { lat, lon, name } = cityCoords();
+  $('aqi-city-name').textContent = name;
+  try {
+    const d = await getJSON(`/api/air?lat=${lat}&lon=${lon}`, DIRECT.air(lat, lon));
+    state.cache.air = { d };
+    renderAir();
+    stamp('air', true);
+    finish('air', true);
+  } catch (e) { setError('air', 'Could not load air quality'); stamp('air', false); finish('air', false); }
+}
+
+/* --- Earthquakes --- */
+function magColor(m) { return m >= 6 ? '#7b2d3b' : m >= 5 ? '#e0344e' : m >= 4 ? '#e67e22' : '#f1c40f'; }
+function renderQuakes() {
+  const feats = state.cache.quakes;
+  if (!feats) return;
+  if (!feats.length) {
+    $('quakes-body').innerHTML = `<div class="loading">✅ ${t('quakesNone')}</div>`;
+    return;
+  }
+  $('quakes-body').innerHTML = feats.map(f => {
+    const { mag, place, time, url } = f.properties;
+    return `<div class="quake">
+      <div class="mag" style="background:${magColor(mag)}">${mag?.toFixed(1) ?? '?'}</div>
+      <div class="q-info">
+        <div class="q-place">${esc(place || 'Unknown location')}</div>
+        <div class="q-time">${nptShort(new Date(time))} · ${nptTime(new Date(time), false)} NPT · ${timeAgo(time)}
+          ${mag >= 5 ? ` · <b style="color:#e0344e">${t('strong')}</b>` : ''}</div>
+      </div>
+      <a class="q-link" href="${esc(url)}" target="_blank" rel="noopener">USGS ↗</a>
+    </div>`;
+  }).join('');
+}
+async function refreshQuakes() {
+  try {
+    const d = await getJSON('/api/quakes', DIRECT.quakes());
+    state.cache.quakes = d.features || [];
+    renderQuakes();
+    stamp('quakes', true, `${state.cache.quakes.length} ${t('events')}`);
+    finish('quakes', true);
+  } catch (e) { setError('quakes', 'Could not load earthquake data'); stamp('quakes', false); finish('quakes', false); }
+}
+
+/* --- News --- */
+async function fetchNews(q) {
+  try {
+    const d = await getJSON('/api/news?q=' + encodeURIComponent(q), DIRECT.news(q));
+    let items = d.items || [];
+    if (!items.length) {
+      const r = await fetch(DIRECT.news(q), { cache: 'no-store' });
+      const d2 = await r.json();
+      items = (d2.items || []).map(i => {
+        let title = i.title || '', source = '';
+        const dash = title.lastIndexOf(' - ');
+        if (dash > 0) { source = title.slice(dash + 3); title = title.slice(0, dash); }
+        return { title, source, link: i.link, pubDate: i.pubDate };
+      });
+    }
+    return items;
+  } catch (e) { return []; }
+}
+const SRC_COLORS = {};
+const SRC_PALETTE = ['rgba(47,111,237,.16)|#8fb3ff', 'rgba(224,52,78,.14)|#ff93a3', 'rgba(46,204,113,.14)|#7fe3a8',
+                     'rgba(241,196,15,.14)|#f2d27c', 'rgba(155,89,182,.16)|#c9a0e0', 'rgba(230,126,34,.15)|#f0a86e'];
+function srcBadge(src) {
+  if (!SRC_COLORS[src]) SRC_COLORS[src] = SRC_PALETTE[Object.keys(SRC_COLORS).length % SRC_PALETTE.length];
+  const [bg, col] = SRC_COLORS[src].split('|');
+  return `<span class="src-badge" style="background:${bg};color:${col}">${esc(src)}</span>`;
+}
+function renderNews() {
+  const items = state.cache.news;
+  if (!items) return;
+  const f = state.newsFilter || 'all';
+  const shown = f === 'all' ? items : items.filter(i => i.lang === f);
+  $('news-body').innerHTML = shown.length
+    ? `<div class="news-list">` + shown.slice(0, 18).map(i =>
+        `<a class="news-item" href="${esc(i.link)}" target="_blank" rel="noopener">
+           <span class="t">${esc(i.title)}</span>
+           <span class="m">${srcBadge(i.source || 'News')} · ${timeAgo(Date.parse(i.pubDate) || Date.now())}</span>
+         </a>`).join('') + `</div>`
+    : `<div class="loading">…</div>`;
+  // ticker: top headlines overall
+  const tk = items.slice(0, 10).map(i => `<span>${esc(i.title)}</span>`).join('');
+  $('ticker').innerHTML = tk + tk;
+  ['all', 'en', 'ne'].forEach(x => $('nf-' + x)?.classList.toggle('active', f === x));
+  $('nf-all').textContent = t('newsAll');
+  $('news-note').textContent = t('newsNote');
+}
+async function refreshNews() {
+  // primary: aggregated feeds from Nepali news websites
+  let items = [];
+  if (PROXY) {
+    try {
+      const r = await fetch('/api/news-nepal', { cache: 'no-store' });
+      if (r.ok) items = (await r.json()).items || [];
+    } catch (e) { /* fall back below */ }
+  }
+  if (!items.length) items = await fetchNews('Nepal'); // fallback: Google News
+  if (!items.length) { setError('news', 'Could not load news'); stamp('news', false); finish('news', false); return; }
+  state.cache.news = items;
+  renderNews();
+  stamp('news', true);
+  finish('news', true);
+}
+function renderMiniHeadlines() {
+  const { goldHl, nepseHl } = state.cache;
+  if (goldHl && goldHl.length) $('gold-hl').innerHTML =
+    `<div class="m" style="margin-bottom:4px">${t('goldHlLabel')}</div>` + goldHl.slice(0, 3).map(i =>
+      `<a href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)} <span class="m">· ${timeAgo(Date.parse(i.pubDate) || Date.now())}</span></a>`).join('');
+  if (nepseHl && nepseHl.length) $('nepse-hl').innerHTML =
+    `<div class="m" style="margin-bottom:4px">${t('nepseHlLabel')}</div>` + nepseHl.slice(0, 3).map(i =>
+      `<a href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)} <span class="m">· ${timeAgo(Date.parse(i.pubDate) || Date.now())}</span></a>`).join('');
+}
+async function refreshMiniHeadlines() {
+  const [g, n] = await Promise.all([fetchNews('gold price'), fetchNews('NEPSE share market Nepal')]);
+  state.cache.goldHl = g; state.cache.nepseHl = n;
+  renderMiniHeadlines();
+}
+
+/* --- Analysis section --- */
+function renderAnalysis() {
+  $('analysis-title').textContent = t('analysisTitle');
+  $('analysis-stamp').textContent = t('analysisStamp');
+  $('analysis-grid').innerHTML = `
+    <div class="analysis-col">
+      <h3>🪙 ${t('whyGold')}</h3>
+      <ul>${t('goldPoints').map(p => `<li>${p}</li>`).join('')}</ul>
+      <div class="src">${t('goldSrc')}</div>
+      <div class="mini-headlines" id="gold-hl"><span class="m">${t('loadingGeneric')}</span></div>
+    </div>
+    <div class="analysis-col">
+      <h3>📉 ${t('whyNepse')}</h3>
+      <ul>${t('nepsePoints').map(p => `<li>${p}</li>`).join('')}</ul>
+      <div class="src">${t('nepseSrc')}</div>
+      <div class="mini-headlines" id="nepse-hl"><span class="m">${t('loadingGeneric')}</span></div>
+    </div>`;
+  renderMiniHeadlines();
+}
+
+/* --- Static chrome --- */
+function applyStaticI18n() {
+  $('tagline').textContent = t('tagline');
+  $('nav-dash').textContent = t('navDash');
+  $('nav-foot').textContent = t('navFoot');
+  $('nav-cricket').textContent = t('navCricket');
+  $('ticker-label').textContent = t('headlines');
+  $('gold-title').textContent = t('goldTitle');
+  $('nepse-title').textContent = t('nepseTitle');
+  $('rates-title').textContent = t('ratesTitle');
+  $('weather-title').textContent = t('weatherTitle');
+  $('air-title').textContent = t('airTitle');
+  $('quakes-title').textContent = t('quakesTitle');
+  $('news-title').textContent = t('newsTitle');
+  $('footer').innerHTML = t('footer');
+}
+
+/* --- Language switching --- */
+function setLang(lang) {
+  LANG = lang;
+  localStorage.setItem('nlive-lang', lang);
+  document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.setAttribute('lang', lang === 'ne' ? 'ne' : 'en');
+  $('lang-en').classList.toggle('active', lang === 'en');
+  $('lang-ne').classList.toggle('active', lang === 'ne');
+  applyStaticI18n();
+  renderAnalysis();
+  // re-render all cached dynamic content in the new language
+  renderGold(); renderNepse(); renderRates(); renderWeather(); renderAir(); renderQuakes(); renderNews();
+  updateStatus();
+  // re-stamp updated labels (stamps store text; simplest: refresh modules' stamps on next auto-refresh)
+  Object.keys(state.cache).forEach(() => {});
+}
+$('lang-en').addEventListener('click', () => setLang('en'));
+$('lang-ne').addEventListener('click', () => setLang('ne'));
+
+/* ============ clock ============ */
+function tickClock() {
+  const now = new Date();
+  const tt = nptTime(now);
+  $('clock').innerHTML = `${tt.slice(0, 5)}<span class="sec">${tt.slice(5)}</span>`;
+  $('date-en').textContent = new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', {
+    timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+  try {
+    $('date-ne').textContent = new Intl.DateTimeFormat('ne-NP', {
+      timeZone: TZ, day: 'numeric', month: 'long', year: 'numeric' }).format(now) + ' (नेपाली)';
+  } catch (e) { $('date-ne').textContent = ''; }
+}
+
+/* ============ boot ============ */
+const MODULES = { gold: refreshGold, nepse: refreshNepse, rates: refreshRates, weather: refreshWeather,
+                  air: refreshAir, quakes: refreshQuakes, news: refreshNews };
+document.querySelectorAll('.rbtn').forEach(btn => {
+  btn.addEventListener('click', () => { btn.classList.add('spinning'); MODULES[btn.dataset.mod](); });
+});
+$('city-select').addEventListener('change', () => { refreshWeather(); refreshAir(); });
+['all', 'en', 'ne'].forEach(f => {
+  const b = $('nf-' + f);
+  if (b) b.addEventListener('click', () => { state.newsFilter = f; renderNews(); });
+});
+
+setLang(LANG);
+tickClock();
+setInterval(tickClock, 1000);
+refreshRates();
+Object.keys(MODULES).forEach(mod => {
+  if (mod !== 'rates') MODULES[mod]();
+  setInterval(MODULES[mod], INTERVALS[mod]);
+});
+refreshMiniHeadlines();
+setInterval(refreshMiniHeadlines, 300e3);
+</script>
+</body>
+</html>
