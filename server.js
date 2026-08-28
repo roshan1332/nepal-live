@@ -182,6 +182,35 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, data);
     }
 
+    /* official Nepal Rastra Bank forex — recent days, normalised to per-1-unit NPR.
+       NRB quotes some currencies per 10/100 units (JPY, INR, KRW), so divide it out
+       here and let the page treat every currency the same. */
+    if (p === '/api/forex') {
+      const data = await cached('forex', 900e3, async () => {
+        const day = 86400e3;
+        const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+        /* +1 day on the upper bound: Nepal (UTC+5:45) can already be on the next date */
+        const url = 'https://www.nrb.org.np/api/forex/v1/rates'
+          + `?from=${iso(Date.now() - 20 * day)}&to=${iso(Date.now() + day)}&per_page=100&page=1`;
+        const j = JSON.parse((await fetchURL(url)).body);
+        const days = (((j.data || {}).payload) || []).map((d) => {
+          const rates = {};
+          (d.rates || []).forEach((x) => {
+            const cur = x.currency || {};
+            const unit = Number(cur.unit) || 1;
+            const buy = Number(x.buy), sell = Number(x.sell);
+            if (!cur.iso3 || !isFinite(buy) || !isFinite(sell)) return;
+            rates[cur.iso3] = { buy: buy / unit, sell: sell / unit, mid: (buy + sell) / 2 / unit, unit };
+          });
+          return { date: d.date, rates };
+        }).filter((d) => Object.keys(d.rates).length)
+          .sort((a, b) => a.date.localeCompare(b.date));
+        if (!days.length) throw new Error('no NRB rates in range');
+        return { source: 'Nepal Rastra Bank', days };
+      });
+      return send(res, 200, data);
+    }
+
     /* gold & silver spot (gold-api.com, free, real-time) */
     if (p === '/api/gold') {
       const data = await cached('gold', 60e3, async () => {
