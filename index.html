@@ -157,7 +157,6 @@
   /* gold */
   .gold-grid{display:grid; grid-template-columns:1fr 1fr; gap:13px; flex:1}
   .metal{border:1px solid rgba(255,255,255,.06); border-radius:13px; padding:15px; background:rgba(255,255,255,.02);
-         display:flex; flex-direction:column;
          transition:transform .3s var(--ease), border-color .3s, background .3s}
   .metal:hover{transform:translateY(-2px)}
   .metal.gold-m{border-top:3px solid var(--gold)}
@@ -171,7 +170,7 @@
   .metal .npr{font-size:15px; margin-top:7px; color:#e6eafb; font-variant-numeric:tabular-nums; font-weight:600}
   .metal .npr small{color:var(--muted); font-weight:400}
   .metal .spot{font-size:10.5px; color:var(--muted); margin-top:8px; font-variant-numeric:tabular-nums}
-  .metal .spark{flex:1; min-height:34px; margin-top:8px}
+  .metal .spark{height:34px; margin-top:8px}
   .gold-note{font-size:11px; color:var(--muted); line-height:1.55}
 
   /* NEPSE */
@@ -190,47 +189,45 @@
   .range-bar .marker{position:absolute; top:-4px; width:4px; height:16px; background:#fff; border-radius:2px;
     box-shadow:0 0 8px rgba(255,255,255,.8); transition:left .6s var(--ease)}
   .range-labels{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted)}
-  /* grows into whatever height the row's tallest card sets, instead of
-     leaving dead space under the chart */
-  #nepse-chart{width:100%; flex:1; min-height:64px; margin-top:6px}
+  #nepse-chart{width:100%; height:64px; margin-top:6px}
 
   .rate-grid{display:grid; grid-template-columns:1fr; gap:0; flex:1; align-content:start}
-  .rate-row{display:grid; grid-template-columns:78px 1fr auto; align-items:center; gap:10px; padding:7px 4px;
-            border-bottom:1px dashed rgba(255,255,255,.08); font-size:14px; transition:background .2s; border-radius:6px}
+  .rate-row{display:grid; grid-template-columns:72px 1fr auto; align-items:center; gap:9px; padding:2px 4px;
+            border-bottom:1px dashed rgba(255,255,255,.08); font-size:13px; transition:background .2s; border-radius:6px}
   .rate-row:hover{background:rgba(255,255,255,.03)}
   .rate-row .cur{color:#c9d2ee; white-space:nowrap}
   .rate-row .val{font-weight:700; font-variant-numeric:tabular-nums}
   .rate-row .val small{color:var(--muted); font-weight:400; margin-left:3px}
-  .rate-src{font-size:11px; color:var(--muted); margin-top:8px}
+  .rate-src{font-size:10.5px; color:var(--muted); margin-top:6px}
 
   /* --- FX: mini trend + daily change --- */
-  .fx-spark{height:20px; min-width:40px; opacity:.85}
-  .fx-num{display:flex; flex-direction:column; align-items:flex-end; line-height:1.25}
-  .fx-chg{font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted)}
+  .fx-spark{height:17px; min-width:36px; opacity:.85}
+  .fx-num{display:flex; flex-direction:column; align-items:flex-end; line-height:1.18}
+  .fx-chg{font-size:10px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted)}
   .fx-chg.up{color:var(--green)} .fx-chg.down{color:#ff7b8d}
   .fx-unit{color:var(--muted); font-size:11px; margin-left:2px}
 
   /* --- FX: converter --- */
   .fx-conv{background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
-           border-radius:12px; padding:10px 11px; margin-bottom:10px}
-  .fx-conv-row{display:flex; align-items:center; gap:7px}
+           border-radius:11px; padding:8px 9px; margin-bottom:7px}
+  .fx-conv-row{display:flex; align-items:center; gap:6px}
   .fx-amt{flex:1; min-width:0; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.12);
-          color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:15px;
+          color:var(--text); border-radius:8px; padding:6px 9px; font:inherit; font-size:14px;
           font-weight:700; font-variant-numeric:tabular-nums; outline:none; transition:border-color .2s, box-shadow .2s}
   .fx-amt:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(240,180,41,.15)}
   .fx-sel{background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.12); color:var(--text);
-          border-radius:8px; padding:8px 6px; font:inherit; font-size:13px; font-weight:600;
-          outline:none; cursor:pointer; max-width:118px}
+          border-radius:8px; padding:6px 5px; font:inherit; font-size:12.5px; font-weight:600;
+          outline:none; cursor:pointer; max-width:112px}
   .fx-sel:focus{border-color:var(--accent)}
   .fx-sel option{background:#171a2e; color:#e9edff}
   .fx-swap{background:rgba(240,180,41,.12); border:1px solid rgba(240,180,41,.3); color:var(--accent);
-           border-radius:8px; width:34px; height:34px; flex:0 0 auto; cursor:pointer; font-size:15px;
+           border-radius:8px; width:30px; height:30px; flex:0 0 auto; cursor:pointer; font-size:14px;
            line-height:1; transition:transform .3s, background .2s}
   .fx-swap:hover{background:rgba(240,180,41,.22)}
   .fx-swap.flip{transform:rotate(180deg)}
-  .fx-result{margin-top:8px; font-size:19px; font-weight:800; font-variant-numeric:tabular-nums;
+  .fx-result{margin-top:6px; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums;
              color:var(--accent); letter-spacing:.2px}
-  .fx-result small{font-size:11px; font-weight:500; color:var(--muted); margin-left:5px; letter-spacing:0}
+  .fx-result small{font-size:10.5px; font-weight:500; color:var(--muted); margin-left:5px; letter-spacing:0}
   /* ---- animated weather scene ---- */
   @keyframes popIn{from{opacity:0; transform:translateY(12px) scale(.95)} to{opacity:1; transform:none}}
   @keyframes floaty{50%{transform:translateY(-6px)}}
