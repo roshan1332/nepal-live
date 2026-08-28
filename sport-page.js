@@ -21,7 +21,7 @@ const S_I18N = {
     noSoccer: 'No football matches scheduled for this day in the feed. Try another day, or check the news below.',
     noCricket: 'No cricket matches scheduled for this day in the feed. Try another day, or check the news below.',
     tagline: 'Matches, scores & news — Nepal Live Sports',
-    navDash: 'Dashboard', navFoot: 'Football Live', navCricket: 'Cricket Live',
+    navDash: 'Dashboard', navMk: 'Markets', navFoot: 'Football Live', navCricket: 'Cricket Live',
     matches: "Today's Matches", worldNewsF: 'World Football News', nepalNewsF: 'Nepal Football News',
     worldNewsC: 'World Cricket News', nepalNewsC: 'Nepal Cricket News',
     prev: '‹ Prev', next: 'Next ›',
@@ -37,7 +37,7 @@ const S_I18N = {
     noSoccer: 'यो दिनका लागि फिडमा फुटबल खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
     noCricket: 'यो दिनका लागि फिडमा क्रिकेट खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
     tagline: 'खेल, स्कोर र समाचार — नेपाल लाइभ स्पोर्ट्स',
-    navDash: 'ड्यासबोर्ड', navFoot: 'फुटबल लाइभ', navCricket: 'क्रिकेट लाइभ',
+    navDash: 'ड्यासबोर्ड', navMk: 'बजार', navFoot: 'फुटबल लाइभ', navCricket: 'क्रिकेट लाइभ',
     matches: 'आजका खेलहरू', worldNewsF: 'विश्व फुटबल समाचार', nepalNewsF: 'नेपाल फुटबल समाचार',
     worldNewsC: 'विश्व क्रिकेट समाचार', nepalNewsC: 'नेपाल क्रिकेट समाचार',
     prev: '‹ अघिल्लो', next: 'अर्को ›',
@@ -233,6 +233,7 @@ async function loadNews(cfg, which) {
 function applySportI18n(cfg) {
   if ($('sp-tagline')) $('sp-tagline').textContent = st('tagline');
   if ($('nav-dash')) $('nav-dash').textContent = st('navDash');
+  if ($('nav-mk')) $('nav-mk').textContent = st('navMk');
   if ($('nav-foot')) $('nav-foot').textContent = st('navFoot');
   if ($('nav-cricket')) $('nav-cricket').textContent = st('navCricket');
   if ($('matches-title')) $('matches-title').textContent = st('matches');

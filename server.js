@@ -222,6 +222,19 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, data);
     }
 
+    /* NEPSE top gainers / losers / turnover */
+    if (p === '/api/nepse/top') {
+      const data = await cached('nepse-top', 60e3, async () => {
+        const [gainers, losers, turnover] = await Promise.all([
+          nepseGet('nots/top-ten/top-gainer?all=false'),
+          nepseGet('nots/top-ten/top-loser?all=false'),
+          nepseGet('nots/top-ten/turnover?all=false'),
+        ]);
+        return { gainers, losers, turnover, fetchedAt: new Date().toISOString() };
+      });
+      return send(res, 200, data);
+    }
+
     /* NEPSE index history (for the chart) */
     if (p === '/api/nepse/history') {
       const size = Math.min(250, Math.max(10, parseInt(u.searchParams.get('size') || '90', 10) || 90));

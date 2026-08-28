@@ -7,13 +7,14 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🇳🇵%3C/text%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#070b16; --panel:#121829; --panel2:#0e1424; --line:#222b45;
-    --text:#e8ecf8; --muted:#8b94b0; --accent:#e0344e; --accent2:#2f6fed;
+    --bg:#0e0a18; --panel:#1a1428; --panel2:#140f20; --line:#2c2444;
+    --text:#f4f0fb; --muted:#a29abf; --accent:#f0b429; --accent2:#4cc3ff;
     --gold:#f5c542; --green:#2ecc71; --red:#e0344e;
-    --radius:18px;
-    --glass:rgba(22,29,51,.66);
-    --glass-brd:rgba(255,255,255,.08);
+    --radius:24px;
+    --glass:rgba(30,22,48,.66);
+    --glass-brd:rgba(255,255,255,.09);
     --ease:cubic-bezier(.22,1,.36,1);
+    --font-display:Georgia,'Times New Roman',serif;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html{scroll-behavior:smooth}
@@ -35,10 +36,10 @@
     filter:blur(90px); opacity:.22;
   }
   body::before{ width:540px;height:540px; left:-140px; top:-140px;
-    background:radial-gradient(circle,#e0344e,transparent 70%);
+    background:radial-gradient(circle,#f0b429,transparent 70%);
     animation:drift1 20s ease-in-out infinite alternate, hueDrift 14s ease-in-out infinite alternate;}
   body::after{ width:640px;height:640px; right:-180px; bottom:-180px;
-    background:radial-gradient(circle,#2f6fed,transparent 70%);
+    background:radial-gradient(circle,#4cc3ff,transparent 70%);
     animation:drift2 26s ease-in-out infinite alternate, hueDrift 18s ease-in-out infinite alternate;}
   @keyframes drift1{to{transform:translate(150px,110px) scale(1.18)}}
   @keyframes drift2{to{transform:translate(-150px,-90px) scale(1.12)}}
@@ -60,7 +61,7 @@
              transition:transform .4s var(--ease)}
   .brand:hover svg{transform:translateY(-3px) rotate(-2deg)}
   .brand h1{font-size:27px; letter-spacing:.5px; font-weight:800}
-  .brand h1 .np{background:linear-gradient(120deg,#ff5c72,#e0344e); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .brand h1 .np{background:linear-gradient(120deg,#ffd75e,#f0b429); -webkit-background-clip:text; background-clip:text; color:transparent}
   .brand .tag{color:var(--muted); font-size:13px; margin-top:2px}
   .clockbox{text-align:right}
   #clock{font-size:34px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:1px}
@@ -79,7 +80,7 @@
   .lang-toggle{display:flex; border:1px solid var(--glass-brd); border-radius:999px; overflow:hidden; backdrop-filter:blur(6px)}
   .lang-toggle button{background:rgba(255,255,255,.04); color:var(--muted); border:none; padding:7px 14px;
     font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
-  .lang-toggle button.active{background:var(--accent); color:#fff}
+  .lang-toggle button.active{background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04}
   .lang-toggle button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
 
   nav.pages{position:sticky; top:10px; z-index:60; width:min(1240px, calc(100% - 44px)); margin:12px auto 0; padding:6px;
@@ -89,12 +90,12 @@
   nav.pages a{display:inline-flex; align-items:center; padding:9px 18px; border-radius:10px; font-size:13.5px; font-weight:600;
     color:var(--muted); background:transparent; border:none; transition:.25s}
   nav.pages a:hover{color:#fff; background:rgba(255,255,255,.06)}
-  nav.pages a.active{background:linear-gradient(135deg,#ff4b62,#e0344e); color:#fff; box-shadow:0 6px 18px rgba(224,52,78,.35)}
+  nav.pages a.active{background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04; box-shadow:0 6px 18px rgba(240,180,41,.35)}
 
   .ticker{width:min(1240px, calc(100% - 44px)); margin:12px auto 16px; padding:0; animation:rise .7s var(--ease) .14s both}
   .ticker-inner{overflow:hidden; white-space:nowrap; background:var(--glass);
     border:1px solid var(--glass-brd); border-radius:13px; display:flex; align-items:center; backdrop-filter:blur(10px)}
-  .ticker-label{flex:0 0 auto; display:flex; align-items:center; background:linear-gradient(135deg,#ff4b62,#e0344e); color:#fff; font-weight:700; font-size:12px;
+  .ticker-label{flex:0 0 auto; display:flex; align-items:center; background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04; font-weight:700; font-size:12px;
     letter-spacing:1.5px; padding:10px 15px; border-radius:12px 0 0 12px}
   .ticker-view{overflow:hidden; flex:1}
   .ticker-track{display:inline-block; white-space:nowrap; padding:10px 0; animation:scroll 70s linear infinite}
@@ -121,8 +122,8 @@
   main .card:nth-child(6){animation-delay:.46s}
   main .card:nth-child(7){animation-delay:.52s}
   main .card:nth-child(8){animation-delay:.58s}
-  .card:hover{transform:translateY(-5px); border-color:rgba(224,52,78,.45);
-    box-shadow:0 22px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(224,52,78,.12)}
+  .card:hover{transform:translateY(-5px); border-color:rgba(240,180,41,.5);
+    box-shadow:0 22px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(240,180,41,.14)}
   .card.wide{grid-column:1/-1}
   /* fill vertical gaps: let card bodies stretch to the card height */
   .card > div:not(.card-head){flex:1; display:flex; flex-direction:column; justify-content:flex-start; min-width:0}
@@ -139,7 +140,7 @@
   .stamp.err{color:var(--red)}
   .rbtn{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted); border-radius:8px;
         width:28px; height:28px; cursor:pointer; font-size:13px; line-height:1; transition:.25s}
-  .rbtn:hover{color:#fff; border-color:var(--accent); background:rgba(224,52,78,.12); transform:rotate(30deg)}
+  .rbtn:hover{color:#ffd75e; border-color:var(--accent); background:rgba(240,180,41,.12); transform:rotate(30deg)}
   .rbtn.spinning{animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   select{background:rgba(255,255,255,.05); color:var(--text); border:1px solid var(--glass-brd);
@@ -386,7 +387,7 @@
   .news-item{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:13px;
              padding:13px; display:flex; flex-direction:column; gap:6px;
              transition:transform .3s var(--ease), border-color .3s, background .3s}
-  .news-item:hover{border-color:var(--accent); transform:translateY(-3px); background:rgba(224,52,78,.06)}
+  .news-item:hover{border-color:var(--accent); transform:translateY(-3px); background:rgba(240,180,41,.06)}
   .news-item .t{font-size:13.5px; line-height:1.45; color:#e6eafb}
   .news-item .m{font-size:11px; color:var(--muted)}
   .news-item .m b{color:#a9b4d6; font-weight:600}
@@ -395,7 +396,7 @@
   .news-filters{display:flex; gap:6px}
   .news-filters button{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted);
     border-radius:8px; padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
-  .news-filters button.active{background:var(--accent); border-color:var(--accent); color:#fff}
+  .news-filters button.active{background:var(--accent); border-color:var(--accent); color:#241a04}
   .news-filters button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
   .news-note{font-size:10.5px; color:#5c6580}
 
@@ -418,6 +419,11 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none !important; transition:none !important}
   }
+  /* ---- redesign: display typography & accents ---- */
+  .brand h1,.card-head h2,.analysis-col h3{font-family:var(--font-display)}
+  .brand h1{font-size:31px; letter-spacing:.3px}
+  .card-head h2{letter-spacing:.8px}
+  ::selection{background:rgba(240,180,41,.35); color:#fff}
 </style>
 </head>
 <body>
@@ -591,7 +597,7 @@
 const I18N = {
   en: {
     tagline: "Real-time dashboard · Nepal's live updates",
-    navDash: "Dashboard", navFoot: "Football Live", navCricket: "Cricket Live",
+    navDash: "Dashboard", navMk: "Markets", navFoot: "Football Live", navCricket: "Cricket Live",
     headlines: "HEADLINES",
     live: "LIVE", connecting: "CONNECTING…", partial: "PARTIAL LIVE",
     updated: "Updated", failed: "Failed — retrying",
@@ -651,7 +657,7 @@ const I18N = {
   },
   ne: {
     tagline: "प्रत्यक्ष-समय ड्यासबोर्ड · नेपालको लाइभ अपडेट",
-    navDash: "ड्यासबोर्ड", navFoot: "फुटबल लाइभ", navCricket: "क्रिकेट लाइभ",
+    navDash: "ड्यासबोर्ड", navMk: "बजार", navFoot: "फुटबल लाइभ", navCricket: "क्रिकेट लाइभ",
     headlines: "ताजा समाचार",
     live: "प्रत्यक्ष", connecting: "जडान हुँदै…", partial: "आंशिक प्रत्यक्ष",
     updated: "अपडेट", failed: "असफल — पुनः प्रयास हुँदै",
