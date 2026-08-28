@@ -66,6 +66,18 @@ function fetchURL(url, redirects = 0) {
    than show silently stale numbers. */
 const STALE_GRACE = 30 * 60e3;
 
+/* Open-Meteo signals failure in a 200 response body, e.g.
+   {"error":true,"reason":"Daily API request limit exceeded..."}. Parsing that as
+   success would cache the error and serve it to the page, so turn it into a real
+   throw: cached() can then fall back to stale data, and the route answers 502 so
+   the browser retries Open-Meteo directly on its own quota. */
+function openMeteo(body, requiredKey) {
+  const j = JSON.parse(body);
+  if (j && j.error) throw new Error(j.reason || 'Open-Meteo error');
+  if (!j || !j[requiredKey]) throw new Error(`Open-Meteo response missing "${requiredKey}"`);
+  return j;
+}
+
 async function cached(key, ttlMs, producer) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < ttlMs) return hit.data;
@@ -293,7 +305,10 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/weather') {
       const lat = num(u.searchParams.get('lat'), 27.7172);
       const lon = num(u.searchParams.get('lon'), 85.324);
-      const data = await cached(`weather:${lat}:${lon}`, 300e3, async () => {
+      /* 15-min TTL, not 5: Open-Meteo's free tier is a daily quota and on Render's
+         shared outbound IP it is easy to exhaust. Forecast data barely moves in
+         that window, so this cuts upstream calls ~3x for no visible staleness. */
+      const data = await cached(`weather:${lat}:${lon}`, 900e3, async () => {
         const url = 'https://api.open-meteo.com/v1/forecast'
           + `?latitude=${lat}&longitude=${lon}`
           + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m'
@@ -301,7 +316,7 @@ const server = http.createServer(async (req, res) => {
           + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
           + '&timezone=Asia%2FKathmandu&forecast_days=7';
         const r = await fetchURL(url);
-        return JSON.parse(r.body);
+        return openMeteo(r.body, 'current');
       });
       return send(res, 200, data);
     }
@@ -310,12 +325,12 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/air') {
       const lat = num(u.searchParams.get('lat'), 27.7172);
       const lon = num(u.searchParams.get('lon'), 85.324);
-      const data = await cached(`air:${lat}:${lon}`, 300e3, async () => {
+      const data = await cached(`air:${lat}:${lon}`, 900e3, async () => {
         const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
           + `?latitude=${lat}&longitude=${lon}`
           + '&current=pm2_5,pm10,us_aqi&timezone=Asia%2FKathmandu';
         const r = await fetchURL(url);
-        return JSON.parse(r.body);
+        return openMeteo(r.body, 'current');
       });
       return send(res, 200, data);
     }
