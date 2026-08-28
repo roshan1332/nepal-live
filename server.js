@@ -60,12 +60,27 @@ function fetchURL(url, redirects = 0) {
   });
 }
 
+/* How long past its TTL a cached payload may still be served when the upstream
+   is failing. A brief Open-Meteo/USGS/NEPSE hiccup should not blank a card that
+   had good data seconds ago; beyond this window we'd rather surface the error
+   than show silently stale numbers. */
+const STALE_GRACE = 30 * 60e3;
+
 async function cached(key, ttlMs, producer) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < ttlMs) return hit.data;
-  const data = await producer();
-  cache.set(key, { ts: Date.now(), data });
-  return data;
+  try {
+    const data = await producer();
+    cache.set(key, { ts: Date.now(), data });
+    return data;
+  } catch (e) {
+    if (hit && Date.now() - hit.ts < ttlMs + STALE_GRACE) {
+      const age = Math.round((Date.now() - hit.ts) / 1000);
+      console.warn(`[cache] ${key}: upstream failed (${e.message}) — serving ${age}s-old data`);
+      return hit.data;
+    }
+    throw e;
+  }
 }
 
 /* ---------------- RSS parser ----------------
