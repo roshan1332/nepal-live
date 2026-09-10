@@ -12,6 +12,15 @@ const zlib = require('zlib');
 const fs = require('fs');
 const path = require('path');
 
+/* Local secrets: optional KEY=value lines in ./.env (git-ignored, never served).
+   Real environment variables — e.g. set in the Render dashboard — win. */
+try {
+  fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split(/\r?\n/).forEach((line) => {
+    const m = /^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
+  });
+} catch (e) { /* no .env file */ }
+
 /* Works whether the nepse files are in ./nepse/ or flattened at the root
    (happens when files are drag-dropped into GitHub one by one). */
 let nepseGet;
@@ -482,11 +491,21 @@ function readStatic(file) {
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://nepal-live.onrender.com';
 
 /* ---------------- accounts & search ---------------- */
-/* Accounts live in one JSON file under DATA_DIR. Point DATA_DIR at a persistent
-   disk in production — without one (e.g. Render's free tier) accounts reset on
-   every deploy, and the account page says so. */
+/* Accounts are stored in Supabase when SUPABASE_URL and its secret key are set
+   (production); otherwise in a JSON file under DATA_DIR (local development —
+   on Render's free tier that file is wiped on every deploy, and the account
+   page says so). */
+const SUPA_URL = process.env.SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const STORE = SUPA_URL && SUPA_KEY
+  ? require('./store-supabase')({ url: SUPA_URL, key: SUPA_KEY })
+  : require('./store-file')(process.env.DATA_DIR || path.join(__dirname, 'data'));
+if (STORE.ping) {
+  STORE.ping().then(() => console.log('[accounts] Supabase connected'))
+    .catch((e) => console.error('[accounts] Supabase check failed — run supabase-schema.sql and check SUPABASE_URL / SUPABASE_SECRET_KEY:', e.detail || e.message));
+} else console.log('[accounts] using local file store' + (process.env.DATA_DIR ? '' : ' (./data — not persistent on Render)'));
 const ACC = require('./accounts')({
-  dataDir: process.env.DATA_DIR || path.join(__dirname, 'data'), durable: !!process.env.DATA_DIR,
+  store: STORE, durable: STORE.kind === 'supabase' || !!process.env.DATA_DIR,
   alerts: () => S.alerts(), cities: S.CITIES,
 });
 const SEARCH = require('./search')({ P, S, SDB, site });

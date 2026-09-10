@@ -12,10 +12,12 @@ Mainali" in every footer — keep it).
 node server.js        # http://localhost:3000  (PORT env to change)
 ```
 **Zero npm dependencies** — plain Node `http` server. Do NOT add a package manager / deps.
-Env: `SITE_ORIGIN` (robots/sitemap/canonical origin, default `https://nepal-live.onrender.com`),
-`DATA_DIR` (account store; **must be a persistent disk in production** — without it accounts live in `./data`
-and reset on every Render deploy; the account page says so), `TRUST_PROXY=1` (trust `X-Forwarded-*`; on
-automatically when `RENDER` is set). `data/` is git-ignored — never commit it.
+Env (an optional git-ignored `.env` file is read at startup; real env vars win — see `.env.example`):
+`SITE_ORIGIN` (robots/sitemap/canonical origin, default `https://nepal-live.onrender.com`),
+`SUPABASE_URL` + `SUPABASE_SECRET_KEY` (accounts in Supabase — production; `SUPABASE_SERVICE_ROLE_KEY` also accepted),
+`DATA_DIR` (file account store when Supabase isn't set — local dev; `./data` by default, wiped on Render deploys),
+`TRUST_PROXY=1` (trust `X-Forwarded-*`; on automatically when `RENDER` is set). `data/` and `.env` are git-ignored —
+never commit them, and never put the Supabase secret key in client code.
 
 ## Files
 Server
@@ -27,7 +29,9 @@ Server
   road news), fuel (NOC), AQI stations, trending, highlights, multi-city weather/air, `CITIES` (32 verified),
   jobs (merojob), calendar (Hamro Patro BS/AD months, today, upcoming), events (calendar + Nepal fixtures).
 - `sportsdb.js` — TheSportsDB behind one rate-limited queue (≈30 req/min); routes answer from cache + `pending`.
-- `accounts.js` — accounts/sessions/saved items/prefs/personal alerts (see Accounts below).
+- `accounts.js` — accounts/sessions/saved items/prefs/personal alerts (see Accounts below), over a storage backend:
+  `store-supabase.js` (Supabase REST/PostgREST via `fetch`, no SDK; tables in `supabase-schema.sql`) or
+  `store-file.js` (JSON file). Both expose the same async interface — keep them in step.
 - `search.js` — `/api/search?q=&type=` across places, markets, news, sports, jobs, events, government, pages
   (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently.
 - `site-pages.js` — server-rendered section pages (`PAGES` map: title, description, OG/Twitter, canonical, JSON-LD,
@@ -89,8 +93,9 @@ explicitly not listed. Disabled chart ranges explain why (no intraday NEPSE; 60 
 - Touch targets 44px on coarse pointers; `prefers-reduced-motion` respected; no horizontal page scroll.
 
 ## Deploy
-Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). For accounts to
-survive deploys, attach a Render persistent disk and set `DATA_DIR` to its mount path.
+Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). Accounts: run
+`supabase-schema.sql` once in the Supabase SQL editor, then set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in Render →
+Environment. The server logs "[accounts] Supabase connected" on startup (or why it couldn't connect).
 
 ## Known pitfalls
 - NEPSE needs the wasm token flow via this server. TheSportsDB 429s without the queue in `sportsdb.js`.

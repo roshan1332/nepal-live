@@ -9,3 +9,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.20.2
+      # accounts in Supabase — fill these in the Render dashboard (sync: false keeps them out of this file)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false

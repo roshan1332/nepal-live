@@ -1,8 +1,11 @@
 'use strict';
 /*
  * Nepal Live accounts: sign-up, login, sessions, profile preferences, saved
- * items and personal alerts. Zero dependencies — Node's crypto and one JSON
- * file in DATA_DIR, written atomically (temp file + rename).
+ * items and personal alerts. Zero dependencies — Node's crypto plus a storage
+ * backend with one async interface:
+ *   store-supabase.js — Supabase (Postgres) over its REST API, used whenever
+ *                       SUPABASE_URL and a secret key are configured
+ *   store-file.js     — one JSON file in DATA_DIR (local development)
  *
  * Security
  *  - passwords: scrypt (N=16384, r=8, p=1) with a per-user 16-byte salt,
@@ -14,14 +17,9 @@
  *    Sec-Fetch-Site) and JSON — a cross-site form cannot send either
  *  - rate limits per IP (and per account for login); body size capped;
  *    every field validated; no CORS headers on these routes
- *
- * Storage: DATA_DIR must be a persistent disk in production. On an ephemeral
- * filesystem (e.g. Render's free tier) accounts are lost on every deploy —
- * GET /api/me reports this so the page can say so.
+ *  - if the store is unreachable, requests fail closed with a 503
  */
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
 
 const COOKIE = 'nl_sid';
 const SESSION_TTL = 30 * 864e5;
@@ -33,32 +31,12 @@ const ITEM_TYPES = ['news', 'job', 'event', 'gov', 'place', 'match', 'page'];
 const TRUST_PROXY = process.env.TRUST_PROXY === '1' || !!process.env.RENDER;
 
 module.exports = function init(opts) {
-  const FILE = path.join(opts.dataDir, 'accounts.json');
+  const store = opts.store;
   const durable = !!opts.durable;
-  fs.mkdirSync(opts.dataDir, { recursive: true });
-  let db;
-  try { db = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (e) { db = {}; }
-  db.users = db.users || {};
-  db.emails = db.emails || {};
-  db.sessions = db.sessions || {};
 
-  /* ------------------------------------------------------------- storage */
-  let writeT = null;
-  const writeNow = () => {
-    const tmp = FILE + '.' + process.pid + '.tmp';
-    try { fs.writeFileSync(tmp, JSON.stringify(db), { mode: 0o600 }); fs.renameSync(tmp, FILE); }
-    catch (e) { console.error('[accounts] save failed:', e.message); }
-  };
-  const persist = () => { if (!writeT) writeT = setTimeout(() => { writeT = null; writeNow(); }, 250); };
-  const flush = () => { if (writeT) { clearTimeout(writeT); writeT = null; writeNow(); } };
-  ['SIGTERM', 'SIGINT'].forEach((sig) => process.once(sig, () => { flush(); process.exit(0); }));
-
-  const sweep = () => {
-    const now = Date.now();
-    for (const [k, s] of Object.entries(db.sessions)) if (s.exp < now || !db.users[s.uid]) delete db.sessions[k];
-  };
+  const sweep = () => store.sweep().catch((e) => console.error('[accounts] session sweep failed:', e.detail || e.message));
   sweep();
-  setInterval(() => { sweep(); persist(); }, 3600e3).unref();
+  setInterval(sweep, 3600e3).unref();
 
   /* -------------------------------------------------------------- crypto */
   const SCRYPT = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
@@ -137,25 +115,22 @@ module.exports = function init(opts) {
   const cookie = (req, token, maxAge) => `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${isHttps(req) ? '; Secure' : ''}`;
   const clearCookie = (req) => cookie(req, '', 0);
 
-  function session(req) {
+  async function session(req) {
     const tok = tokenOf(req);
     if (!tok) return null;
-    const key = sha(tok), s = db.sessions[key];
-    if (!s || s.exp < Date.now() || !db.users[s.uid]) return null;
-    if (Date.now() - (s.seen || 0) > 3600e3) { s.seen = Date.now(); s.exp = Date.now() + SESSION_TTL; persist(); }
-    return { key, user: db.users[s.uid] };
+    const key = sha(tok);
+    const s = await store.getSession(key);
+    if (!s || s.exp < Date.now() || !s.user) return null;
+    if (Date.now() - (s.seen || 0) > 3600e3) await store.touchSession(key, Date.now(), Date.now() + SESSION_TTL);
+    return { key, user: s.user };
   }
-  function newSession(uid) {
+  async function newSession(uid) {
     const token = crypto.randomBytes(32).toString('base64url');
-    db.sessions[sha(token)] = { uid, created: Date.now(), seen: Date.now(), exp: Date.now() + SESSION_TTL };
-    Object.entries(db.sessions).filter(([, s]) => s.uid === uid).sort((a, b) => b[1].seen - a[1].seen)
-      .slice(10).forEach(([k]) => delete db.sessions[k]);
-    persist();
+    const now = Date.now();
+    await store.createSession({ key: sha(token), uid, created: now, seen: now, exp: now + SESSION_TTL });
+    await store.pruneSessions(uid, 10);
     return token;
   }
-  const dropSessions = (uid, keep) => {
-    for (const [k, s] of Object.entries(db.sessions)) if (s.uid === uid && k !== keep) delete db.sessions[k];
-  };
 
   /* ----------------------------------------------------------- validation */
   const str = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max) : '');
@@ -182,7 +157,7 @@ module.exports = function init(opts) {
   const DISTRICT_RE = /^[A-Za-z][A-Za-z .'-]{1,39}$/;
   const defaultPrefs = () => ({ lang: 'en', theme: 'system', city: '', alerts: { enabled: true, minLevel: 'warning', categories: [], districts: [] } });
   function vPrefs(p, cur) {
-    const out = JSON.parse(JSON.stringify(cur || defaultPrefs()));
+    const out = JSON.parse(JSON.stringify(cur && cur.alerts ? cur : defaultPrefs()));
     if (!p || typeof p !== 'object') return out;
     if (p.lang !== undefined) { if (!['en', 'ne'].includes(p.lang)) throw fail(400, 'Invalid language.', 'bad_pref'); out.lang = p.lang; }
     if (p.theme !== undefined) { if (!['light', 'dark', 'system'].includes(p.theme)) throw fail(400, 'Invalid theme.', 'bad_pref'); out.theme = p.theme; }
@@ -220,27 +195,29 @@ module.exports = function init(opts) {
       sub: str(b.sub, 200), img: /^https?:/.test(img) ? img : '', savedAt: new Date().toISOString(),
     };
   }
-  const pub = (u) => ({
-    id: u.id, email: u.email, name: u.name, created: u.created, prefs: u.prefs,
-    saved: u.saved.map((s) => s.key), seenAt: u.seenAt || 0,
+  const pub = async (u) => ({
+    id: u.id, email: u.email, name: u.name, created: u.created, prefs: vPrefs(null, u.prefs),
+    saved: await store.savedKeys(u.id), seenAt: u.seenAt || 0,
   });
 
   /* --------------------------------------------------------------- routes */
+  const EXISTS = 'An account with this email already exists — log in instead.';
   async function signup(req, res, ip) {
     if (limited('signup:' + ip, 5, 3600e3)) throw fail(429, 'Too many sign-ups from this network. Try again in an hour.', 'rate');
     const b = await readBody(req);
     const email = vEmail(b.email);
     const pw = vPassword(b.password, email);
     const name = str(b.name, 60);
-    if (db.emails[email]) throw fail(409, 'An account with this email already exists — log in instead.', 'exists');
-    if (Object.keys(db.users).length >= MAX_USERS) throw fail(503, 'Sign-ups are paused right now.', 'full');
-    const pwd = await hashPw(pw);
-    if (db.emails[email]) throw fail(409, 'An account with this email already exists — log in instead.', 'exists');
-    const id = crypto.randomBytes(9).toString('base64url');
-    db.users[id] = { id, email, name, pwd, created: new Date().toISOString(), prefs: vPrefs(b.prefs, defaultPrefs()), saved: [], seenAt: Date.now() };
-    db.emails[email] = id;
-    const tok = newSession(id);
-    json(res, 201, { user: pub(db.users[id]) }, { 'Set-Cookie': cookie(req, tok, SESSION_TTL / 1000) });
+    if (await store.findUserByEmail(email)) throw fail(409, EXISTS, 'exists');
+    if ((await store.countUsers()) >= MAX_USERS) throw fail(503, 'Sign-ups are paused right now.', 'full');
+    const user = {
+      id: crypto.randomBytes(9).toString('base64url'), email, name, pwd: await hashPw(pw),
+      created: new Date().toISOString(), prefs: vPrefs(b.prefs, defaultPrefs()), seenAt: Date.now(),
+    };
+    /* the unique email constraint settles two simultaneous sign-ups */
+    try { await store.createUser(user); } catch (e) { if (e.code === 'exists') throw fail(409, EXISTS, 'exists'); throw e; }
+    const tok = await newSession(user.id);
+    json(res, 201, { user: await pub(user) }, { 'Set-Cookie': cookie(req, tok, SESSION_TTL / 1000) });
   }
   async function login(req, res, ip) {
     if (limited('login:' + ip, 20, 15 * 60e3)) throw fail(429, 'Too many attempts. Wait 15 minutes and try again.', 'rate');
@@ -248,11 +225,11 @@ module.exports = function init(opts) {
     const email = str(b.email, 254).toLowerCase();
     const pw = typeof b.password === 'string' ? b.password.slice(0, 200) : '';
     if (limited('login-acct:' + sha(email), 10, 15 * 60e3)) throw fail(429, 'Too many attempts for this account. Wait 15 minutes and try again.', 'rate');
-    const uid = db.emails[email], user = uid && db.users[uid];
+    const user = email ? await store.findUserByEmail(email) : null;
     const ok = await checkPw(pw, user ? user.pwd : DUMMY);
     if (!user || !ok) throw fail(401, 'Email or password is incorrect.', 'bad_login');
-    const tok = newSession(user.id);
-    json(res, 200, { user: pub(user) }, { 'Set-Cookie': cookie(req, tok, SESSION_TTL / 1000) });
+    const tok = await newSession(user.id);
+    json(res, 200, { user: await pub(user) }, { 'Set-Cookie': cookie(req, tok, SESSION_TTL / 1000) });
   }
 
   /* Personal alerts come only from the official alert feed (BIPAD, Department
@@ -260,7 +237,7 @@ module.exports = function init(opts) {
      choices. Nothing is generated; each item keeps its source link. */
   const nd = (s) => String(s || '').toLowerCase().replace(/[^a-z]/g, '');
   async function notifications(user) {
-    const pref = user.prefs.alerts;
+    const pref = vPrefs(null, user.prefs).alerts;
     if (!pref.enabled) return { enabled: false, items: [], unread: 0 };
     const data = await opts.alerts();
     const min = LEVELS.indexOf(pref.minLevel);
@@ -289,68 +266,63 @@ module.exports = function init(opts) {
       if (route === 'POST /api/auth/signup') return await signup(req, res, ip);
       if (route === 'POST /api/auth/login') return await login(req, res, ip);
       if (route === 'POST /api/auth/logout') {
-        const s = session(req);
-        if (s) { delete db.sessions[s.key]; persist(); }
+        const s = await session(req);
+        if (s) await store.deleteSession(s.key);
         return json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie(req) });
       }
       if (route === 'GET /api/me') {
-        const s = session(req);
-        return json(res, 200, { user: s ? pub(s.user) : null, storage: { durable } });
+        const s = await session(req);
+        return json(res, 200, { user: s ? await pub(s.user) : null, storage: { durable } });
       }
 
-      const s = session(req);
+      const s = await session(req);
       if (!s) throw fail(401, 'Please log in.', 'auth');
       const user = s.user;
 
       switch (route) {
         case 'PATCH /api/me': {
           const b = await readBody(req);
-          if (b.name !== undefined) user.name = str(b.name, 60);
-          if (b.prefs !== undefined) user.prefs = vPrefs(b.prefs, user.prefs);
-          persist();
-          return json(res, 200, { user: pub(user) });
+          const patch = {};
+          if (b.name !== undefined) patch.name = user.name = str(b.name, 60);
+          if (b.prefs !== undefined) patch.prefs = user.prefs = vPrefs(b.prefs, user.prefs);
+          if (Object.keys(patch).length) await store.updateUser(user.id, patch);
+          return json(res, 200, { user: await pub(user) });
         }
         case 'POST /api/me/password': {
           const b = await readBody(req);
           if (limited('pw:' + user.id, 10, 15 * 60e3)) throw fail(429, 'Too many attempts. Try again later.', 'rate');
           if (!(await checkPw(typeof b.current === 'string' ? b.current.slice(0, 200) : '', user.pwd))) throw fail(401, 'Current password is incorrect.', 'bad_login');
-          user.pwd = await hashPw(vPassword(b.next, user.email));
-          dropSessions(user.id, s.key);
-          persist();
+          await store.updateUser(user.id, { pwd: await hashPw(vPassword(b.next, user.email)) });
+          await store.deleteUserSessions(user.id, s.key);
           return json(res, 200, { ok: true });
         }
         case 'DELETE /api/me': {
           const b = await readBody(req);
           if (limited('pw:' + user.id, 10, 15 * 60e3)) throw fail(429, 'Too many attempts. Try again later.', 'rate');
           if (!(await checkPw(typeof b.password === 'string' ? b.password.slice(0, 200) : '', user.pwd))) throw fail(401, 'Password is incorrect.', 'bad_login');
-          dropSessions(user.id);
-          delete db.emails[user.email];
-          delete db.users[user.id];
-          persist();
+          await store.deleteUser(user.id); /* sessions and saved items go with it */
           return json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie(req) });
         }
         case 'GET /api/me/saved':
-          return json(res, 200, { items: user.saved.slice().reverse() });
+          return json(res, 200, { items: (await store.listSaved(user.id)).reverse() });
         case 'POST /api/me/saved': {
           const item = vItem(await readBody(req));
-          user.saved = user.saved.filter((x) => x.key !== item.key);
-          if (user.saved.length >= MAX_SAVED) throw fail(409, `You can keep up to ${MAX_SAVED} saved items. Remove some first.`, 'full');
-          user.saved.push(item);
-          persist();
-          return json(res, 201, { item, saved: user.saved.map((x) => x.key) });
+          const keys = await store.savedKeys(user.id);
+          if (!keys.includes(item.key) && keys.length >= MAX_SAVED) throw fail(409, `You can keep up to ${MAX_SAVED} saved items. Remove some first.`, 'full');
+          await store.addSaved(user.id, item);
+          return json(res, 201, { item, saved: await store.savedKeys(user.id) });
         }
         case 'DELETE /api/me/saved': {
-          const key = str(u.searchParams.get('key'), 240);
-          user.saved = user.saved.filter((x) => x.key !== key);
-          persist();
-          return json(res, 200, { ok: true, saved: user.saved.map((x) => x.key) });
+          await store.removeSaved(user.id, str(u.searchParams.get('key'), 240));
+          return json(res, 200, { ok: true, saved: await store.savedKeys(user.id) });
         }
         case 'GET /api/me/notifications':
           return json(res, 200, await notifications(user));
-        case 'POST /api/me/notifications/seen':
-          user.seenAt = Date.now();
-          persist();
-          return json(res, 200, { ok: true, seenAt: user.seenAt });
+        case 'POST /api/me/notifications/seen': {
+          const seenAt = Date.now();
+          await store.updateUser(user.id, { seenAt });
+          return json(res, 200, { ok: true, seenAt });
+        }
         default:
           throw fail(404, 'Not found.', 'not_found');
       }
@@ -360,5 +332,5 @@ module.exports = function init(opts) {
     }
   }
 
-  return { handle, flush, count: () => Object.keys(db.users).length };
+  return { handle };
 };
