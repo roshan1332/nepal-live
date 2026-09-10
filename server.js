@@ -133,6 +133,66 @@ function firstCategory(block) {
   return c;
 }
 
+const NAMED_ENTITIES = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', hellip: '…', ndash: '–', mdash: '—',
+  rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', laquo: '«', raquo: '»', middot: '·', bull: '•',
+};
+function decodeEntities(str) {
+  return String(str || '')
+    .replace(/&#(\d+);/g, (_, d) => { const c = +d; return c > 0 && c < 0x110000 ? String.fromCodePoint(c) : ''; })
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => { const c = parseInt(h, 16); return c > 0 && c < 0x110000 ? String.fromCodePoint(c) : ''; })
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+}
+
+/* A short standfirst for the featured story: the feed's description minus the
+   WordPress boilerplate, cut at a word boundary. Dropped when it merely repeats
+   the headline (Google News descriptions are just "title · source"). */
+function makeSummary(desc, title) {
+  let t = String(desc || '')
+    .replace(/The post .*? appeared first on .*?\.?$/i, '')
+    .replace(/\[(…|&hellip;|\.\.\.)\]/g, '')
+    .replace(/(Continue reading|Read more|थप पढ्नुहोस्).*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!t) return '';
+  const head = String(title || '').trim().slice(0, 40).toLowerCase();
+  if (head && t.toLowerCase().startsWith(head)) return '';
+  if (t.length > 220) t = t.slice(0, 220).replace(/\s+\S*$/, '') + '…';
+  return t.length >= 40 ? t : '';
+}
+
+/* Canonical topic for the category pills. Feeds' own <category> values are
+   free text in two scripts, so topics come from keywords over the category and
+   headline (then the summary as a tie-breaker). Order matters: a cricket story
+   about India is Sports, not World. */
+const TOPIC_RULES = [
+  ['sports',
+    /\b(sports?|cricket|football|futsal|matches|match|cup|league|tournament|olympics?|athletes?|players?|squad|wickets?|innings|T20|ODI|FIFA|ICC|ACC|ANFA|\d+-run)\b/i,
+    /(खेलकुद|क्रिकेट|फुटबल|फुटसल|लिग|प्रतियोगिता|खेलाडी|विश्वकप|विकेट|रनको|रनले|रनमा|टी-२०|टी२०|म्याच)/],
+  ['entertainment',
+    /\b(film|films|movie|movies|cinema|music|songs?|singers?|actor|actress|celebrit(y|ies)|entertainment|bollywood|kollywood|hollywood|concert|album)\b/i,
+    /(मनोरञ्जन|फिल्म|चलचित्र|गीत|संगीत|गायक|गायिका|कलाकार|अभिनेता|अभिनेत्री|नायिका|कन्सर्ट|एल्बम)/],
+  ['technology',
+    /\b(tech|technology|digital|internet|apps?|software|startups?|cyber|smartphones?|mobile phones?|AI|artificial intelligence|5G|telecom|Ncell|NTC|satellite|robots?|gadgets?|iPhone|Android|TikTok|Facebook)\b/i,
+    /(प्रविधि|डिजिटल|इन्टरनेट|सफ्टवेयर|साइबर|स्मार्टफोन|मोबाइल|टेलिकम|एनसेल|टिकटक|फेसबुक|कृत्रिम बौद्धिकता|आईफोन|एप्पल)/],
+  ['business',
+    /\b(business|economy|economic|markets?|banks?|banking|NEPSE|shares?|stocks?|gold|silver|prices?|trade|budget|investments?|investors?|remittances?|inflation|imports?|exports?|industr(y|ies)|revenue|loans?|interest rates?|fuel|petrol|rupee|forex|GDP|compan(y|ies)|hydropower|tourism|LP gas)\b/i,
+    /(अर्थतन्त्र|आर्थिक|अर्थ मन्त्रालय|बजार|बैंक|सेयर|नेप्से|सुनको|सुनचाँदी|सुन चाँदी|चाँदी|मूल्य|भाउ|व्यापार|बजेट|लगानी|रेमिट्यान्स|मुद्रास्फीति|आयात|निर्यात|उद्योग|राजस्व|ऋण|ब्याज|इन्धन|पेट्रोल|कम्पनी|जलविद्युत|पर्यटन|ग्यास)/],
+  ['politics',
+    /\b(politics|political|politicians?|ministers?|ministry|parliament|elections?|votes?|voting|part(y|ies)|congress|UML|Maoist|government|govt|cabinet|prime minister|president|opposition|lawmakers?|coalition|Oli|Deuba|Prachanda|Balen|supreme court|constitution|protests?)\b/i,
+    /(राजनीति|मन्त्री|संसद|निर्वाचन|चुनाव|पार्टी|काँग्रेस|कांग्रेस|एमाले|माओवादी|सरकार|प्रधानमन्त्री|मन्त्रिपरिषद्|राष्ट्रपति|सांसद|गठबन्धन|ओली|देउवा|प्रचण्ड|बालेन|सर्वोच्च|संविधान|आन्दोलन|प्रदेशसभा)/],
+  ['world',
+    /\b(world|international|global|China|Chinese|India|Indian|Pakistan|Bangladesh|Sri Lanka|America|American|U\.S\.|USA|United States|Trump|Biden|Iran|Israel|Gaza|Russia|Ukraine|Europe|European|UK|Britain|Japan|Korea|UN|United Nations|Philippines|Afghanistan)\b/i,
+    /(विश्व|अन्तर्राष्ट्रिय|चीन|चिनियाँ|भारत|भारतीय|पाकिस्तान|बंगलादेश|अमेरिका|ट्रम्प|इरान|इजरायल|रुस|युक्रेन|युरोप|जापान|कोरिया|फिलिपिन्स|संयुक्त राष्ट्र)/],
+];
+function topicOf(title, category, summary) {
+  const test = (text) => {
+    for (const [id, en, ne] of TOPIC_RULES) if (en.test(text) || ne.test(text)) return id;
+    return '';
+  };
+  return test(`${category || ''} ${title || ''}`) || test(summary || '') || 'nepal';
+}
+
 function parseRSS(xml, defaultSource = '', splitSource = true, limit = 14) {
   const items = [];
   const re = /<item>([\s\S]*?)<\/item>/g;
@@ -142,11 +202,11 @@ function parseRSS(xml, defaultSource = '', splitSource = true, limit = 14) {
     const get = (tag) => {
       const mm = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
       if (!mm) return '';
-      return mm[1]
-        .replace(/<!\[CDATA\[|\]\]>/g, '')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
+      /* decode first: some feeds entity-encode their HTML, so tags only
+         become strippable once &lt;p&gt; is back to <p> */
+      return decodeEntities(decodeEntities(mm[1].replace(/<!\[CDATA\[|\]\]>/g, '')))
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
     };
     const raw = get('title');
@@ -158,10 +218,15 @@ function parseRSS(xml, defaultSource = '', splitSource = true, limit = 14) {
       if (dash > 0 && raw.slice(dash + 3).length <= 40) { title = raw.slice(0, dash); source = raw.slice(dash + 3); }
     }
     const pubDate = get('pubDate');
-    if (title) items.push({
+    if (!title) continue;
+    const category = firstCategory(block);
+    const summary = makeSummary(get('description') || get('content:encoded'), title);
+    items.push({
       title, source, link: get('link'), pubDate,
       image: firstImage(block),
-      category: firstCategory(block),
+      category,
+      summary,
+      topic: topicOf(title, category, summary),
     });
   }
   return { items, fetchedAt: new Date().toISOString() };
@@ -483,7 +548,7 @@ const server = http.createServer(async (req, res) => {
         const results = await Promise.allSettled(
           NEPAL_FEEDS.map(async (f) => {
             const r = await fetchURL(f.url);
-            return parseRSS(r.body, f.name, false, 15).items
+            return parseRSS(r.body, f.name, false, 20).items
               .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en' }));
           })
         );
@@ -491,7 +556,14 @@ const server = http.createServer(async (req, res) => {
         results.forEach((res) => { if (res.status === 'fulfilled') items = items.concat(res.value); });
         // newest first
         items.sort((a, b) => (Date.parse(b.pubDate) || 0) - (Date.parse(a.pubDate) || 0));
-        return { items: items.slice(0, 40), fetchedAt: new Date().toISOString() };
+        /* the same story can arrive through two feeds */
+        const seen = new Set();
+        items = items.filter((it) => {
+          const k = it.link || it.title;
+          if (seen.has(k)) return false;
+          seen.add(k); return true;
+        });
+        return { items: items.slice(0, 64), fetchedAt: new Date().toISOString() };
       });
       const filtered = langFilter
         ? { ...data, items: data.items.filter((i) => i.lang === langFilter) }

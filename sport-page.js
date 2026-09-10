@@ -1,278 +1,152 @@
 /*
  * Shared logic for the Football Live / Cricket Live pages.
  * Called via initSportPage({ sport, newsWorld, newsLocal }).
- * Includes Nepali/English switching (synced with the dashboard via localStorage).
+ * Scoreboards come from NL.sport (app.js) so the homepage preview and these
+ * pages render matches identically. Language follows the shell (NL.setLang).
  */
 "use strict";
 
-const TZ = 'Asia/Kathmandu';
 const PROXY = location.protocol.startsWith('http');
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = NL.esc;
 
 /* ---------- i18n ---------- */
 const S_I18N = {
   en: {
-    today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow',
-    upcoming: 'UPCOMING', live: 'LIVE',
-    recent: 'Recent', upcomingDays: 'Upcoming', final: 'Final',
-    liveNow: 'Live now', finished: 'Finished', scheduled: 'Upcoming',
-    venue: 'Venue', noneToday: 'No matches in the feed for the next few days. Check back soon.',
-    errMatches: 'Unable to load the match list right now. Please try again.',
-    errNews: 'Unable to load news right now. Please try again.',
+    kicker: 'Nepal Live Sports',
+    titleSoccer: 'Football <em>Live</em>', titleCricket: 'Cricket <em>Live</em>',
+    subSoccer: 'Live scores, fixtures and results from leagues worldwide — kick-off times in Nepal Time.',
+    subCricket: 'Live scores, fixtures and results from international and domestic cricket — start times in Nepal Time.',
+    tabLive: 'Live', tabSoon: 'Upcoming', tabDone: 'Finished', refresh: 'Refresh',
+    noLive: 'No live matches right now', nextUp: 'Next up', seeUpcoming: 'See upcoming matches',
+    noSoon: 'No upcoming matches in the feed for the next 10 days.', noDone: 'No results from the last two days.',
+    noneAny: 'No matches in the feed for the next few days. Check back soon.',
+    errMatches: 'Match data isn’t available right now.', errNews: 'News isn’t available right now.',
     lastGood: 'Last good update',
-    updated: 'Updated', failed: 'Failed — retrying', round: 'Round',
-    agoS: 's ago', agoM: 'm ago', agoH: 'h ago', agoD: 'd ago',
-    noSoccer: 'No football matches scheduled for this day in the feed. Try another day, or check the news below.',
-    noCricket: 'No cricket matches scheduled for this day in the feed. Try another day, or check the news below.',
-    tagline: 'Matches, scores & news — Nepal Live Sports',
-    navDash: 'Dashboard', navMk: 'Markets', navFoot: 'Football Live', navCricket: 'Cricket Live',
-    matches: "Today's Matches", worldNewsF: 'World Football News', nepalNewsF: 'Nepal Football News',
-    worldNewsC: 'World Cricket News', nepalNewsC: 'Nepal Cricket News',
-    prev: '‹ Prev', next: 'Next ›',
-    credit: 'Made by <b>Roshan Mainali</b>',
-    footerSoccer: '<b>Sources:</b> TheSportsDB (fixtures & scores) · Google News. Matches auto-refresh every 2 min, news every 5 min. Kick-off times shown in Nepal Time (NPT).',
-    footerCricket: '<b>Sources:</b> TheSportsDB (fixtures & scores) · Google News. Matches auto-refresh every 2 min, news every 5 min. Start times shown in Nepal Time (NPT).'
+    worldNewsSoccer: 'World football', nepalNewsSoccer: 'Nepal football',
+    worldNewsCricket: 'World cricket', nepalNewsCricket: 'Nepal cricket',
+    newsKicker: 'Headlines', newsTitle: 'News', aggNote: 'Headlines are aggregated from Google News and open on the original publisher’s site. Match data: TheSportsDB.',
+    matches: 'Matches', gNews: 'News'
   },
   ne: {
-    today: 'आज', yesterday: 'हिजो', tomorrow: 'भोलि',
-    upcoming: 'आगामी', live: 'प्रत्यक्ष',
-    recent: 'हालैका', upcomingDays: 'आगामी', final: 'समाप्त',
-    liveNow: 'प्रत्यक्ष', finished: 'सकिएका', scheduled: 'आगामी',
-    venue: 'मैदान', noneToday: 'आउँदा केही दिनका लागि फिडमा खेल छैनन्। केही बेरमा फेरि हेर्नुहोस्।',
-    errMatches: 'खेलको सूची लोड गर्न सकिएन। फेरि प्रयास गर्नुहोस्।',
-    errNews: 'समाचार लोड गर्न सकिएन। फेरि प्रयास गर्नुहोस्।',
+    kicker: 'नेपाल लाइभ खेलकुद',
+    titleSoccer: 'फुटबल <em>लाइभ</em>', titleCricket: 'क्रिकेट <em>लाइभ</em>',
+    subSoccer: 'विश्वभरका लिगका प्रत्यक्ष स्कोर, तालिका र नतिजा — सुरु समय नेपाली समयमा।',
+    subCricket: 'अन्तर्राष्ट्रिय र घरेलु क्रिकेटका प्रत्यक्ष स्कोर, तालिका र नतिजा — सुरु समय नेपाली समयमा।',
+    tabLive: 'प्रत्यक्ष', tabSoon: 'आगामी', tabDone: 'सकिएका', refresh: 'ताजा गर्नुहोस्',
+    noLive: 'अहिले कुनै खेल प्रत्यक्ष छैन', nextUp: 'अर्को खेल', seeUpcoming: 'आगामी खेल हेर्नुहोस्',
+    noSoon: 'आउँदा १० दिनका लागि फिडमा खेल छैनन्।', noDone: 'पछिल्ला दुई दिनका नतिजा छैनन्।',
+    noneAny: 'आउँदा केही दिनका लागि फिडमा खेल छैनन्। केही बेरमा फेरि हेर्नुहोस्।',
+    errMatches: 'खेलको तथ्यांक अहिले उपलब्ध छैन।', errNews: 'समाचार अहिले उपलब्ध छैन।',
     lastGood: 'अन्तिम सफल अपडेट',
-    updated: 'अपडेट', failed: 'असफल — पुनः प्रयास', round: 'चरण',
-    agoS: 'सेकेन्ड अघि', agoM: 'मिनेट अघि', agoH: 'घण्टा अघि', agoD: 'दिन अघि',
-    noSoccer: 'यो दिनका लागि फिडमा फुटबल खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
-    noCricket: 'यो दिनका लागि फिडमा क्रिकेट खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
-    tagline: 'खेल, स्कोर र समाचार — नेपाल लाइभ स्पोर्ट्स',
-    navDash: 'ड्यासबोर्ड', navMk: 'बजार', navFoot: 'फुटबल लाइभ', navCricket: 'क्रिकेट लाइभ',
-    matches: 'आजका खेलहरू', worldNewsF: 'विश्व फुटबल समाचार', nepalNewsF: 'नेपाल फुटबल समाचार',
-    worldNewsC: 'विश्व क्रिकेट समाचार', nepalNewsC: 'नेपाल क्रिकेट समाचार',
-    prev: '‹ अघिल्लो', next: 'अर्को ›',
-    credit: 'निर्माता: <b>रोशन मैनाली</b>',
-    footerSoccer: '<b>स्रोतहरू:</b> द स्पोर्ट्स डीबी (खेल तालिका र स्कोर) · गुगल न्यूज। खेल हरेक २ मिनेटमा ताजा हुन्छन्, समाचार हरेक ५ मिनेटमा। सुरु समय नेपाल समय (NPT) मा।',
-    footerCricket: '<b>स्रोतहरू:</b> द स्पोर्ट्स डीबी (खेल तालिका र स्कोर) · गुगल न्यूज। खेल हरेक २ मिनेटमा ताजा हुन्छन्, समाचार हरेक ५ मिनेटमा। सुरु समय नेपाल समय (NPT) मा।'
+    worldNewsSoccer: 'विश्व फुटबल', nepalNewsSoccer: 'नेपाल फुटबल',
+    worldNewsCricket: 'विश्व क्रिकेट', nepalNewsCricket: 'नेपाल क्रिकेट',
+    newsKicker: 'शीर्षक', newsTitle: 'समाचार', aggNote: 'शीर्षकहरू गुगल न्यूजबाट संकलित हुन् र मूल प्रकाशकको साइटमा खुल्छन्। खेल तथ्यांक: TheSportsDB।',
+    matches: 'खेलहरू', gNews: 'समाचार'
   }
 };
-let S_LANG = localStorage.getItem('nlive-lang') || 'en';
-const st = (k) => (S_I18N[S_LANG] && S_I18N[S_LANG][k]) ?? S_I18N.en[k] ?? k;
-
-/* ---------- date/time helpers ---------- */
-function kathmanduDateISO(offsetDays = 0) {
-  const ymd = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date()); // YYYY-MM-DD in NPT
-  const [y, m, d] = ymd.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d + offsetDays)).toISOString().slice(0, 10);
-}
-function nptTime(date, withSec = false) {
-  return new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit',
-    ...(withSec ? { second: '2-digit' } : {}), hour12: false }).format(date);
-}
-function nptDay(dateStr) {
-  const today = kathmanduDateISO(0);
-  if (dateStr === today) return st('today');
-  if (dateStr === kathmanduDateISO(-1)) return st('yesterday');
-  if (dateStr === kathmanduDateISO(1)) return st('tomorrow');
-  return new Intl.DateTimeFormat(S_LANG === 'ne' ? 'ne-NP' : 'en-GB',
-    { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' })
-    .format(new Date(dateStr + 'T00:00:00Z'));
-}
-function timeAgo(ts) {
-  const s = Math.max(0, (Date.now() - ts) / 1000);
-  if (s < 90) return Math.round(s) + ' ' + st('agoS');
-  if (s < 5400) return Math.round(s / 60) + ' ' + st('agoM');
-  if (s < 172800) return Math.round(s / 3600) + ' ' + st('agoH');
-  return Math.round(s / 86400) + ' ' + st('agoD');
-}
+const st = (k) => (S_I18N[NL.lang()] && S_I18N[NL.lang()][k]) ?? S_I18N.en[k] ?? k;
+const S_CACHE = { matches: null, news1: null, news2: null };
 const S_LAST = {};
-function stamp(id, ok = true) {
-  if (ok) S_LAST[id.replace('stamp-', '')] = nptTime(new Date(), true);
-  const el = $(id);
-  if (!el) return;
-  el.textContent = ok ? st('updated') + ' ' + nptTime(new Date(), true) : st('failed');
-  el.classList.toggle('err', !ok);
-}
-
-/* ---------- status normalization ---------- */
-const LIVE_SET = new Set(['1H', 'HT', '2H', 'ET', 'P', 'BT', 'LIVE', 'IN PLAY', 'INPLAY',
-  '1ST INNINGS', '2ND INNINGS', '3RD INNINGS', '4TH INNINGS', 'STUMPS', 'TEA', 'LUNCH', 'DRINKS', 'SUPER OVER']);
-const DONE_SET = new Set(['FT', 'AET', 'PEN', 'FINISHED', 'COMPLETE', 'COMPLETED', 'MATCH FINISHED', 'ENDED', 'RESULT']);
-const OFF_SET = new Set(['PPD', 'CANC', 'ABD', 'POSTPONED', 'CANCELLED', 'ABANDONED', 'NO RESULT']);
-
-function classify(ev) {
-  const s = String(ev.strStatus || '').trim().toUpperCase();
-  if (LIVE_SET.has(s)) return 'live';
-  if (DONE_SET.has(s)) return 'done';
-  if (OFF_SET.has(s)) return 'off';
-  return 'ns';
-}
-function statusChip(ev) {
-  const c = classify(ev);
-  const raw = String(ev.strStatus || '').trim();
-  if (c === 'live') return `<span class="chip live">● ${st('live')}${raw && !['LIVE'].includes(raw.toUpperCase()) ? ' · ' + esc(raw) : ''}</span>`;
-  if (c === 'done') return `<span class="chip ft">${esc(raw || 'FT')}</span>`;
-  if (c === 'off') return `<span class="chip ft">${esc(raw || 'POSTPONED')}</span>`;
-  return `<span class="chip ns">${st('upcoming')}</span>`;
-}
+let activeTab = null;          /* null until the visitor picks one */
+let CFG = null;
 
 /* ---------- matches ---------- */
-let dayOffset = 0;
-const S_CACHE = { matches: null, news1: null, news2: null };
-
-function matchCard(ev, i = 0) {
-  const cls = classify(ev);
-  const hs = ev.strHomeScore ?? ev.intHomeScore;
-  const as = ev.strAwayScore ?? ev.intAwayScore;
-  const hasScore = hs != null && as != null && String(hs) !== '' && String(as) !== '';
-  const kickoff = ev.strTimestamp ? new Date(ev.strTimestamp.replace(' ', 'T') + 'Z') : null;
-  const center = hasScore
-    ? `<div class="score">${esc(hs)} – ${esc(as)}</div>`
-    : `<div class="score vs">${kickoff ? nptTime(kickoff) : 'vs'}</div>`;
-  const badge = (url) => url ? `<img src="${esc(url)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
-  return `<div class="match ${cls === 'live' ? 'live' : ''}" style="--i:${i}">
-    <div class="match-top">
-      <span class="league">${esc(ev.strLeague || '')}${ev.strCountry ? ' · ' + esc(ev.strCountry) : ''}</span>
-      ${statusChip(ev)}
-    </div>
-    <div class="teams">
-      <div class="team">${badge(ev.strHomeTeamBadge)}<div class="nm">${esc(ev.strHomeTeam || '—')}</div></div>
-      ${center}
-      <div class="team">${badge(ev.strAwayTeamBadge)}<div class="nm">${esc(ev.strAwayTeam || '—')}</div></div>
-    </div>
-    <div class="match-bot">
-      <span>${kickoff ? '🕐 ' + nptTime(kickoff) + ' NPT' : ''}</span>
-      <span>${ev.intRound ? st('round') + ' ' + esc(ev.intRound) : ''}</span>
-    </div>
-  </div>`;
+function allEvents() {
+  const all = [];
+  (S_CACHE.matches || []).forEach((d) => (d.events || []).forEach((ev) => all.push(ev)));
+  return all;
 }
-
-/* Apple Sports layout: each team gets its own row (badge · name · score) and the
-   match status sits in a column on the right. Opt-in via cfg.cardStyle:'apple'. */
-function matchCardApple(ev, i = 0) {
-  const cls = classify(ev);
-  const hs = ev.strHomeScore ?? ev.intHomeScore;
-  const as = ev.strAwayScore ?? ev.intAwayScore;
-  const hasScore = hs != null && as != null && String(hs) !== '' && String(as) !== '';
-  const hn = Number(hs), an = Number(as);
-  const decided = hasScore && cls === 'done' && Number.isFinite(hn) && Number.isFinite(an) && hn !== an;
-  const kickoff = ev.strTimestamp ? new Date(ev.strTimestamp.replace(' ', 'T') + 'Z') : null;
-  const raw = String(ev.strStatus || '').trim();
-
-  const row = (team, badge, score, dim) =>
-    `<div class="ap-row${dim ? ' dim' : ''}">
-       <span class="ap-badge">${badge ? `<img src="${esc(badge)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}</span>
-       <span class="ap-name">${esc(team || '—')}</span>
-       <span class="ap-score">${hasScore ? esc(score) : ''}</span>
-     </div>`;
-
-  let status;
-  if (cls === 'live')
-    status = `<span class="ap-st hot"><i class="ap-dot"></i>${st('live')}</span>`
-      + (raw && raw.toUpperCase() !== 'LIVE' ? `<span class="ap-sub">${esc(raw)}</span>` : '');
-  else if (cls === 'done')
-    status = `<span class="ap-st">${raw && raw.toUpperCase() !== 'FT' ? esc(raw) : st('final')}</span>`;
-  else if (cls === 'off')
-    status = `<span class="ap-st">${esc(raw || 'Postponed')}</span>`;
-  else
-    status = kickoff
-      ? `<span class="ap-time">${nptTime(kickoff)}</span><span class="ap-sub">NPT</span>`
-      : `<span class="ap-st">${st('upcoming')}</span>`;
-
-  const venue = ev.strVenue ? `<div class="ap-venue">${esc(ev.strVenue)}</div>` : '';
-  return `<div class="match ${cls}" style="--i:${i}">
-    <div class="ap-league">${esc(ev.strLeague || '')}${ev.strCountry ? ' · ' + esc(ev.strCountry) : ''}</div>
-    <div class="ap-main">
-      <div class="ap-teams">
-        ${row(ev.strHomeTeam, ev.strHomeTeamBadge, hs, decided && hn < an)}
-        ${row(ev.strAwayTeam, ev.strAwayTeamBadge, as, decided && an < hn)}
-      </div>
-      <div class="ap-status">${status}</div>
-    </div>
-    ${venue}
-  </div>`;
+function buckets() {
+  const all = allEvents();
+  const by = (fn) => all.filter((e) => fn(NL.sport.classify(e)));
+  return {
+    live: by((c) => c === 'live').sort((a, b) => NL.sport.ms(a) - NL.sport.ms(b)),
+    soon: by((c) => c === 'ns' || c === 'off').sort((a, b) => NL.sport.ms(a) - NL.sport.ms(b)),
+    done: by((c) => c === 'done' || c === 'past').sort((a, b) => NL.sport.ms(b) - NL.sport.ms(a)),
+  };
 }
-
-let cardFn = matchCard;
-
-function daySection(title, inner){
-  return `<div class="day-sec"><div class="day-h">${title}</div>${inner}</div>`;
-}
-function subDay(date, events){
-  return `<div class="subday">${nptDay(date)}</div><div class="day-grid">${events.map((ev,i)=>cardFn(ev,i)).join('')}</div>`;
-}
-/* Matches are grouped by what the viewer cares about first — what is on now,
-   then what is coming, then what finished — with day sub-headings inside the
-   last two. */
-function group(kind, label, count, inner){
-  return `<section class="grp ${kind}">
-    <div class="grp-h"><span class="lbl">${label}</span><span class="n">${count}</span></div>
-    ${inner}
-  </section>`;
-}
-function byDay(events, newestFirst){
+function byDay(events) {
   const map = new Map();
   events.forEach((ev) => {
-    const d = ev._date || (ev.dateEvent || '');
+    const d = NL.sport.nptDate(ev);
     if (!map.has(d)) map.set(d, []);
     map.get(d).push(ev);
   });
-  const dates = [...map.keys()].sort((a, b) => newestFirst ? b.localeCompare(a) : a.localeCompare(b));
-  return dates.map((d) =>
-    `<div class="subday">${nptDay(d)}</div><div class="day-grid">${map.get(d).map((ev,i)=>cardFn(ev,i)).join('')}</div>`
+  let i = 0;
+  return [...map.entries()].map(([d, evs]) =>
+    `<h3 class="day-h">${esc(NL.sport.dayLabel(d))}</h3><div class="sb-grid">${evs.map((ev) => NL.sport.card(ev, i++, { noDay: true })).join('')}</div>`
   ).join('');
 }
-function kickoffMs(ev){
-  const t = ev.strTimestamp ? Date.parse(ev.strTimestamp.replace(' ', 'T') + 'Z') : NaN;
-  return Number.isFinite(t) ? t : Date.parse((ev.dateEvent || '') + 'T00:00:00Z') || 0;
+function renderTabs(b) {
+  const tabs = [['live', st('tabLive')], ['soon', st('tabSoon')], ['done', st('tabDone')]];
+  $('sp-tabs').innerHTML = tabs.map(([k, label]) => {
+    const n = b[k].length;
+    const on = k === activeTab;
+    return `<button class="tab${k === 'live' && n ? ' is-live' : ''}" role="tab" type="button" id="tab-${k}" data-tab="${k}"
+      aria-selected="${on}" aria-controls="matches-body" tabindex="${on ? 0 : -1}">
+      ${k === 'live' && n ? '<i class="live-i" aria-hidden="true"></i>' : ''}${esc(label)}<span class="n">${n}</span></button>`;
+  }).join('');
 }
-function renderMatches(cfg){
-  const days = S_CACHE.matches;
-  if(!days) return;
-  const all = [];
-  days.forEach((d) => (d.events || []).forEach((ev) => all.push(Object.assign({ _date: d.date }, ev))));
-
-  const live = all.filter((e) => classify(e) === 'live').sort((a,b)=>kickoffMs(a)-kickoffMs(b));
-  const soon = all.filter((e) => { const c = classify(e); return c === 'ns' || c === 'off'; })
-                  .sort((a,b)=>kickoffMs(a)-kickoffMs(b));
-  const done = all.filter((e) => classify(e) === 'done').sort((a,b)=>kickoffMs(b)-kickoffMs(a));
-
-  let html = '';
-  if (live.length) html += group('is-live', st('liveNow'), live.length,
-    `<div class="day-grid">${live.map((ev,i)=>cardFn(ev,i)).join('')}</div>`);
-  if (soon.length) html += group('is-soon', st('scheduled'), soon.length, byDay(soon, false));
-  if (done.length) html += group('is-done', st('finished'), done.length, byDay(done, true));
-
-  $('matches-body').innerHTML = html || NL.emptyState(st('noneToday'));
+function renderMatches() {
+  if (!S_CACHE.matches) return;
+  const b = buckets();
+  if (!activeTab) activeTab = b.live.length ? 'live' : b.soon.length ? 'soon' : 'done';
+  renderTabs(b);
+  const body = $('matches-body');
+  body.setAttribute('aria-labelledby', 'tab-' + activeTab);
+  const list = b[activeTab];
+  if (!b.live.length && !b.soon.length && !b.done.length) {
+    body.innerHTML = NL.emptyState(st('noneAny'), { icon: 'calendar' });
+    return;
+  }
+  if (!list.length) {
+    if (activeTab === 'live') {
+      const next = b.soon.find((e) => NL.sport.classify(e) === 'ns');
+      const sub = next ? `${st('nextUp')}: ${next.strHomeTeam} – ${next.strAwayTeam} · ${NL.sport.dayLabel(NL.sport.nptDate(next))}`
+        + (NL.sport.kickoff(next) ? ' ' + NL.nptHM(NL.sport.kickoff(next)) + ' NPT' : '') : '';
+      body.innerHTML = NL.emptyState(st('noLive'), { icon: 'calendar', sub,
+        action: b.soon.length ? { label: st('seeUpcoming'), attr: 'data-tab="soon"' } : null });
+    } else body.innerHTML = NL.emptyState(activeTab === 'soon' ? st('noSoon') : st('noDone'), { icon: 'calendar' });
+    return;
+  }
+  body.innerHTML = activeTab === 'live'
+    ? `<div class="sb-grid">${list.map((ev, i) => NL.sport.card(ev, i)).join('')}</div>`
+    : byDay(list);
 }
 
-async function loadMatches(cfg){
-  try{
-    if (!S_CACHE.matches) $('matches-body').innerHTML = NL.skeleton('cards');
+async function loadMatches(cfg) {
+  const btn = $('refresh-matches');
+  if (btn) btn.classList.add('spinning');
+  try {
+    if (!S_CACHE.matches) $('matches-body').innerHTML = NL.skeleton('scores');
     let d;
-    try{
-      const r = await fetch(`/api/sport-range?s=${cfg.sport}&past=2&future=10`, { cache:'no-store' });
-      if(!r.ok) throw new Error('proxy');
+    try {
+      const r = await fetch(`/api/sport-range?s=${cfg.sport}&past=2&future=10`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('proxy');
       d = await r.json();
-    }catch(e){
-      const date = kathmanduDateISO(0);
-      const r2 = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${cfg.sport}`, { cache:'no-store' });
+    } catch (e) {
+      const date = NL.sport.nptISO(0);
+      const r2 = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${cfg.sport}`, { cache: 'no-store' });
       const j2 = await r2.json();
       d = { days: (j2.events && j2.events.length) ? [{ date, events: j2.events }] : [] };
     }
     S_CACHE.matches = d.days || [];
-    renderMatches(cfg);
-    stamp('stamp-matches', true);
-  }catch(e){
-    $('matches-body').innerHTML = NL.errorState(st('errMatches'), {
-      mod: 'matches',
-      stale: S_LAST.matches ? st('lastGood') + ' ' + S_LAST.matches : '',
-    });
-    stamp('stamp-matches', false);
+    S_LAST.matches = NL.nptHM();
+    renderMatches();
+    NL.stamp('stamp-matches', true);
+    NL.feed('matches', true);
+  } catch (e) {
+    if (!S_CACHE.matches) {
+      $('sp-tabs').innerHTML = '';
+      $('matches-body').innerHTML = NL.errorState(st('errMatches'), {
+        mod: 'matches', stale: S_LAST.matches ? st('lastGood') + ' ' + S_LAST.matches + ' NPT' : '',
+      });
+    }
+    NL.stamp('stamp-matches', false);
+    NL.feed('matches', false);
+  } finally {
+    if (btn) btn.classList.remove('spinning');
   }
 }
 
@@ -308,143 +182,126 @@ function renderNews(which) {
   if (!items) return;
   if (!items.length) {
     body.innerHTML = NL.errorState(st('errNews'), {
-      mod: 'news' + which,
-      stale: S_LAST['news' + which] ? st('lastGood') + ' ' + S_LAST['news' + which] : '',
+      mod: 'news' + which, compact: true,
+      stale: S_LAST['news' + which] ? st('lastGood') + ' ' + S_LAST['news' + which] + ' NPT' : '',
     });
     return;
   }
-  body.innerHTML = `<div class="news-list">` + items.slice(0, 12).map((i, idx) =>
-    `<a class="news-item" style="--i:${idx}" href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">
+  body.innerHTML = `<div class="news-list">` + items.slice(0, 10).map((i, idx) => {
+    const ts = Date.parse(i.pubDate) || Date.now();
+    return `<a class="news-item" style="--i:${idx}" href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">
        <div class="news-body">
          <div class="t">${esc(i.title)}</div>
-         <div class="m"><span class="src-badge">${esc(i.source || 'News')}</span>
-           <span>${timeAgo(Date.parse(i.pubDate) || Date.now())}</span></div>
-       </div>
-     </a>`).join('') + `</div>`;
+         <div class="m"><span class="src-badge">${esc(i.source || 'News')}</span><span class="sep">·</span>
+           <span data-ago="${ts}">${NL.ago(ts)}</span></div>
+       </div><span class="ro" aria-hidden="true">↗</span>
+     </a>`;
+  }).join('') + `</div>`;
 }
 
 async function loadNews(cfg, which) {
   const q = which === 1 ? cfg.newsWorld : cfg.newsLocal;
   const items = await fetchNews(q);
-  if (which === 1) S_CACHE.news1 = items; else S_CACHE.news2 = items;
+  /* keep the last good list rather than replacing it with an error */
+  if (items.length || !(which === 1 ? S_CACHE.news1 : S_CACHE.news2)) {
+    if (which === 1) S_CACHE.news1 = items; else S_CACHE.news2 = items;
+  }
+  if (items.length) S_LAST['news' + which] = NL.nptHM();
   renderNews(which);
-  stamp(`stamp-news${which}`, !!items.length);
+  NL.stamp(`stamp-news${which}`, !!items.length);
 }
 
 /* ---------- language ---------- */
 function applySportI18n(cfg) {
-  if ($('sp-tagline')) $('sp-tagline').textContent = st('tagline');
-  if ($('nav-dash')) $('nav-dash').textContent = st('navDash');
-  if ($('nav-mk')) $('nav-mk').textContent = st('navMk');
-  if ($('nav-foot')) $('nav-foot').textContent = st('navFoot');
-  if ($('nav-cricket')) $('nav-cricket').textContent = st('navCricket');
-  if ($('matches-title')) $('matches-title').textContent = st('matches');
-  if ($('news1-title')) $('news1-title').textContent = cfg.sport === 'Cricket' ? st('worldNewsC') : st('worldNewsF');
-  if ($('news2-title')) $('news2-title').textContent = cfg.sport === 'Cricket' ? st('nepalNewsC') : st('nepalNewsF');
-  if ($('prev-day')) $('prev-day').textContent = st('prev');
-  if ($('next-day')) $('next-day').textContent = st('next');
-  NL.footerSources = [
+  const k = cfg.sport === 'Cricket' ? 'Cricket' : 'Soccer';
+  $('sp-kicker').textContent = st('kicker');
+  $('sp-title').innerHTML = st('title' + k);
+  $('sp-sub').textContent = st('sub' + k);
+  $('refresh-label').textContent = st('refresh');
+  $('news1-title').textContent = st('worldNews' + k);
+  $('news2-title').textContent = st('nepalNews' + k);
+  $('news-kicker').textContent = st('newsKicker');
+  $('news-title').textContent = st('newsTitle');
+  $('agg-text').textContent = st('aggNote');
+  NL.renderFooter([
     { name: 'TheSportsDB — fixtures, scores & badges', url: 'https://www.thesportsdb.com/' },
     { name: 'Google News — sports headlines', url: 'https://news.google.com/' },
-    { name: 'Nepal Live dashboard — gold, NEPSE, weather', url: 'index.html' },
-  ];
-  NL.renderFooter(NL.footerSources);
-}
-function setSportLang(cfg, lang) {
-  S_LANG = lang;
-  localStorage.setItem('nlive-lang', lang);
-  document.documentElement.setAttribute('data-lang', lang);
-  document.documentElement.setAttribute('lang', lang === 'ne' ? 'ne' : 'en');
-  document.querySelectorAll('[data-lang]').forEach((b) =>
-    b.classList.toggle('active', b.getAttribute('data-lang') === lang));
-  document.dispatchEvent(new CustomEvent('nl:lang', { detail: { lang } }));
-  applySportI18n(cfg);
-  renderMatches(cfg);
-  renderNews(1); renderNews(2);
+  ]);
 }
 
-/* ---------- clock ---------- */
-function tickClock() {
-  const now = new Date();
-  const t = nptTime(now, true);
-  const c = $('clock');
-  if (c) c.innerHTML = `${t.slice(0, 5)}<span class="sec">${t.slice(5)}</span>`;
-  const d = $('date-en');
-  if (d) d.textContent = new Intl.DateTimeFormat(S_LANG === 'ne' ? 'ne-NP' : 'en-GB', {
-    timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
-}
-
-/* ---------- language switch animation ---------- */
-function rippleFrom(btn) {
-  const r = btn.getBoundingClientRect();
-  const c = document.createElement('div');
-  c.className = 'lang-ripple';
-  c.style.left = (r.left + r.width / 2) + 'px';
-  c.style.top = (r.top + r.height / 2) + 'px';
-  document.body.appendChild(c);
-  setTimeout(() => c.remove(), 900);
-}
-function playLangWave() {
-  const els = [document.querySelector('header'), document.querySelector('nav.pages'),
-               ...document.querySelectorAll('main .card')];
-  els.forEach((el, i) => {
-    if (!el) return;
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = 'langSwap .4s ease-out both';
-    el.style.animationDelay = (i * 0.03) + 's';
+/* ---------- search ---------- */
+function registerSearch(cfg) {
+  const page = cfg.sport === 'Cricket' ? 'cricket.html' : 'football.html';
+  NL.search.add({
+    group: () => st('matches'), limit: 6,
+    items: () => allEvents().map((ev) => {
+      const ko = NL.sport.kickoff(ev);
+      const cls = NL.sport.classify(ev);
+      return {
+        title: `${ev.strHomeTeam} vs ${ev.strAwayTeam}`,
+        sub: `${ev.strLeague || ''} · ${NL.sport.dayLabel(NL.sport.nptDate(ev))}${ko ? ' ' + NL.nptHM(ko) + ' NPT' : ''}`,
+        href: page + '#matches', icon: cfg.sport === 'Cricket' ? 'bat' : 'ball',
+        img: ev.strHomeTeamBadge ? ev.strHomeTeamBadge + '/tiny' : '',
+        val: cls === 'live' || cls === 'done' ? `${ev.intHomeScore ?? ''}–${ev.intAwayScore ?? ''}` : '',
+        kw: `${ev.strCountry || ''} ${ev.strVenue || ''}`,
+      };
+    }),
   });
-}
-function switchSportLang(cfg, lang, btn) {
-  rippleFrom(btn);
-  setSportLang(cfg, lang);
-  playLangWave();
-}
-
-/* ---------- parallax ---------- */
-function initParallax() {
-  const el = document.querySelector('.brand .ball') || document.querySelector('.brand svg');
-  if (!el || !matchMedia('(pointer:fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  let tx = 0, ty = 0, cx = 0, cy = 0;
-  addEventListener('mousemove', (e) => {
-    tx = (e.clientX / innerWidth - 0.5) * 2;
-    ty = (e.clientY / innerHeight - 0.5) * 2;
-  }, { passive: true });
-  (function loop() {
-    cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
-    el.style.transform = `translate(${(cx * 7).toFixed(2)}px, ${(cy * 5).toFixed(2)}px) rotate(${(cx * 4).toFixed(2)}deg)`;
-    requestAnimationFrame(loop);
-  })();
+  NL.search.add({
+    group: () => st('gNews'), limit: 6, recent: 4,
+    items: () => [...(S_CACHE.news1 || []), ...(S_CACHE.news2 || [])].map((i) => ({
+      title: i.title, sub: `${i.source || 'News'} · ${NL.ago(Date.parse(i.pubDate) || Date.now())}`,
+      href: i.link, external: true, icon: 'doc',
+    })),
+  });
 }
 
 /* ---------- init ---------- */
 function initSportPage(cfg) {
-  cardFn = cfg.cardStyle === 'apple' ? matchCardApple : matchCard;
-  NL.retryHandlers = {
-    matches: () => loadMatches(cfg),
-    news1: () => loadNews(cfg, 1),
-    news2: () => loadNews(cfg, 2),
-  };
-  $('refresh-matches').addEventListener('click', (e) => {
-    e.currentTarget.classList.add('spinning');
-    loadMatches(cfg).finally(() => e.currentTarget.classList.remove('spinning'));
-  });
+  CFG = cfg;
+  NL.retryHandlers.matches = () => loadMatches(cfg);
+  NL.retryHandlers.news1 = () => loadNews(cfg, 1);
+  NL.retryHandlers.news2 = () => loadNews(cfg, 2);
+  $('refresh-matches').addEventListener('click', () => loadMatches(cfg));
   $('refresh-news1').addEventListener('click', () => loadNews(cfg, 1));
   $('refresh-news2').addEventListener('click', () => loadNews(cfg, 2));
-  /* delegated so the header switch and the one in the mobile menu both work */
+
+  /* tabs: click, and arrow keys along the tablist */
   document.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-lang]');
-    if (b) switchSportLang(cfg, b.getAttribute('data-lang'), b);
+    const b = e.target.closest('[data-tab]');
+    if (!b) return;
+    activeTab = b.getAttribute('data-tab');
+    renderMatches();
+    const t = $('tab-' + activeTab);
+    if (t && b.classList.contains('tab')) t.focus();
+  });
+  $('sp-tabs').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const order = ['live', 'soon', 'done'];
+    const i = order.indexOf(activeTab);
+    activeTab = order[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3];
+    renderMatches();
+    $('tab-' + activeTab).focus();
+  });
+  document.addEventListener('nl:lang', () => {
+    applySportI18n(cfg); renderMatches(); renderNews(1); renderNews(2);
   });
 
-  setSportLang(cfg, S_LANG);
-  initParallax();
-  tickClock();
-  setInterval(tickClock, 1000);
+  applySportI18n(cfg);
+  registerSearch(cfg);
+  $('news1-body').innerHTML = NL.skeleton('rows');
+  $('news2-body').innerHTML = NL.skeleton('rows');
+  NL.ticker.autoload();
 
   loadMatches(cfg);
   loadNews(cfg, 1);
   loadNews(cfg, 2);
-  setInterval(() => loadMatches(cfg), 120e3);
-  setInterval(() => { loadNews(cfg, 1); loadNews(cfg, 2); }, 300e3);
+  /* skip background refreshes while the tab is hidden; catch up on return */
+  setInterval(() => { if (!document.hidden) loadMatches(cfg); }, 120e3);
+  setInterval(() => { if (!document.hidden) { loadNews(cfg, 1); loadNews(cfg, 2); } }, 300e3);
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (hiddenAt && Date.now() - hiddenAt > 120e3) loadMatches(cfg);
+  });
 }
