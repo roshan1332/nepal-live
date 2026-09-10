@@ -1,7 +1,7 @@
 /*
- * Nepal Live — real-time dashboard server
- * Serves the dashboard pages and proxies public APIs (with caching) so the
- * pages work from any origin with zero CORS problems.
+ * Nepal Live — server
+ * Serves the pages and proxies public APIs (with caching) so the pages work
+ * from any origin with zero CORS problems.
  *
  * Run:  node server.js      (default port 3000, override with PORT=...)
  * No npm dependencies required (Node 18+).
@@ -78,21 +78,30 @@ function openMeteo(body, requiredKey) {
   return j;
 }
 
+/* Concurrent requests for the same key share one upstream call. */
+const inflight = new Map();
 async function cached(key, ttlMs, producer) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < ttlMs) return hit.data;
-  try {
-    const data = await producer();
-    cache.set(key, { ts: Date.now(), data });
-    return data;
-  } catch (e) {
-    if (hit && Date.now() - hit.ts < ttlMs + STALE_GRACE) {
-      const age = Math.round((Date.now() - hit.ts) / 1000);
-      console.warn(`[cache] ${key}: upstream failed (${e.message}) — serving ${age}s-old data`);
-      return hit.data;
+  if (inflight.has(key)) return inflight.get(key);
+  const run = (async () => {
+    try {
+      const data = await producer();
+      cache.set(key, { ts: Date.now(), data });
+      return data;
+    } catch (e) {
+      if (hit && Date.now() - hit.ts < ttlMs + STALE_GRACE) {
+        const age = Math.round((Date.now() - hit.ts) / 1000);
+        console.warn(`[cache] ${key}: upstream failed (${e.message}) — serving ${age}s-old data`);
+        return hit.data;
+      }
+      throw e;
+    } finally {
+      inflight.delete(key);
     }
-    throw e;
-  }
+  })();
+  inflight.set(key, run);
+  return run;
 }
 
 /* ---------------- RSS parser ----------------
@@ -100,7 +109,7 @@ async function cached(key, ttlMs, producer) {
  * splitSource=false → direct site feeds; source = defaultSource   */
 /* Feeds label themselves en/ne, but several mix scripts item-by-item
    (Nagarik's "EN" feed is mostly Devanagari). Trust the text, not the label. */
-const DEVANAGARI = /[\u0900-\u097F]/;
+const DEVANAGARI = /[ऀ-ॿ]/;
 const isNepali = (s) => DEVANAGARI.test(String(s || ''));
 
 /* First usable image in the item: media:*, an image enclosure, or the first
@@ -239,6 +248,8 @@ const NEPAL_FEEDS = [
   { name: 'Khabarhub (EN)', lang: 'en', url: 'https://english.khabarhub.com/feed/' },
   { name: 'Nagarik News (EN)', lang: 'en', url: 'https://nagariknews.nagariknetwork.com/feed' },
   { name: 'Setopati', lang: 'ne', url: 'https://www.setopati.com/feed' },
+  { name: 'The Himalayan Times', lang: 'en', url: 'https://thehimalayantimes.com/rssFeed/15' },
+  { name: 'Ratopati', lang: 'ne', url: 'https://www.ratopati.com/feed' },
 ];
 
 /* ---------------- Hamro Patro gold/silver parser ---------------- */
@@ -264,19 +275,11 @@ function parseHamroGold(html) {
       price: p.price.price,
       prevPrice: p.history && p.history[1] ? p.history[1].price : null,
       history: (p.history || []).slice(0, 31).map(h => h.price).reverse(), // oldest -> newest
+      /* the full series Hamro Patro publishes (≈60 days), with dates, for charts */
+      series: (p.history || []).map(h => ({ date: h.date, price: h.price })).reverse(),
     })),
   }));
   return { date: seg.date, items };
-}
-
-/* ---------------- response helper ---------------- */
-function send(res, status, body, isHTML = false) {
-  res.writeHead(status, {
-    'Content-Type': isHTML ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
-    'Cache-Control': 'no-store',
-  });
-  res.end(typeof body === 'string' ? body : JSON.stringify(body));
 }
 
 const num = (v, dflt) => {
@@ -284,14 +287,210 @@ const num = (v, dflt) => {
   return Number.isFinite(n) ? n : dflt;
 };
 
-const PAGES = new Set(['index.html', 'football.html', 'cricket.html']);
-const ASSETS = new Map([
-  ['sport-page.js', 'application/javascript'],
-  ['app.js', 'application/javascript'],
-  ['app.css', 'text/css'],
-]);
+const SDB = require('./sportsdb')(fetchURL);
+
+/* ---------------- shared producers ----------------
+   One function per upstream, so routes and the aggregate endpoints
+   (highlights, alerts, roads …) reuse the same cache entries. */
+const P = {
+  rates: () => cached('rates', 300e3, async () => JSON.parse((await fetchURL('https://open.er-api.com/v6/latest/USD')).body)),
+
+  /* official Nepal Rastra Bank forex — recent days, normalised to per-1-unit NPR.
+     NRB quotes some currencies per 10/100 units (JPY, INR, KRW), so divide it out
+     here and let the page treat every currency the same. */
+  forex: () => cached('forex', 900e3, async () => {
+    const day = 86400e3;
+    const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+    /* +1 day on the upper bound: Nepal (UTC+5:45) can already be on the next date */
+    const url = 'https://www.nrb.org.np/api/forex/v1/rates'
+      + `?from=${iso(Date.now() - 20 * day)}&to=${iso(Date.now() + day)}&per_page=100&page=1`;
+    const j = await nrbJSON(url);
+    const days = normForex(j);
+    if (!days.length) throw new Error('no NRB rates in range');
+    return { source: 'Nepal Rastra Bank', days };
+  }),
+
+  gold: () => cached('gold', 60e3, async () => {
+    const [xau, xag] = await Promise.all([
+      fetchURL('https://api.gold-api.com/price/XAU'),
+      fetchURL('https://api.gold-api.com/price/XAG'),
+    ]);
+    const gold = JSON.parse(xau.body);
+    const silver = JSON.parse(xag.body);
+    return {
+      gold: { usdPerOz: gold.price, updatedAt: gold.updatedAt },
+      silver: { usdPerOz: silver.price, updatedAt: silver.updatedAt },
+      fetchedAt: new Date().toISOString(),
+    };
+  }),
+
+  goldHP: () => cached('gold-hp', 600e3, async () => {
+    const r = await fetchURL('https://www.hamropatro.com/gold');
+    const parsed = parseHamroGold(r.body);
+    return { source: 'hamropatro', ...parsed, fetchedAt: new Date().toISOString() };
+  }),
+
+  nepse: () => cached('nepse', 60e3, async () => {
+    const [indices, summary] = await Promise.all([
+      nepseGet('nots/nepse-index'),
+      nepseGet('nots/market-summary'),
+    ]);
+    return { indices, summary, fetchedAt: new Date().toISOString() };
+  }),
+  nepseTop: () => cached('nepse-top', 60e3, async () => {
+    const [gainers, losers, turnover] = await Promise.all([
+      nepseGet('nots/top-ten/top-gainer?all=false'),
+      nepseGet('nots/top-ten/top-loser?all=false'),
+      nepseGet('nots/top-ten/turnover?all=false'),
+    ]);
+    return { gainers, losers, turnover, fetchedAt: new Date().toISOString() };
+  }),
+  nepseHistory: (size) => cached(`nepse-hist-${size}`, 600e3, async () => {
+    const h = await nepseGet(`nots/index/history/58?size=${size}`);
+    return { content: h.content || h, fetchedAt: new Date().toISOString() };
+  }),
+  /* the exchange's own open/closed flag, rather than guessing from the clock */
+  nepseStatus: () => cached('nepse-status', 60e3, async () => {
+    const s = await nepseGet('nots/nepse-data/market-open');
+    return { isOpen: s.isOpen, asOf: s.asOf, fetchedAt: new Date().toISOString() };
+  }),
+
+  quakes: ({ days = 7, minmag = 3.5, limit = 12 } = {}) => cached(`quakes:${days}:${minmag}:${limit}`, 120e3, async () => {
+    const now = new Date();
+    const since = new Date(now.getTime() - days * 86400e3);
+    const fmt = (d) => encodeURIComponent(d.toISOString().slice(0, 19));
+    const url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
+      + `?format=geojson&starttime=${fmt(since)}&endtime=${fmt(now)}`
+      + `&latitude=27.9&longitude=84.1&maxradiuskm=800&minmagnitude=${minmag}`
+      + `&orderby=time&limit=${limit}`;
+    const r = await fetchURL(url);
+    return JSON.parse(r.body);
+  }),
+
+  /* Latest news aggregated directly from Nepali news websites */
+  newsNepal: () => cached('news-nepal', 300e3, async () => {
+    const results = await Promise.allSettled(
+      NEPAL_FEEDS.map(async (f) => {
+        const r = await fetchURL(f.url);
+        return parseRSS(r.body, f.name, false, 20).items
+          .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en' }));
+      })
+    );
+    let items = [];
+    results.forEach((res) => { if (res.status === 'fulfilled') items = items.concat(res.value); });
+    if (!items.length) throw new Error('no news feed answered');
+    // newest first
+    items.sort((a, b) => (Date.parse(b.pubDate) || 0) - (Date.parse(a.pubDate) || 0));
+    /* the same story can arrive through two feeds */
+    const seen = new Set();
+    items = items.filter((it) => {
+      const k = it.link || it.title;
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+    return { items: items.slice(0, 140), fetchedAt: new Date().toISOString() };
+  }),
+
+  /* TheSportsDB, through the rate-limited queue in sportsdb.js: routes answer
+     from cache immediately and report days still pending */
+  sportRange: (sport, past = 2, future = 10) => Promise.resolve(SDB.range(sport, past, future)),
+  sportsOther: () => Promise.resolve(SDB.other()),
+  nepalSports: () => Promise.resolve(SDB.nepal()),
+};
+SDB.prime();
+
+/* NRB's API intermittently drops or errors a request; one retry after a short
+   pause clears nearly all of those without hammering it. */
+async function nrbJSON(url) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const r = await fetchURL(url);
+      if (r.status >= 400) throw new Error('NRB HTTP ' + r.status);
+      return JSON.parse(r.body);
+    } catch (e) {
+      if (attempt >= 1) throw e;
+      await new Promise((ok) => setTimeout(ok, 800));
+    }
+  }
+}
+
+function normForex(j) {
+  return (((j.data || {}).payload) || []).map((d) => {
+    const rates = {};
+    (d.rates || []).forEach((x) => {
+      const cur = x.currency || {};
+      const unit = Number(cur.unit) || 1;
+      const buy = Number(x.buy), sell = Number(x.sell);
+      if (!cur.iso3 || !isFinite(buy) || !isFinite(sell)) return;
+      rates[cur.iso3] = { buy: buy / unit, sell: sell / unit, mid: (buy + sell) / 2 / unit, unit };
+    });
+    return { date: d.date, rates };
+  }).filter((d) => Object.keys(d.rates).length)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+const S = require('./sources')({ fetchURL, cached, P });
+const site = require('./site-pages');
+
+/* ---------------- response helpers ---------------- */
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Frame-Options': 'SAMEORIGIN',
+};
+/* gzip text responses when the browser accepts it (pages and scripts are the
+   bulk of every first visit) */
+function reply(req, res, status, body, headers) {
+  let buf = Buffer.isBuffer(body) ? body : Buffer.from(typeof body === 'string' ? body : JSON.stringify(body), 'utf8');
+  const h = { ...headers, Vary: 'Accept-Encoding' };
+  if (buf.length > 1024 && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
+    buf = zlib.gzipSync(buf, { level: 6 });
+    h['Content-Encoding'] = 'gzip';
+  }
+  h['Content-Length'] = buf.length;
+  res.writeHead(status, h);
+  res.end(req.method === 'HEAD' ? undefined : buf);
+}
+function send(req, res, status, body, isHTML = false) {
+  reply(req, res, status, body, {
+    'Content-Type': isHTML ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-store',
+    ...(isHTML ? SECURITY_HEADERS : {}),
+  });
+}
+
+/* static files: pages, plus an allow-list of client assets (never server code) */
+const PAGE_FILES = {
+  '/': 'index.html', '/index.html': 'index.html',
+  '/football': 'football.html', '/football.html': 'football.html',
+  '/cricket': 'cricket.html', '/cricket.html': 'cricket.html',
+};
+const ASSET_RE = /^\/(app|kit|sport-page|nepal-map|page-[a-z-]+)\.(js|css)$/;
+const TYPES = { js: 'application/javascript; charset=utf-8', css: 'text/css; charset=utf-8' };
+const staticCache = new Map();
+function readStatic(file) {
+  const full = path.join(__dirname, file);
+  const st = fs.statSync(full);
+  const hit = staticCache.get(file);
+  if (hit && hit.mtime === st.mtimeMs) return hit.buf;
+  const buf = fs.readFileSync(full);
+  staticCache.set(file, { mtime: st.mtimeMs, buf });
+  return buf;
+}
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://nepal-live.onrender.com';
+
+/* ---------------- accounts & search ---------------- */
+/* Accounts live in one JSON file under DATA_DIR. Point DATA_DIR at a persistent
+   disk in production — without one (e.g. Render's free tier) accounts reset on
+   every deploy, and the account page says so. */
+const ACC = require('./accounts')({
+  dataDir: process.env.DATA_DIR || path.join(__dirname, 'data'), durable: !!process.env.DATA_DIR,
+  alerts: () => S.alerts(), cities: S.CITIES,
+});
+const SEARCH = require('./search')({ P, S, SDB, site });
+const isAccountRoute = (p) => p.startsWith('/api/auth/') || p === '/api/me' || p.startsWith('/api/me/');
 
 const ROBOTS = [
   'User-agent: *',
@@ -306,8 +505,9 @@ function sitemap() {
   const today = new Date().toISOString().slice(0, 10);
   const urls = [
     { loc: '/', priority: '1.0', freq: 'hourly' },
-    { loc: '/football.html', priority: '0.8', freq: 'hourly' },
-    { loc: '/cricket.html', priority: '0.8', freq: 'hourly' },
+    ...site.paths().map((p) => ({ loc: p, priority: site.PAGES[p].priority || '0.7', freq: site.PAGES[p].changefreq || 'daily' })),
+    { loc: '/football', priority: '0.8', freq: 'hourly' },
+    { loc: '/cricket', priority: '0.8', freq: 'hourly' },
   ];
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
     + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -316,25 +516,203 @@ function sitemap() {
     + '\n</urlset>\n';
 }
 
-/* ---------------- routes ---------------- */
+/* ---------------- API routes ---------------- */
+const API = {
+  /* currency exchange rates (base USD) */
+  '/api/rates': () => P.rates(),
+  '/api/forex': () => P.forex(),
+  /* gold & silver spot (gold-api.com, free, real-time) */
+  '/api/gold': () => P.gold(),
+  /* Nepal's official daily gold/silver rates — Hamro Patro (FEGOD rates) */
+  '/api/gold-hamropatro': () => P.goldHP(),
+  /* NEPSE index + market summary (official site API via token flow) */
+  '/api/nepse': () => P.nepse(),
+  '/api/nepse/top': () => P.nepseTop(),
+  '/api/nepse/status': () => P.nepseStatus(),
+  /* NEPSE index history (for the chart) */
+  '/api/nepse/history': (u) => P.nepseHistory(Math.min(250, Math.max(10, parseInt(u.searchParams.get('size') || '90', 10) || 90))),
+
+  /* weather — Open-Meteo */
+  '/api/weather': (u) => {
+    const lat = num(u.searchParams.get('lat'), 27.7172);
+    const lon = num(u.searchParams.get('lon'), 85.324);
+    /* 15-min TTL, not 5: Open-Meteo's free tier is a daily quota and on Render's
+       shared outbound IP it is easy to exhaust. Forecast data barely moves in
+       that window, so this cuts upstream calls ~3x for no visible staleness. */
+    return cached(`weather:${lat}:${lon}`, 900e3, async () => {
+      const url = 'https://api.open-meteo.com/v1/forecast'
+        + `?latitude=${lat}&longitude=${lon}`
+        + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m'
+        + '&hourly=temperature_2m,weather_code,precipitation_probability'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset'
+        + '&timezone=Asia%2FKathmandu&forecast_days=7';
+      return openMeteo((await fetchURL(url)).body, 'current');
+    });
+  },
+
+  /* air quality — Open-Meteo */
+  '/api/air': (u) => {
+    const lat = num(u.searchParams.get('lat'), 27.7172);
+    const lon = num(u.searchParams.get('lon'), 85.324);
+    return cached(`air:${lat}:${lon}`, 900e3, async () => {
+      /* current = concentrations plus the per-pollutant US AQI sub-indices (so the
+         dominant pollutant is upstream's, not ours); hourly us_aqi across
+         yesterday..tomorrow feeds the ±12 h trend line. */
+      const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+        + `?latitude=${lat}&longitude=${lon}`
+        + '&current=pm2_5,pm10,us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_ozone,'
+        + 'us_aqi_nitrogen_dioxide,us_aqi_sulphur_dioxide,us_aqi_carbon_monoxide,'
+        + 'ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide'
+        + '&hourly=us_aqi&past_days=1&forecast_days=2'
+        + '&timezone=Asia%2FKathmandu';
+      return openMeteo((await fetchURL(url)).body, 'current');
+    });
+  },
+
+  /* earthquakes near Nepal — USGS (defaults match the original card) */
+  '/api/quakes': (u) => P.quakes({
+    days: Math.min(30, Math.max(1, parseInt(u.searchParams.get('days') || '7', 10) || 7)),
+    minmag: Math.min(6, Math.max(2.5, num(u.searchParams.get('minmag'), 3.5))),
+    limit: Math.min(100, Math.max(5, parseInt(u.searchParams.get('limit') || '12', 10) || 12)),
+  }),
+
+  /* live sport matches — TheSportsDB (today's events for a sport) */
+  '/api/sport': (u) => {
+    const sport = u.searchParams.get('s') === 'Cricket' ? 'Cricket' : 'Soccer';
+    const d = (u.searchParams.get('d') || '').match(/^\d{4}-\d{2}-\d{2}$/)
+      ? u.searchParams.get('d')
+      : new Date().toISOString().slice(0, 10);
+    return Promise.resolve(SDB.single(sport, d));
+  },
+
+  /* Sport fixtures across a date range (past results + today + upcoming) */
+  '/api/sport-range': (u) => {
+    const sport = u.searchParams.get('s') === 'Cricket' ? 'Cricket' : 'Soccer';
+    const past = Math.min(7, parseInt(u.searchParams.get('past') || '2', 10) || 2);
+    const future = Math.min(14, parseInt(u.searchParams.get('future') || '10', 10) || 10);
+    return P.sportRange(sport, past, future);
+  },
+  '/api/sports-other': () => P.sportsOther(),
+  '/api/nepal-sports': () => P.nepalSports(),
+
+  /* Latest news aggregated directly from Nepali news websites */
+  '/api/news-nepal': async (u) => {
+    const langFilter = u.searchParams.get('lang'); // optional: en | ne
+    const data = await P.newsNepal();
+    return langFilter ? { ...data, items: data.items.filter((i) => i.lang === langFilter) } : data;
+  },
+
+  /* news — Google News RSS, topic via ?q= */
+  '/api/news': (u) => {
+    const q = (u.searchParams.get('q') || 'Nepal').slice(0, 120);
+    return cached('news:' + q.toLowerCase(), 300e3, async () => {
+      const url = 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=en-US&gl=US&ceid=US:en';
+      return parseRSS((await fetchURL(url)).body);
+    });
+  },
+
+  /* newer sections (sources.js) */
+  '/api/alerts': () => S.alerts(),
+  '/api/roads': () => S.roads(),
+  '/api/fuel': () => S.fuel(),
+  '/api/aqi-stations': () => S.aqiStations(),
+  '/api/trending': () => S.trending(),
+  '/api/highlights': () => S.highlights(),
+  '/api/weather-cities': () => S.weatherCities(),
+  '/api/air-cities': () => S.airCities(),
+  '/api/cities': async () => ({ cities: S.CITIES }),
+
+  /* jobs (merojob), calendar (Hamro Patro), events */
+  '/api/jobs': (u) => S.jobs({
+    q: (u.searchParams.get('q') || '').slice(0, 80), cat: u.searchParams.get('cat') || '', loc: (u.searchParams.get('loc') || '').slice(0, 30),
+    type: (u.searchParams.get('type') || '').slice(0, 30), sort: u.searchParams.get('sort') || '', page: u.searchParams.get('page') || '1',
+  }),
+  '/api/job': (u) => S.job(u.searchParams.get('id') || ''),
+  '/api/calendar': (u) => {
+    const mode = u.searchParams.get('mode') === 'ad' ? 'ad' : 'bs';
+    const y = parseInt(u.searchParams.get('y'), 10), m = parseInt(u.searchParams.get('m'), 10);
+    const ok = (v, lo, hi) => Number.isFinite(v) && v >= lo && v <= hi;
+    if (mode === 'ad') {
+      if (!ok(y, 2013, 2043) || !ok(m, 1, 12)) { const t = new Date(); return S.calendarAd(t.getUTCFullYear(), t.getUTCMonth() + 1); }
+      return S.calendarAd(y, m);
+    }
+    if (!ok(y, 2070, 2100) || !ok(m, 1, 12)) return S.calendarToday().then((t) => S.calendarBs(t.day.bs[0], t.day.bs[1]));
+    return S.calendarBs(y, m);
+  },
+  '/api/calendar/today': () => S.calendarToday(),
+  '/api/calendar/upcoming': (u) => S.calendarUpcoming(Math.min(90, Math.max(7, parseInt(u.searchParams.get('days') || '60', 10) || 60))),
+  '/api/events': () => S.events(),
+
+  /* global search across news, places, markets, sports, jobs, events, government */
+  '/api/search': (u) => SEARCH.search((u.searchParams.get('q') || '').slice(0, 100), (u.searchParams.get('type') || '').slice(0, 20)),
+
+  /* NRB daily rates over up to ~13 months (the API pages 100 days at a time),
+     reduced to mid rates for the charts */
+  '/api/forex-history': (u) => {
+    const days = Math.min(400, Math.max(7, parseInt(u.searchParams.get('days') || '365', 10) || 365));
+    return cached(`forex-hist-${days}`, 6 * 3600e3, async () => {
+      const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+      const url = (page) => 'https://www.nrb.org.np/api/forex/v1/rates'
+        + `?from=${iso(Date.now() - days * 864e5)}&to=${iso(Date.now() + 864e5)}&per_page=100&page=${page}`;
+      const first = await nrbJSON(url(1));
+      const pages = Math.min(6, ((first.pagination || {}).pages) || 1);
+      /* sequential: NRB is happier with one request at a time */
+      const rest = [];
+      for (let pg = 2; pg <= pages; pg++) rest.push(await nrbJSON(url(pg)));
+      const payload = [first, ...rest].flatMap((j) => ((j.data || {}).payload) || []);
+      const series = normForex({ data: { payload } }).map((d) => {
+        const mids = {};
+        Object.keys(d.rates).forEach((c) => { mids[c] = +d.rates[c].mid.toFixed(4); });
+        return { date: d.date, mid: mids };
+      });
+      if (!series.length) throw new Error('no NRB history');
+      return { source: 'Nepal Rastra Bank', days: series, fetchedAt: new Date().toISOString() };
+    });
+  },
+
+  /* city search, limited to Nepal */
+  '/api/geocode': (u) => {
+    const q = (u.searchParams.get('q') || '').trim().slice(0, 60);
+    if (q.length < 2) return Promise.resolve({ results: [] });
+    return cached('geo:' + q.toLowerCase(), 86400e3, async () => {
+      const j = JSON.parse((await fetchURL('https://geocoding-api.open-meteo.com/v1/search?count=8&language=en&country_code=NP&name='
+        + encodeURIComponent(q))).body);
+      /* the upstream filter is loose; keep only places that are actually in Nepal */
+      return { results: (j.results || []).filter((r) => r.country_code === 'NP')
+        .map((r) => ({ name: r.name, lat: r.latitude, lon: r.longitude, admin1: r.admin1 || '', admin2: r.admin2 || '', population: r.population || 0 })) };
+    });
+  },
+};
+
+/* ---------------- server ---------------- */
 const server = http.createServer(async (req, res) => {
   try {
     const u = new URL(req.url, 'http://localhost');
-    const p = u.pathname;
+    let p = u.pathname;
 
-    /* static pages */
-    if (p === '/' || PAGES.has(p.slice(1))) {
-      const file = p === '/' ? 'index.html' : p.slice(1);
-      return send(res, 200, fs.readFileSync(path.join(__dirname, file), 'utf8'), true);
+    /* /news/ → /news (one canonical URL per page) */
+    if (p.length > 1 && p.endsWith('/')) {
+      res.writeHead(301, { Location: p.replace(/\/+$/, '') + u.search });
+      return res.end();
     }
-    if (ASSETS.has(p.slice(1))) {
+
+    /* /markets is the same page as /money; one canonical URL */
+    if (p === '/markets') { res.writeHead(301, { Location: '/money' + u.search }); return res.end(); }
+    /* account aliases */
+    if (p === '/profile' || p === '/saved') { res.writeHead(301, { Location: '/account' }); return res.end(); }
+    if (p === '/login' || p === '/signup') { res.writeHead(301, { Location: '/account?tab=' + p.slice(1) }); return res.end(); }
+
+    if (PAGE_FILES[p]) {
+      return reply(req, res, 200, readStatic(PAGE_FILES[p]), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+    }
+    if (site.PAGES[p]) {
+      return reply(req, res, 200, site.render(p, SITE_ORIGIN), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+    }
+    const asset = ASSET_RE.exec(p);
+    if (asset && fs.existsSync(path.join(__dirname, p.slice(1)))) {
       /* short max-age: long enough to help repeat views, short enough that a
          Render deploy is picked up without a hard refresh */
-      res.writeHead(200, {
-        'Content-Type': `${ASSETS.get(p.slice(1))}; charset=utf-8`,
-        'Cache-Control': 'public, max-age=600',
-      });
-      return res.end(fs.readFileSync(path.join(__dirname, p.slice(1)), 'utf8'));
+      return reply(req, res, 200, readStatic(p.slice(1)), { 'Content-Type': TYPES[asset[2]], 'Cache-Control': 'public, max-age=600' });
     }
     if (p === '/robots.txt') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
@@ -344,248 +722,20 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
       return res.end(sitemap());
     }
-    if (p === '/healthz') return send(res, 200, { ok: true });
+    if (p === '/healthz') return send(req, res, 200, { ok: true });
 
-    /* currency exchange rates (base USD) */
-    if (p === '/api/rates') {
-      const data = await cached('rates', 300e3, async () => {
-        const r = await fetchURL('https://open.er-api.com/v6/latest/USD');
-        return JSON.parse(r.body);
-      });
-      return send(res, 200, data);
+    if (isAccountRoute(p)) return ACC.handle(req, res, p, u);
+
+    const route = API[p];
+    if (route) {
+      if (req.method !== 'GET' && req.method !== 'HEAD') return send(req, res, 405, { error: 'method not allowed' });
+      return send(req, res, 200, await route(u));
     }
 
-    /* official Nepal Rastra Bank forex — recent days, normalised to per-1-unit NPR.
-       NRB quotes some currencies per 10/100 units (JPY, INR, KRW), so divide it out
-       here and let the page treat every currency the same. */
-    if (p === '/api/forex') {
-      const data = await cached('forex', 900e3, async () => {
-        const day = 86400e3;
-        const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
-        /* +1 day on the upper bound: Nepal (UTC+5:45) can already be on the next date */
-        const url = 'https://www.nrb.org.np/api/forex/v1/rates'
-          + `?from=${iso(Date.now() - 20 * day)}&to=${iso(Date.now() + day)}&per_page=100&page=1`;
-        const j = JSON.parse((await fetchURL(url)).body);
-        const days = (((j.data || {}).payload) || []).map((d) => {
-          const rates = {};
-          (d.rates || []).forEach((x) => {
-            const cur = x.currency || {};
-            const unit = Number(cur.unit) || 1;
-            const buy = Number(x.buy), sell = Number(x.sell);
-            if (!cur.iso3 || !isFinite(buy) || !isFinite(sell)) return;
-            rates[cur.iso3] = { buy: buy / unit, sell: sell / unit, mid: (buy + sell) / 2 / unit, unit };
-          });
-          return { date: d.date, rates };
-        }).filter((d) => Object.keys(d.rates).length)
-          .sort((a, b) => a.date.localeCompare(b.date));
-        if (!days.length) throw new Error('no NRB rates in range');
-        return { source: 'Nepal Rastra Bank', days };
-      });
-      return send(res, 200, data);
-    }
-
-    /* gold & silver spot (gold-api.com, free, real-time) */
-    if (p === '/api/gold') {
-      const data = await cached('gold', 60e3, async () => {
-        const [xau, xag] = await Promise.all([
-          fetchURL('https://api.gold-api.com/price/XAU'),
-          fetchURL('https://api.gold-api.com/price/XAG'),
-        ]);
-        const gold = JSON.parse(xau.body);
-        const silver = JSON.parse(xag.body);
-        return {
-          gold: { usdPerOz: gold.price, updatedAt: gold.updatedAt },
-          silver: { usdPerOz: silver.price, updatedAt: silver.updatedAt },
-          fetchedAt: new Date().toISOString(),
-        };
-      });
-      return send(res, 200, data);
-    }
-
-    /* Nepal's official daily gold/silver rates — Hamro Patro (FEGOD rates) */
-    if (p === '/api/gold-hamropatro') {
-      const data = await cached('gold-hp', 600e3, async () => {
-        const r = await fetchURL('https://www.hamropatro.com/gold');
-        const parsed = parseHamroGold(r.body);
-        return { source: 'hamropatro', ...parsed, fetchedAt: new Date().toISOString() };
-      });
-      return send(res, 200, data);
-    }
-
-    /* NEPSE index + market summary (official site API via token flow) */
-    if (p === '/api/nepse') {
-      const data = await cached('nepse', 60e3, async () => {
-        const [indices, summary] = await Promise.all([
-          nepseGet('nots/nepse-index'),
-          nepseGet('nots/market-summary'),
-        ]);
-        return { indices, summary, fetchedAt: new Date().toISOString() };
-      });
-      return send(res, 200, data);
-    }
-
-    /* NEPSE top gainers / losers / turnover */
-    if (p === '/api/nepse/top') {
-      const data = await cached('nepse-top', 60e3, async () => {
-        const [gainers, losers, turnover] = await Promise.all([
-          nepseGet('nots/top-ten/top-gainer?all=false'),
-          nepseGet('nots/top-ten/top-loser?all=false'),
-          nepseGet('nots/top-ten/turnover?all=false'),
-        ]);
-        return { gainers, losers, turnover, fetchedAt: new Date().toISOString() };
-      });
-      return send(res, 200, data);
-    }
-
-    /* NEPSE index history (for the chart) */
-    if (p === '/api/nepse/history') {
-      const size = Math.min(250, Math.max(10, parseInt(u.searchParams.get('size') || '90', 10) || 90));
-      const data = await cached(`nepse-hist-${size}`, 600e3, async () => {
-        const h = await nepseGet(`nots/index/history/58?size=${size}`);
-        return { content: h.content || h, fetchedAt: new Date().toISOString() };
-      });
-      return send(res, 200, data);
-    }
-
-    /* weather — Open-Meteo */
-    if (p === '/api/weather') {
-      const lat = num(u.searchParams.get('lat'), 27.7172);
-      const lon = num(u.searchParams.get('lon'), 85.324);
-      /* 15-min TTL, not 5: Open-Meteo's free tier is a daily quota and on Render's
-         shared outbound IP it is easy to exhaust. Forecast data barely moves in
-         that window, so this cuts upstream calls ~3x for no visible staleness. */
-      const data = await cached(`weather:${lat}:${lon}`, 900e3, async () => {
-        const url = 'https://api.open-meteo.com/v1/forecast'
-          + `?latitude=${lat}&longitude=${lon}`
-          + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m'
-          + '&hourly=temperature_2m,weather_code,precipitation_probability'
-          + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
-          + '&timezone=Asia%2FKathmandu&forecast_days=7';
-        const r = await fetchURL(url);
-        return openMeteo(r.body, 'current');
-      });
-      return send(res, 200, data);
-    }
-
-    /* air quality — Open-Meteo */
-    if (p === '/api/air') {
-      const lat = num(u.searchParams.get('lat'), 27.7172);
-      const lon = num(u.searchParams.get('lon'), 85.324);
-      const data = await cached(`air:${lat}:${lon}`, 900e3, async () => {
-        /* current = concentrations plus the per-pollutant US AQI sub-indices (so the
-           dominant pollutant is upstream's, not ours); hourly us_aqi across
-           yesterday..tomorrow feeds the ±12 h trend line. */
-        const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-          + `?latitude=${lat}&longitude=${lon}`
-          + '&current=pm2_5,pm10,us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_ozone,'
-          + 'us_aqi_nitrogen_dioxide,us_aqi_sulphur_dioxide,us_aqi_carbon_monoxide,'
-          + 'ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide'
-          + '&hourly=us_aqi&past_days=1&forecast_days=2'
-          + '&timezone=Asia%2FKathmandu';
-        const r = await fetchURL(url);
-        return openMeteo(r.body, 'current');
-      });
-      return send(res, 200, data);
-    }
-
-    /* earthquakes near Nepal — USGS */
-    if (p === '/api/quakes') {
-      const data = await cached('quakes', 120e3, async () => {
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 86400e3);
-        const fmt = (d) => encodeURIComponent(d.toISOString().slice(0, 19));
-        const url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
-          + `?format=geojson&starttime=${fmt(weekAgo)}&endtime=${fmt(now)}`
-          + '&latitude=27.9&longitude=84.1&maxradiuskm=800&minmagnitude=3.5'
-          + '&orderby=time&limit=12';
-        const r = await fetchURL(url);
-        return JSON.parse(r.body);
-      });
-      return send(res, 200, data);
-    }
-
-    /* live sport matches — TheSportsDB (today's events for a sport) */
-    if (p === '/api/sport') {
-      const sport = u.searchParams.get('s') === 'Cricket' ? 'Cricket' : 'Soccer';
-      const d = (u.searchParams.get('d') || '').match(/^\d{4}-\d{2}-\d{2}$/)
-        ? u.searchParams.get('d')
-        : new Date().toISOString().slice(0, 10);
-      const data = await cached(`sport:${sport}:${d}`, 120e3, async () => {
-        const url = `https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${d}&s=${sport}`;
-        const r = await fetchURL(url);
-        return JSON.parse(r.body);
-      });
-      return send(res, 200, data);
-    }
-
-    /* Sport fixtures across a date range (past results + today + upcoming) */
-    if (p === '/api/sport-range') {
-      const sport = u.searchParams.get('s') === 'Cricket' ? 'Cricket' : 'Soccer';
-      const past = Math.min(7, parseInt(u.searchParams.get('past') || '2', 10) || 2);
-      const future = Math.min(14, parseInt(u.searchParams.get('future') || '10', 10) || 10);
-      const data = await cached(`sport-range:${sport}:${past}:${future}`, 180e3, async () => {
-        const todayMs = Date.now();
-        const offsets = [];
-        for (let off = -past; off <= future; off++) offsets.push(off);
-        const results = await Promise.allSettled(offsets.map(async (off) => {
-          const date = new Date(todayMs + off * 864e5).toISOString().slice(0, 10);
-          const r = await fetchURL(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${sport}`);
-          const j = JSON.parse(r.body);
-          return { date, events: j.events || [] };
-        }));
-        const days = [];
-        results.forEach((res) => { if (res.status === 'fulfilled' && res.value.events.length) days.push(res.value); });
-        days.sort((a, b) => a.date.localeCompare(b.date));
-        return { days, fetchedAt: new Date().toISOString() };
-      });
-      return send(res, 200, data);
-    }
-
-    /* Latest news aggregated directly from Nepali news websites */
-    if (p === '/api/news-nepal') {
-      const langFilter = u.searchParams.get('lang'); // optional: en | ne
-      const data = await cached('news-nepal', 300e3, async () => {
-        const results = await Promise.allSettled(
-          NEPAL_FEEDS.map(async (f) => {
-            const r = await fetchURL(f.url);
-            return parseRSS(r.body, f.name, false, 20).items
-              .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en' }));
-          })
-        );
-        let items = [];
-        results.forEach((res) => { if (res.status === 'fulfilled') items = items.concat(res.value); });
-        // newest first
-        items.sort((a, b) => (Date.parse(b.pubDate) || 0) - (Date.parse(a.pubDate) || 0));
-        /* the same story can arrive through two feeds */
-        const seen = new Set();
-        items = items.filter((it) => {
-          const k = it.link || it.title;
-          if (seen.has(k)) return false;
-          seen.add(k); return true;
-        });
-        return { items: items.slice(0, 64), fetchedAt: new Date().toISOString() };
-      });
-      const filtered = langFilter
-        ? { ...data, items: data.items.filter((i) => i.lang === langFilter) }
-        : data;
-      return send(res, 200, filtered);
-    }
-
-    /* news — Google News RSS, topic via ?q= */
-    if (p === '/api/news') {
-      const q = (u.searchParams.get('q') || 'Nepal').slice(0, 120);
-      const key = 'news:' + q.toLowerCase();
-      const data = await cached(key, 300e3, async () => {
-        const url = 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=en-US&gl=US&ceid=US:en';
-        const r = await fetchURL(url);
-        return parseRSS(r.body);
-      });
-      return send(res, 200, data);
-    }
-
-    return send(res, 404, { error: 'not found' });
+    if (p.startsWith('/api/')) return send(req, res, 404, { error: 'not found' });
+    return reply(req, res, 404, site.render(p, SITE_ORIGIN, { notFound: true }), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
   } catch (e) {
-    return send(res, 502, { error: String((e && e.message) || e) });
+    return send(req, res, (e && e.status) || 502, { error: String((e && e.message) || e) });
   }
 });
 

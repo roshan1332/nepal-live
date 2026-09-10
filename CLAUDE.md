@@ -1,70 +1,99 @@
 # Nepal Live — project brief (for continuing in VS Code / Claude)
 
-"Everything happening in Nepal, live." An editorial news + live-data product: Nepali headlines
-(featured / top stories / latest / category rails), gold/silver (official Hamro Patro/FEGOD rates per
-tola & kg), NEPSE index + top movers, NRB exchange rates, weather, air quality, earthquakes, and
-live Football/Cricket scores. Built by Roshan Mainali ("Made by Roshan Mainali" in every footer).
+"Everything happening in Nepal, live." A Nepal-focused live information platform: news from Nepali
+newsrooms, Nepal Today highlights, official alerts, roads, money (NEPSE, gold/silver, NRB forex, fuel),
+weather + air quality, earthquakes, sports (football, cricket, other sports, Nepal national teams), jobs,
+events, the Nepali calendar, a government-services directory, global search, accounts (saved items,
+personal alerts, preferences) and an interactive Explore map. Built by Roshan Mainali ("Made by Roshan
+Mainali" in every footer — keep it).
 
 ## Run locally
 ```
 node server.js        # http://localhost:3000  (PORT env to change)
 ```
 **Zero npm dependencies** — plain Node `http` server. Do NOT add a package manager / deps.
-`SITE_ORIGIN` env overrides the origin used in robots.txt / sitemap.xml (default `https://nepal-live.onrender.com`).
-Web fonts (Inter + Noto Sans Devanagari) load from Google Fonts with `display=swap`; the stack falls back to system fonts.
+Env: `SITE_ORIGIN` (robots/sitemap/canonical origin, default `https://nepal-live.onrender.com`),
+`DATA_DIR` (account store; **must be a persistent disk in production** — without it accounts live in `./data`
+and reset on every Render deploy; the account page says so), `TRUST_PROXY=1` (trust `X-Forwarded-*`; on
+automatically when `RENDER` is set). `data/` is git-ignored — never commit it.
 
 ## Files
-- `server.js` — static file server + `/api/*` proxy with in-memory caching (+30 min stale grace).
-  Also serves `/robots.txt`, a generated `/sitemap.xml` and `/healthz`. News items carry a server-side `topic`
-  (sports/entertainment/technology/business/politics/world/nepal) that drives the category pills.
-- `app.css` — **design system**: light/dark tokens, type scale, sticky header, ticker, hero, editorial
-  (feature card, row stories, latest grid, rails, pills), snapshot tiles, cards, scoreboards + tabs,
-  skeletons, empty/error states, search dialog, sheets, footer, responsive + touch + reduced-motion rules.
-- `app.js` — **shared shell**, everything on `window.NL` (shares global scope with page scripts, so it must
-  not declare bare top-level names). Renders into page placeholders `#nl-head`, `#nl-ticker`, `#nl-foot`:
-  header + nav (+ "More" menu, scrollspy on home), mobile drawer, live ticker (`NL.ticker.set(key, item)`,
-  item builders in `NL.tk.*`, `NL.ticker.autoload()` for pages without market modules), global search
-  (`NL.search.add({group, items, limit, recent})`, Ctrl/⌘K or `/`), footer + About/Contact/Privacy/Terms sheets,
-  theme (`localStorage['nlive-theme']`), language (`NL.setLang`, `localStorage['nlive-lang']`, fires `nl:lang`),
-  feed status (`NL.feed(mod, ok)`), ageing stamps (`NL.stamp(el, ok, extra)`, `[data-ago]`), `NL.skeleton(kind)`,
-  `NL.errorState` / `NL.emptyState` / `NL.retryHandlers` (any `[data-retry=mod]`), and `NL.sport` — the single
-  scoreboard renderer + status classifier used by both the homepage preview and the sports pages.
-- `nepse-client.js` + `css.wasm` — NEPSE token flow (prove → prune token via wasm). Loaded leniently (`./nepse/nepse-client` or flattened `./nepse-client`).
-- `index.html` — homepage (inline `<style>` for its modules + inline `<script>`). Order: hero → featured + top
-  stories (`#news`) → snapshot tiles (`#markets`) → latest news + pills → category rails → sports preview
-  (lazy-loaded) → in-depth cards (`#card-nepse|gold|rates|weather|air|quakes|analysis`).
-- `football.html`, `cricket.html` — sports pages; share `sport-page.js` (LIVE / UPCOMING / FINISHED tabs,
-  day-grouped scoreboards, world + Nepal news columns).
+Server
+- `server.js` — pages, static assets (allow-list `ASSET_RE`), `/api/*` with `cached()` (in-flight dedupe, 30-min
+  stale grace), shared producers `P` (rates, forex, gold, nepse*, quakes, newsNepal, sport*), gzip, security
+  headers, trailing-slash 301, `/markets`→`/money`, `/profile|/saved`→`/account`, `/login|/signup`→`/account?tab=`,
+  robots, sitemap (from `site.paths()`), 404 page. Non-GET on data APIs → 405. Errors carry `e.status` (else 502).
+- `sources.js` — alerts (BIPAD, river stations, pollution, USGS, GDACS → 4 levels), roads (DoR closures + corridors +
+  road news), fuel (NOC), AQI stations, trending, highlights, multi-city weather/air, `CITIES` (32 verified),
+  jobs (merojob), calendar (Hamro Patro BS/AD months, today, upcoming), events (calendar + Nepal fixtures).
+- `sportsdb.js` — TheSportsDB behind one rate-limited queue (≈30 req/min); routes answer from cache + `pending`.
+- `accounts.js` — accounts/sessions/saved items/prefs/personal alerts (see Accounts below).
+- `search.js` — `/api/search?q=&type=` across places, markets, news, sports, jobs, events, government, pages
+  (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently.
+- `site-pages.js` — server-rendered section pages (`PAGES` map: title, description, OG/Twitter, canonical, JSON-LD,
+  hero, body, `script`, optional `pre` scripts, `noindex`). Also the government directory data `GOV`.
+- `nepse-client.js` + `css.wasm` — NEPSE token flow.
 
-## API endpoints (all cached, `Cache-Control: no-store` to browser)
-`/api/rates` `/api/forex` `/api/gold` `/api/gold-hamropatro` `/api/nepse` `/api/nepse/history` `/api/nepse/top`
-`/api/weather` `/api/air` `/api/quakes` `/api/sport` `/api/sport-range` `/api/news-nepal` `/api/news`
+Client
+- `app.css` — design system + every page's styles (tokens only — never hard-code a colour; tokens like
+  `--logo-bg`, `--on-brand` exist for the few fixed needs).
+- `app.js` — shared shell on `window.NL`: header (nav, More menu, search, language, theme, account button + unread
+  badge), drawer, mobile bottom nav (Home, News, Markets, Sports, Explore, More), ticker, global search dialog
+  (+ "See all results" → `/search`), footer + sheets, theme/lang, feed status, stamps, skeleton/error/empty states,
+  `NL.sport`, `NL.me` (session state, `NL.me.fetch` for account API), `NL.saveBtn(item)` + save/unsave delegation,
+  `NL.toast`.
+- `kit.js` — shared page helpers: `NL.i18n` (`[data-t]`, `[data-th]`, `[data-tp]`; `add()` re-applies), `NL.api`,
+  formatting, charts, range tabs, freshness labels (`NL.fresh`), story renderers, alert cards, weather codes, AQI.
+- `nepal-map.js` — generated province geometry (7 provinces, ~1.5k points), `proj`, `provinceAt(lon,lat)`,
+  `provinceOfDistrict`, 77-district map. Regenerate only from the OCHA ADM1 GeoJSON with a DP simplifier.
+- `index.html` — homepage (order: hero → live bar → Nepal Today → alerts → latest news → money → weather & AQI →
+  roads → sports → jobs → events → trending → government → explore → footer). Reads `localStorage['nlive-city']`.
+- `football.html`, `cricket.html` + `sport-page.js`.
+- `page-*.js` — one per section page: news, alerts, roads, trending, money, weather, earthquakes, sports,
+  nepal-sports, jobs, events, calendar, government, search, account, explore.
+
+## Pages
+`/ /news /alerts /roads /trending /money /weather /earthquakes /sports /nepal-sports /football /cricket /jobs
+/events /calendar /government /search /explore /account (noindex)`.
+
+## API endpoints
+Data: `/api/rates /forex /forex-history /gold /gold-hamropatro /nepse /nepse/top /nepse/status /nepse/history
+/weather /air /weather-cities /air-cities /geocode /cities /quakes /alerts /roads /fuel /aqi-stations /trending
+/highlights /news-nepal /news /sport /sport-range /sports-other /nepal-sports /jobs /job /calendar /calendar/today
+/calendar/upcoming /events /search`.
+Accounts: `POST /api/auth/signup|login|logout`, `GET|PATCH|DELETE /api/me`, `POST /api/me/password`,
+`GET|POST|DELETE /api/me/saved`, `GET /api/me/notifications`, `POST /api/me/notifications/seen`.
+
+## Accounts (security model)
+scrypt password hashes (per-user salt, constant-time compare, dummy hash for unknown emails); 256-bit session
+tokens stored only as SHA-256; cookie `nl_sid` HttpOnly + SameSite=Lax (+Secure behind HTTPS), 30-day sliding;
+new token on every login; password change signs out other sessions. Mutations must be same-origin
+(Origin / Sec-Fetch-Site) **and** JSON — no CORS on these routes. Rate limits per IP and per account; 16 KB body cap;
+all fields validated; saved-item links must be same-site paths or http(s). Personal alerts = the official alert
+feed filtered by the user's level/types/districts — nothing generated, no emails or push.
+
+## Data-honesty rules (non-negotiable)
+Never invent values, news, alerts, traffic, weather, scores, notices or events. Show "Data currently unavailable."
+or "Updated X ago" instead. 🔴 LIVE only for genuinely live data; otherwise "Updated/Issued/Reported … ago".
+Every module names its source and links to the original. Nepal Live is not the employer (jobs link to merojob),
+not the government (directory links say "Official source →"). Holidays for some groups only keep the Nepali
+qualifier. Events list only verifiable sources (Hamro Patro calendar, Nepal fixtures); other categories are
+explicitly not listed. Disabled chart ranges explain why (no intraday NEPSE; 60 days of metals history).
 
 ## Frontend conventions
-- Vanilla JS. Page helpers: `$`, `esc` (= `NL.esc`), `fmtNum`, `animateCounts` (glides from the previous value via
-  `COUNT_CACHE`, keyed by `data-key`), `spark(values)` for area sparklines, `tile(id, {...})` for snapshot tiles.
-- i18n: `I18N` (index) / `S_I18N` (sports) en/ne dicts, `t()` / `st()`; re-render on the `nl:lang` event.
-  Devanagari text gets `lang="ne"` so CSS can relax tracking/leading.
-- Theme: **never hard-code a colour in page CSS** — use a token (`--text`, `--up`, `--down`, `--live`, `--brand` …).
-  Inside SVG use `style="stroke:var(--x)"` (CSS vars don't work in presentation attributes everywhere).
-- Every module: skeleton while loading → content with source line + "Updated x min ago" → on failure keep the
-  last good data, otherwise an error state with a retry button. One failing feed must never blank the page.
-- Background refreshes skip while the tab is hidden and catch up on `visibilitychange`.
-- Touch targets: `@media (pointer: coarse)` enforces 44px. Motion respects `prefers-reduced-motion`.
-
-## Data notes
-- Gold per tola = Hamro Patro official; per kg derived (tola/11.6638*1000). 30-day history from same source.
-- NEPSE needs the wasm token flow; only works via the Node server (not static hosting). Turnover: 1 Arba = 1e9 Rs.
-- Forex = Nepal Rastra Bank (official, per-1-unit normalised); open.er-api is fallback + USD/NPR for spot conversion.
-- Weather/air from Open-Meteo; quakes USGS; fixtures TheSportsDB (fixtures with a long-past kick-off and no
-  status are shown as "No result yet", never as upcoming); news = Nepali RSS feeds (Google News fallback).
-- Nepal Live is an aggregator: headlines always link to the original publisher ("Read original ↗").
+- Vanilla JS; page scripts are IIFEs using `NL.i18n.add`, `NL.onLang`, `NL.ticker.autoload()`, `NL.renderFooter([...])`,
+  `NL.retryHandlers[mod]`, `NL.feed(mod, ok)`, `NL.stamp(id, ok)`.
+- Skeleton → content with source + freshness → keep last good data on failure, else error state with retry.
+- Devanagari text gets `lang="ne"`. Official names stay accurate in both languages.
+- `[hidden]` loses to class `display` rules — add `.x[hidden]{display:none}` when needed.
+- Touch targets 44px on coarse pointers; `prefers-reduced-motion` respected; no horizontal page scroll.
 
 ## Deploy
-Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`).
+Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). For accounts to
+survive deploys, attach a Render persistent disk and set `DATA_DIR` to its mount path.
 
 ## Known pitfalls
-- Client calls `/api/*` relative first, falls back to direct public URLs. NEPSE has no direct fallback.
-- Don't reintroduce the removed `markets.html`.
+- NEPSE needs the wasm token flow via this server. TheSportsDB 429s without the queue in `sportsdb.js`.
+- Don't reintroduce `markets.html`.
 - `html { scroll-behavior: smooth }` — scripted scrolls in tests need `behavior: 'instant'`.
-- The dev server here stops between sessions; restart with `node server.js`.
+- The dev server stops between sessions; restart with `node server.js`.

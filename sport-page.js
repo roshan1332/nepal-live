@@ -26,7 +26,7 @@ const S_I18N = {
     worldNewsSoccer: 'World football', nepalNewsSoccer: 'Nepal football',
     worldNewsCricket: 'World cricket', nepalNewsCricket: 'Nepal cricket',
     newsKicker: 'Headlines', newsTitle: 'News', aggNote: 'Headlines are aggregated from Google News and open on the original publisher’s site. Match data: TheSportsDB.',
-    matches: 'Matches', gNews: 'News'
+    matches: 'Matches', gNews: 'News', morePending: 'loading more days…'
   },
   ne: {
     kicker: 'नेपाल लाइभ खेलकुद',
@@ -42,7 +42,7 @@ const S_I18N = {
     worldNewsSoccer: 'विश्व फुटबल', nepalNewsSoccer: 'नेपाल फुटबल',
     worldNewsCricket: 'विश्व क्रिकेट', nepalNewsCricket: 'नेपाल क्रिकेट',
     newsKicker: 'शीर्षक', newsTitle: 'समाचार', aggNote: 'शीर्षकहरू गुगल न्यूजबाट संकलित हुन् र मूल प्रकाशकको साइटमा खुल्छन्। खेल तथ्यांक: TheSportsDB।',
-    matches: 'खेलहरू', gNews: 'समाचार'
+    matches: 'खेलहरू', gNews: 'समाचार', morePending: 'थप दिन लोड हुँदै…'
   }
 };
 const st = (k) => (S_I18N[NL.lang()] && S_I18N[NL.lang()][k]) ?? S_I18N.en[k] ?? k;
@@ -50,6 +50,7 @@ const S_CACHE = { matches: null, news1: null, news2: null };
 const S_LAST = {};
 let activeTab = null;          /* null until the visitor picks one */
 let CFG = null;
+let S_PENDING = 0, S_RETRY = 0; /* days the server is still fetching (rate-limited feed) */
 
 /* ---------- matches ---------- */
 function allEvents() {
@@ -97,9 +98,10 @@ function renderMatches() {
   body.setAttribute('aria-labelledby', 'tab-' + activeTab);
   const list = b[activeTab];
   if (!b.live.length && !b.soon.length && !b.done.length) {
-    body.innerHTML = NL.emptyState(st('noneAny'), { icon: 'calendar' });
+    body.innerHTML = S_PENDING ? NL.skeleton('scores') : NL.emptyState(st('noneAny'), { icon: 'calendar' });
     return;
   }
+  if (!list.length && S_PENDING) { body.innerHTML = NL.skeleton('scores'); return; }
   if (!list.length) {
     if (activeTab === 'live') {
       const next = b.soon.find((e) => NL.sport.classify(e) === 'ns');
@@ -133,8 +135,12 @@ async function loadMatches(cfg) {
     }
     S_CACHE.matches = d.days || [];
     S_LAST.matches = NL.nptHM();
+    S_PENDING = d.pending || 0;
+    /* the server fills in the remaining days over the next minute; check back */
+    if (S_PENDING && ++S_RETRY <= 8) setTimeout(() => loadMatches(cfg), 12000);
+    if (!S_PENDING) S_RETRY = 0;
     renderMatches();
-    NL.stamp('stamp-matches', true);
+    NL.stamp('stamp-matches', true, S_PENDING ? st('morePending') : '');
     NL.feed('matches', true);
   } catch (e) {
     if (!S_CACHE.matches) {

@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Nepal Live — Everything happening in Nepal, live">
 <meta name="twitter:description" content="Nepali headlines, markets, weather and scores on one page. Times in NPT.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 38'%3E%3Cpath d='M2.5 2.5L27 17.2H11.4L27 35.5H2.5z' fill='%23c8102e' stroke='%231d3c8f' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-17.582 -4.664 71.571 87.246'%3E%3Cpath d='M-15,37.574h60L-15,0v80h60L-15,20z' fill='%23DC143C' stroke='%23003893' stroke-width='5.165' stroke-linejoin='round' paint-order='stroke'/%3E%3Cg fill='%23fff'%3E%3Cpath d='M-11.95,23.483A12.84,12.84 0 0 0 11.95,23.483A11.95,11.95 0 0 1-11.95,23.483'/%3E%3Ccircle cy='29.045' r='5.561'/%3E%3Cpath d='M2.128,23.907L1.507,21.47L0,23.484ZM3.932,25.113L4.291,22.623L2.128,23.907ZM5.138,26.917L6.422,24.754L3.932,25.113ZM5.561,29.045L7.575,27.538L5.138,26.917ZM5.138,31.173L7.575,30.552L5.561,29.045ZM3.932,32.977L6.422,33.336L5.138,31.173ZM-2.128,23.907L-1.507,21.47L0,23.484ZM-3.932,25.113L-4.291,22.623L-2.128,23.907ZM-5.138,26.917L-6.422,24.754L-3.932,25.113ZM-5.561,29.045L-7.575,27.538L-5.138,26.917ZM-5.138,31.173L-7.575,30.552L-5.561,29.045ZM-3.932,32.977L-6.422,33.336L-5.138,31.173Z'/%3E%3Ccircle cy='58.787' r='8.143'/%3E%3Cpath d='M2.108,66.653L0,71.627L-2.108,66.653ZM-2.108,66.653L-6.42,69.907L-5.758,64.545ZM-5.758,64.545L-11.12,65.207L-7.866,60.895ZM-7.866,60.895L-12.84,58.787L-7.866,56.679ZM-7.866,56.679L-11.12,52.367L-5.758,53.029ZM-5.758,53.029L-6.42,47.667L-2.108,50.921ZM-2.108,50.921L0,45.947L2.108,50.921ZM2.108,50.921L6.42,47.667L5.758,53.029ZM5.758,53.029L11.12,52.367L7.866,56.679ZM7.866,56.679L12.84,58.787L7.866,60.895ZM7.866,60.895L11.12,65.207L5.758,64.545ZM5.758,64.545L6.42,69.907L2.108,66.653Z'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Noto+Sans+Devanagari:wght@400..800&display=swap">
@@ -252,7 +252,7 @@
     <div>
       <div class="hero-kicker">
         <span class="brandline">NEPAL <b>LIVE</b></span><span class="sep" aria-hidden="true">·</span>
-        <span id="hero-date"></span><span class="npt-tag">NPT</span>
+        <span id="hero-date"></span><span class="npt-tag">NPT</span><span class="hero-bs" id="hero-bs" hidden></span>
       </div>
       <h1 id="hero-title">Everything happening in Nepal, <em>live.</em></h1>
       <p class="hero-sub" id="hero-sub">Headlines from Nepali newsrooms, markets, weather and scores — in one place, updated through the day.</p>
@@ -263,8 +263,12 @@
     </div>
   </section>
 
-  <!-- Featured + top stories -->
-  <section class="ed" id="news" aria-labelledby="top-label">
+  <!-- Nepal Today: featured story, top stories, today's numbers, highlights -->
+  <section class="sec first" id="news" aria-labelledby="today-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="today-kicker">Nepal Today</span><h2 class="sec-title" id="today-title">Nepal Today</h2></div>
+      <div class="sec-actions"><span class="sec-meta" id="today-sub">Everything important happening in Nepal today.</span></div>
+    </div>
     <div class="ed-grid">
       <div id="featured"></div>
       <aside class="top-col">
@@ -272,23 +276,37 @@
         <div class="top-list" id="top-list"></div>
       </aside>
     </div>
+    <div class="today-grid">
+      <div>
+        <div class="top-head"><h3 class="label" id="numbers-label">Today’s numbers</h3><span class="sec-meta" id="mk-meta">Official sources · refreshing automatically</span></div>
+        <div class="tiles">
+          <a class="tile" id="tile-nepse" href="#card-nepse"></a>
+          <a class="tile" id="tile-gold" href="#card-gold"></a>
+          <a class="tile" id="tile-silver" href="#card-gold"></a>
+          <a class="tile" id="tile-usd" href="#card-rates"></a>
+          <a class="tile" id="tile-fuel" href="#markets"></a>
+          <a class="tile" id="tile-weather" href="#card-weather"></a>
+          <a class="tile" id="tile-aqi" href="#card-air"></a>
+          <a class="tile" id="tile-quake" href="#card-quakes"></a>
+        </div>
+      </div>
+      <aside>
+        <div class="top-head"><h3 class="label" id="hl-label">Today’s highlights</h3><span class="stamp" id="stamp-highlights"></span></div>
+        <ul class="hl-list" id="hl-list"></ul>
+      </aside>
+    </div>
   </section>
 
-  <!-- Live data tiles -->
-  <section class="sec" id="markets" aria-labelledby="mk-title">
+  <!-- Important alerts -->
+  <section class="sec" id="home-alerts" aria-labelledby="ha-title">
     <div class="sec-head">
-      <div><span class="kicker" id="mk-kicker">Live data</span><h2 class="sec-title" id="mk-title">Markets &amp; Nepal today</h2></div>
-      <div class="sec-actions"><span class="sec-meta" id="mk-meta">Official sources · refreshing automatically</span></div>
+      <div><span class="kicker" id="ha-kicker">Nepal Alerts</span><h2 class="sec-title" id="ha-title">Important alerts</h2></div>
+      <div class="sec-actions"><span class="stamp" id="stamp-home-alerts"></span><a class="link-more" href="/alerts"><span id="ha-all">All alerts</span> <span>→</span></a></div>
     </div>
-    <div class="tiles">
-      <a class="tile" id="tile-nepse" href="#card-nepse"></a>
-      <a class="tile" id="tile-gold" href="#card-gold"></a>
-      <a class="tile" id="tile-silver" href="#card-gold"></a>
-      <a class="tile" id="tile-usd" href="#card-rates"></a>
-      <a class="tile" id="tile-weather" href="#card-weather"></a>
-      <a class="tile" id="tile-aqi" href="#card-air"></a>
-    </div>
+    <div class="home-alert-bar" id="ha-bar"></div>
+    <div class="mod-grid" id="ha-list"></div>
   </section>
+
 
   <!-- Latest news -->
   <section class="sec" id="latest" aria-labelledby="latest-title">
@@ -315,26 +333,11 @@
     <div class="rails" id="rails"></div>
   </section>
 
-  <!-- Sports preview -->
-  <section class="sec" id="sports" aria-labelledby="sp-title">
-    <div class="sec-head"><div><span class="kicker" id="sp-kicker">Sports</span><h2 class="sec-title" id="sp-title">Scores &amp; fixtures</h2></div></div>
-    <div class="sp-grid">
-      <div class="sp-col">
-        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z"/><path d="M12 7.6V3.2M16.2 10.6l4-1.3M14.6 15.5l2.5 3.4M9.4 15.5l-2.5 3.4M7.8 10.6l-4-1.3"/></svg><span id="sp-foot-h">Football</span></h3>
-          <a class="link-more" href="football.html"><span id="sp-foot-all">All matches</span> <span>→</span></a></div>
-        <div class="sp-list" id="sp-football"></div>
-      </div>
-      <div class="sp-col">
-        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 3.5l6 6-9 9a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8z"/><path d="M4 20l2.5-2.5"/><circle cx="18.5" cy="18.5" r="2"/></svg><span id="sp-cric-h">Cricket</span></h3>
-          <a class="link-more" href="cricket.html"><span id="sp-cric-all">All matches</span> <span>→</span></a></div>
-        <div class="sp-list" id="sp-cricket"></div>
-      </div>
-    </div>
-  </section>
 
-  <!-- In-depth modules -->
-  <section class="sec" id="depth" aria-labelledby="depth-title">
-    <div class="sec-head"><div><span class="kicker" id="depth-kicker">In depth</span><h2 class="sec-title" id="depth-title">Markets, weather &amp; alerts</h2></div></div>
+  <!-- Money & markets -->
+  <section class="sec" id="markets" aria-labelledby="depth-title">
+    <div class="sec-head"><div><span class="kicker" id="depth-kicker">Money</span><h2 class="sec-title" id="depth-title">Money &amp; markets</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/money"><span id="mk-all">Charts, all currencies &amp; fuel</span> <span>→</span></a></div></div>
     <div class="depth-grid">
       <section class="card span-2" id="card-nepse">
         <div class="card-head">
@@ -369,6 +372,22 @@
         <div class="card-foot"><span id="src-rates"></span><a href="https://www.nrb.org.np/forex/" target="_blank" rel="noopener noreferrer">nrb.org.np ↗</a></div>
       </section>
 
+      <section class="card span-2" id="card-analysis">
+        <div class="card-head">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span>
+          <h3 id="analysis-title">Market Pulse — why is it moving?</h3>
+          <span class="stamp" id="analysis-stamp"></span>
+        </div>
+        <div class="card-body"><div class="analysis-grid" id="analysis-grid"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- Weather, air & earthquakes -->
+  <section class="sec" id="weather" aria-labelledby="wx-sec-title">
+    <div class="sec-head"><div><span class="kicker" id="wx-kicker">Weather &amp; environment</span><h2 class="sec-title" id="wx-sec-title">Weather, air &amp; earthquakes</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/weather"><span id="wx-all">All cities &amp; forecasts</span> <span>→</span></a><a class="link-more" href="/earthquakes"><span id="eq-all">Earthquake monitor</span> <span>→</span></a></div></div>
+    <div class="depth-grid">
       <section class="card" id="card-weather">
         <div class="card-head">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
@@ -409,21 +428,91 @@
         <div class="card-foot"><span id="src-quakes"></span><a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener noreferrer">usgs.gov ↗</a></div>
       </section>
 
-      <section class="card span-2" id="card-analysis">
-        <div class="card-head">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span>
-          <h3 id="analysis-title">Market Pulse — why is it moving?</h3>
-          <span class="stamp" id="analysis-stamp"></span>
-        </div>
-        <div class="card-body"><div class="analysis-grid" id="analysis-grid"></div></div>
-      </section>
     </div>
+  </section>
+
+  <!-- Roads -->
+  <section class="sec" id="home-roads" aria-labelledby="hr-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="hr-kicker">Nepal Roads</span><h2 class="sec-title" id="hr-title">Roads &amp; highways</h2></div>
+      <div class="sec-actions"><span class="stamp" id="stamp-home-roads"></span><a class="link-more" href="/roads"><span id="hr-all">All road updates</span> <span>→</span></a></div>
+    </div>
+    <div class="mod-grid" id="hr-list"></div>
+    <div class="mod-foot" id="hr-foot"></div>
+  </section>
+
+  <!-- Sports preview -->
+  <section class="sec" id="sports" aria-labelledby="sp-title">
+    <div class="sec-head"><div><span class="kicker" id="sp-kicker">Sports</span><h2 class="sec-title" id="sp-title">Scores &amp; fixtures</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/sports"><span id="sp-all">All sports</span> <span>→</span></a><a class="link-more" href="/nepal-sports"><span id="np-all">Nepal sports</span> <span>→</span></a></div></div>
+    <div class="sp-grid">
+      <div class="sp-col">
+        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z"/><path d="M12 7.6V3.2M16.2 10.6l4-1.3M14.6 15.5l2.5 3.4M9.4 15.5l-2.5 3.4M7.8 10.6l-4-1.3"/></svg><span id="sp-foot-h">Football</span></h3>
+          <a class="link-more" href="/football"><span id="sp-foot-all">All matches</span> <span>→</span></a></div>
+        <div class="sp-list" id="sp-football"></div>
+      </div>
+      <div class="sp-col">
+        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 3.5l6 6-9 9a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8z"/><path d="M4 20l2.5-2.5"/><circle cx="18.5" cy="18.5" r="2"/></svg><span id="sp-cric-h">Cricket</span></h3>
+          <a class="link-more" href="/cricket"><span id="sp-cric-all">All matches</span> <span>→</span></a></div>
+        <div class="sp-list" id="sp-cricket"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Jobs -->
+  <section class="sec" id="home-jobs" aria-labelledby="hj-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="hj-kicker">Nepal Jobs</span><h2 class="sec-title" id="hj-title">Latest jobs</h2></div>
+      <div class="sec-actions"><span class="stamp" id="stamp-home-jobs"></span><a class="link-more" href="/jobs"><span id="hj-all">All jobs</span> <span>→</span></a></div>
+    </div>
+    <div class="hj-cats" id="hj-cats"></div>
+    <div class="hj-list" id="hj-list"></div>
+    <p class="basis" id="hj-basis"></p>
+  </section>
+
+  <!-- Events -->
+  <section class="sec" id="home-events" aria-labelledby="he-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="he-kicker">Nepal Events</span><h2 class="sec-title" id="he-title">Coming up</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/events"><span id="he-all">All events</span> <span>→</span></a><a class="link-more" href="/calendar"><span id="he-cal">Calendar</span> <span>→</span></a></div>
+    </div>
+    <div class="he-list" id="he-list"></div>
+  </section>
+
+  <!-- Trending -->
+  <section class="sec" id="home-trending" aria-labelledby="ht-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="ht-kicker">Trending now</span><h2 class="sec-title" id="ht-title">Trending in Nepal</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/trending"><span id="ht-all">All trending topics</span> <span>→</span></a></div>
+    </div>
+    <div class="trend-chips" id="ht-list"></div>
+    <p class="basis" id="ht-basis"></p>
+  </section>
+
+  <!-- Government services -->
+  <section class="sec" id="home-gov" aria-labelledby="hg-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="hg-kicker">Nepal Government</span><h2 class="sec-title" id="hg-title">Government services</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/government"><span id="hg-all">All services</span> <span>→</span></a></div>
+    </div>
+    <div class="hg-grid" id="hg-list"></div>
+    <p class="basis" id="hg-note"></p>
+  </section>
+
+  <!-- Explore Nepal -->
+  <section class="sec" id="home-explore" aria-labelledby="hx-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="hx-kicker">Explore Nepal</span><h2 class="sec-title" id="hx-title">Explore by province</h2></div>
+      <div class="sec-actions"><a class="link-more" href="/explore"><span id="hx-all">Open the map</span> <span>→</span></a></div>
+    </div>
+    <div class="hx-grid" id="hx-list"></div>
   </section>
 </main>
 
 <footer class="nl-foot" id="nl-foot"></footer>
 
 <script src="app.js"></script>
+<script src="kit.js"></script>
 <script>
 "use strict";
 /* ============ i18n ============ */
@@ -437,7 +526,7 @@ const I18N = {
     mkKicker: 'Live data', mkTitle: 'Markets & Nepal today', mkMeta: 'Official sources · refreshing automatically',
     latestKicker: 'Latest', latestTitle: 'Latest news', catKicker: 'Sections', catTitle: 'By category',
     spKicker: 'Sports', spTitle: 'Scores & fixtures', football: 'Football', cricket: 'Cricket', allMatches: 'All matches',
-    depthKicker: 'In depth', depthTitle: 'Markets, weather & alerts',
+    depthKicker: 'Money', depthTitle: 'Money & markets',
     readOrig: 'Read original', showMore: 'Show more stories', seeAll: 'See all',
     aggNote: 'Nepal Live aggregates headlines from OnlineKhabar, Khabarhub, Nagarik News and Setopati. Every story opens on the original publisher’s site — we don’t rehost or edit their journalism.',
     topics: { all: 'All', nepal: 'Nepal', politics: 'Politics', business: 'Business', technology: 'Technology', sports: 'Sports', entertainment: 'Entertainment', world: 'World' },
@@ -507,7 +596,43 @@ const I18N = {
     errQuakes: "Earthquake data isn’t available right now.",
     errNews: "News isn’t available right now.",
     tileErr: "Unavailable", retry: "Try again",
-    gNews: 'News', gMarkets: 'Markets', gSports: 'Matches',
+    gNews: 'News', gMarkets: 'Markets', gSports: 'Matches', gAlerts: 'Active alerts',
+    todayK: 'Today', todayTitle: 'Nepal Today', todaySub: 'Everything important happening in Nepal today.',
+    numbersLabel: 'Today’s numbers', hlLabel: 'Today’s highlights', errHighlights: 'Highlights aren’t available right now.',
+    haKicker: 'Nepal Alerts', haTitle: 'Important alerts', haAll: 'All alerts',
+    noAlerts: 'No major alerts right now.', noAlertsSub: 'We check BIPAD Portal, DHM river gauges, USGS and GDACS every few minutes.',
+    errAlerts: 'Alerts aren’t available right now.',
+    hrKicker: 'Nepal Roads', hrTitle: 'Roads & highways', hrAll: 'All road updates',
+    noClosures: 'No active road closures reported by the Department of Roads.',
+    corReported: 'Closures reported in districts on {n} major routes: {names}.', corNone: 'No closures reported in the districts of major routes.',
+    noTraffic: 'No live traffic-speed data exists for Nepal’s highways — we don’t guess it.', errRoads: 'Road information isn’t available right now.',
+    htKicker: 'Trending now', htTitle: 'Trending in Nepal', htAll: 'All trending topics',
+    trendNone: 'Nothing is covered widely enough to call it trending right now.',
+    trendBasis: 'Counted from {h} headlines by {s} publishers in the last {hrs} hours.', errTrending: 'Trending topics aren’t available right now.',
+    hjKicker: 'Nepal Jobs', hjTitle: 'Latest jobs', hjAll: 'All jobs', errJobs: 'Job listings aren’t available right now.', jobsNone: 'No open vacancies are listed right now.',
+    hjBasis: '{n} open vacancies from merojob.com. Nepal Live is not the employer — each job opens on its original listing.', applyBy: 'Apply by {d}', viaMj: 'via merojob',
+    jc_it: 'IT', jc_banking: 'Banking & finance', jc_hospitality: 'Hospitality', jc_education: 'Education', jc_engineering: 'Engineering', jc_healthcare: 'Healthcare',
+    jc_marketing: 'Marketing', jc_government: 'Government (Lok Sewa)', jc_internship: 'Internship', 'jc_part-time': 'Part-time', jc_remote: 'Remote',
+    heKicker: 'Nepal Events', heTitle: 'Coming up', heAll: 'All events', heCal: 'Calendar', errEvents: 'Events aren’t available right now.', evNone: 'Nothing is listed for the coming weeks.',
+    ev_holiday: 'Public holiday', ev_holidayLtd: 'Holiday for some groups', ev_festival: 'Festival', ev_day: 'Observance', ev_sports: 'Nepal fixture', nationwide: 'Nationwide',
+    hgKicker: 'Nepal Government', hgTitle: 'Government services', hgAll: 'All services', officialSrc: 'Official source', calSrc: 'Nepal Calendar',
+    hgNote: 'Every link opens the official government site. Nepal Live is an information service, not a government office.',
+    hxKicker: 'Explore Nepal', hxTitle: 'Explore by province', hxAll: 'Open the map', hxDistricts: '{n} districts',
+    wxKicker: 'Weather & environment', wxSecTitle: 'Weather, air & earthquakes',
+    mkAll: 'Charts, all currencies & fuel', wxAll: 'All cities & forecasts', eqAll: 'Earthquake monitor', spAll: 'All sports', npAll: 'Nepal sports',
+    fuelK: 'Petrol', dieselK: 'Diesel', unchanged: 'Unchanged in latest revision', vsPrev: 'vs previous', errFuel: 'Fuel prices aren’t available right now.',
+    quakeK: 'Latest earthquake', quakeNoneShort: 'None M3.5+ in 7 days', deep: 'deep',
+    rateFor: 'rate for {d}', effective: 'effective {d}',
+    hl_nepse_up: 'NEPSE is up {pts} points ({pct}%) at {val}', hl_nepse_down: 'NEPSE is down {pts} points ({pct}%) at {val}', hl_nepse_flat: 'NEPSE is flat at {val}',
+    hl_gold_up: 'Gold rose Rs {chg} per tola to {price}', hl_gold_down: 'Gold fell Rs {chg} per tola to {price}', hl_gold_flat: 'Gold unchanged at {price} per tola',
+    hl_usd: 'US dollar at Rs {val} (official NRB rate){chg}',
+    hl_alerts: '{n} active alerts — most severe: {title}', hl_alerts_none: 'No major alerts right now',
+    hl_quake: 'M{mag} earthquake — {place}',
+    hl_roads: '{n} road closures reported by the Department of Roads', hl_roads_one: '1 road closure reported by the Department of Roads',
+    hl_roads_none: 'No road closures reported by the Department of Roads',
+    hl_aqi: 'Most polluted air right now: {station}, AQI {aqi}',
+    hl_fuel_flat: 'Fuel prices unchanged — petrol Rs {p}/L, diesel Rs {d}/L', hl_fuel_up: 'Petrol up Rs {chg} to Rs {p}/L', hl_fuel_down: 'Petrol down Rs {chg} to Rs {p}/L',
+    hl_story: 'Most covered: “{term}” — {n} headlines from {s} publishers',
     fxNames: { USD: 'US dollar', INR: 'Indian rupee', EUR: 'Euro', GBP: 'British pound', AUD: 'Australian dollar', JPY: 'Japanese yen', CNY: 'Chinese yuan', AED: 'UAE dirham', SAR: 'Saudi riyal', KRW: 'South Korean won' }
   },
   ne: {
@@ -519,7 +644,7 @@ const I18N = {
     mkKicker: 'प्रत्यक्ष तथ्यांक', mkTitle: 'बजार र आजको नेपाल', mkMeta: 'आधिकारिक स्रोत · आफैँ ताजा हुन्छ',
     latestKicker: 'ताजा', latestTitle: 'ताजा समाचार', catKicker: 'खण्ड', catTitle: 'विधाअनुसार',
     spKicker: 'खेलकुद', spTitle: 'स्कोर र तालिका', football: 'फुटबल', cricket: 'क्रिकेट', allMatches: 'सबै खेल',
-    depthKicker: 'विस्तृत', depthTitle: 'बजार, मौसम र सतर्कता',
+    depthKicker: 'अर्थ', depthTitle: 'पैसा र बजार',
     readOrig: 'मूल समाचार पढ्नुहोस्', showMore: 'थप समाचार', seeAll: 'सबै हेर्नुहोस्',
     aggNote: 'नेपाल लाइभले अनलाइनखबर, खबरहब, नागरिक न्यूज र सेतोपाटीका शीर्षक संकलन गर्छ। हरेक समाचार मूल प्रकाशककै साइटमा खुल्छ — हामी उनीहरूको पत्रकारिता पुनः प्रकाशन वा सम्पादन गर्दैनौं।',
     topics: { all: 'सबै', nepal: 'समाचार', politics: 'राजनीति', business: 'व्यापार', technology: 'प्रविधि', sports: 'खेलकुद', entertainment: 'मनोरञ्जन', world: 'विश्व' },
@@ -589,7 +714,43 @@ const I18N = {
     errQuakes: "भूकम्पको तथ्यांक अहिले उपलब्ध छैन।",
     errNews: "समाचार अहिले उपलब्ध छैन।",
     tileErr: "उपलब्ध छैन", retry: "फेरि प्रयास गर्नुहोस्",
-    gNews: 'समाचार', gMarkets: 'बजार', gSports: 'खेल',
+    gNews: 'समाचार', gMarkets: 'बजार', gSports: 'खेल', gAlerts: 'सक्रिय सतर्कता',
+    todayK: 'आज', todayTitle: 'आजको नेपाल', todaySub: 'आज नेपालमा भइरहेका सबै महत्त्वपूर्ण कुरा।',
+    numbersLabel: 'आजका अंक', hlLabel: 'आजका मुख्य कुरा', errHighlights: 'मुख्य कुरा अहिले उपलब्ध छैनन्।',
+    haKicker: 'नेपाल सतर्कता', haTitle: 'महत्त्वपूर्ण सतर्कता', haAll: 'सबै सतर्कता',
+    noAlerts: 'अहिले कुनै ठूलो सतर्कता छैन।', noAlertsSub: 'हामी बिपद पोर्टल, नदी मापन केन्द्र, USGS र GDACS हरेक केही मिनेटमा जाँच्छौं।',
+    errAlerts: 'सतर्कता अहिले उपलब्ध छैन।',
+    hrKicker: 'नेपालका सडक', hrTitle: 'सडक र राजमार्ग', hrAll: 'सबै सडक अपडेट',
+    noClosures: 'सडक विभागले अहिले कुनै सडक बन्द रिपोर्ट गरेको छैन।',
+    corReported: '{n} मुख्य मार्ग पर्ने जिल्लामा अवरोध रिपोर्ट भएको: {names}।', corNone: 'मुख्य मार्ग पर्ने जिल्लाहरूमा कुनै अवरोध रिपोर्ट भएको छैन।',
+    noTraffic: 'नेपालका राजमार्गको प्रत्यक्ष ट्राफिक गति तथ्यांक उपलब्ध छैन — हामी अनुमान गर्दैनौं।', errRoads: 'सडकको जानकारी अहिले उपलब्ध छैन।',
+    htKicker: 'अहिले चर्चामा', htTitle: 'नेपालमा चर्चामा', htAll: 'चर्चाका सबै विषय',
+    trendNone: 'अहिले चर्चामा भन्न पुग्ने गरी कुनै विषय व्यापक रूपमा कभर भएको छैन।',
+    trendBasis: 'पछिल्लो {hrs} घण्टामा {s} प्रकाशकका {h} शीर्षकबाट गनिएको।', errTrending: 'चर्चाका विषय अहिले उपलब्ध छैनन्।',
+    hjKicker: 'नेपालका जागिर', hjTitle: 'पछिल्ला जागिर', hjAll: 'सबै जागिर', errJobs: 'जागिरको सूची अहिले उपलब्ध छैन।', jobsNone: 'अहिले कुनै खुला पद सूचीकृत छैन।',
+    hjBasis: 'merojob.com का {n} खुला पद। नेपाल लाइभ रोजगारदाता होइन — हरेक जागिर मूल सूचीमा खुल्छ।', applyBy: '{d} सम्म आवेदन', viaMj: 'merojob मार्फत',
+    jc_it: 'आईटी', jc_banking: 'बैंकिङ र वित्त', jc_hospitality: 'होटल/आतिथ्य', jc_education: 'शिक्षा', jc_engineering: 'इन्जिनियरिङ', jc_healthcare: 'स्वास्थ्य',
+    jc_marketing: 'मार्केटिङ', jc_government: 'सरकारी (लोक सेवा)', jc_internship: 'इन्टर्नसिप', 'jc_part-time': 'पार्ट-टाइम', jc_remote: 'रिमोट',
+    heKicker: 'नेपालका कार्यक्रम', heTitle: 'आउँदै गरेका', heAll: 'सबै कार्यक्रम', heCal: 'पात्रो', errEvents: 'कार्यक्रम अहिले उपलब्ध छैनन्।', evNone: 'आगामी हप्ताहरूमा केही सूचीकृत छैन।',
+    ev_holiday: 'सार्वजनिक बिदा', ev_holidayLtd: 'केही समूहलाई मात्र बिदा', ev_festival: 'चाडपर्व', ev_day: 'दिवस', ev_sports: 'नेपालको खेल', nationwide: 'देशभर',
+    hgKicker: 'नेपाल सरकार', hgTitle: 'सरकारी सेवा', hgAll: 'सबै सेवा', officialSrc: 'आधिकारिक स्रोत', calSrc: 'नेपाली पात्रो',
+    hgNote: 'हरेक लिंकले आधिकारिक सरकारी वेबसाइट खोल्छ। नेपाल लाइभ सूचना सेवा हो, सरकारी कार्यालय होइन।',
+    hxKicker: 'नेपाल अन्वेषण', hxTitle: 'प्रदेशअनुसार हेर्नुहोस्', hxAll: 'नक्सा खोल्नुहोस्', hxDistricts: '{n} जिल्ला',
+    wxKicker: 'मौसम र वातावरण', wxSecTitle: 'मौसम, हावा र भूकम्प',
+    mkAll: 'चार्ट, सबै मुद्रा र इन्धन', wxAll: 'सबै सहर र पूर्वानुमान', eqAll: 'भूकम्प निगरानी', spAll: 'सबै खेल', npAll: 'नेपाली खेलकुद',
+    fuelK: 'पेट्रोल', dieselK: 'डिजेल', unchanged: 'पछिल्लो संशोधनमा परिवर्तन छैन', vsPrev: 'अघिल्लोभन्दा', errFuel: 'इन्धनको मूल्य अहिले उपलब्ध छैन।',
+    quakeK: 'पछिल्लो भूकम्प', quakeNoneShort: '७ दिनमा ३.५+ छैन', deep: 'गहिराइ',
+    rateFor: '{d} को दर', effective: '{d} देखि लागू',
+    hl_nepse_up: 'नेप्से {pts} अंक ({pct}%) बढेर {val} मा', hl_nepse_down: 'नेप्से {pts} अंक ({pct}%) घटेर {val} मा', hl_nepse_flat: 'नेप्से {val} मा स्थिर',
+    hl_gold_up: 'सुन प्रति तोला रु {chg} बढेर {price}', hl_gold_down: 'सुन प्रति तोला रु {chg} घटेर {price}', hl_gold_flat: 'सुन प्रति तोला {price} मा स्थिर',
+    hl_usd: 'अमेरिकी डलर रु {val} (राष्ट्र बैंकको आधिकारिक दर){chg}',
+    hl_alerts: '{n} सक्रिय सतर्कता — सबैभन्दा गम्भीर: {title}', hl_alerts_none: 'अहिले कुनै ठूलो सतर्कता छैन',
+    hl_quake: '{mag} म्याग्निच्युडको भूकम्प — {place}',
+    hl_roads: 'सडक विभागले {n} ठाउँमा सडक बन्द रिपोर्ट गरेको', hl_roads_one: 'सडक विभागले १ ठाउँमा सडक बन्द रिपोर्ट गरेको',
+    hl_roads_none: 'सडक विभागले कुनै सडक बन्द रिपोर्ट गरेको छैन',
+    hl_aqi: 'अहिले सबैभन्दा प्रदूषित हावा: {station}, AQI {aqi}',
+    hl_fuel_flat: 'इन्धन मूल्य यथावत् — पेट्रोल रु {p}/लि, डिजेल रु {d}/लि', hl_fuel_up: 'पेट्रोल रु {chg} बढेर रु {p}/लि', hl_fuel_down: 'पेट्रोल रु {chg} घटेर रु {p}/लि',
+    hl_story: 'सबैभन्दा बढी कभर: “{term}” — {s} प्रकाशकका {n} शीर्षक',
     fxNames: { USD: 'अमेरिकी डलर', INR: 'भारतीय रुपैयाँ', EUR: 'युरो', GBP: 'बेलायती पाउन्ड', AUD: 'अस्ट्रेलियाली डलर', JPY: 'जापानी येन', CNY: 'चिनियाँ युआन', AED: 'युएई दिराम', SAR: 'साउदी रियाल', KRW: 'दक्षिण कोरियाली वन' }
   }
 };
@@ -628,7 +789,9 @@ const DIRECT = {
     + encodeURIComponent(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`)
 };
 
-const INTERVALS = { gold: 60e3, nepse: 60e3, rates: 600e3, weather: 300e3, air: 300e3, quakes: 120e3, news: 300e3 };
+const INTERVALS = { gold: 60e3, nepse: 60e3, rates: 600e3, weather: 300e3, air: 300e3, quakes: 120e3, news: 300e3,
+                    fuel: 3600e3, highlights: 120e3, alerts: 180e3, roads: 300e3, trending: 300e3,
+                    jobs: 1800e3, events: 1800e3, calToday: 900e3 };
 const state = { ok: {}, lastOk: {}, usdNpr: null, cache: {}, newsFilter: 'all', topic: 'all', shown: 9,
                 moverTab: 'gainers', tileVals: {}, fx: { amount: '100', code: 'USD', dir: 'to' } };
 
@@ -697,7 +860,8 @@ function stamp(mod, ok = true, extra = '') {
   NL.stamp('stamp-' + mod, ok, extra);
 }
 /* Which snapshot tiles each module feeds, so a failure can mark them too. */
-const MOD_TILES = { gold: ['tile-gold', 'tile-silver'], nepse: ['tile-nepse'], rates: ['tile-usd'], weather: ['tile-weather'], air: ['tile-aqi'] };
+const MOD_TILES = { gold: ['tile-gold', 'tile-silver'], nepse: ['tile-nepse'], rates: ['tile-usd'], weather: ['tile-weather'], air: ['tile-aqi'],
+                    fuel: ['tile-fuel'], quakes: ['tile-quake'] };
 /* A failed feed keeps the card intact: what went wrong, when we last had good
    data, and a way to retry — never a broken-looking value. Cached data stays. */
 function setError(mod, msg) {
@@ -764,7 +928,7 @@ function tileError(id, mod) {
   const el = $(id);
   if (!el) return;
   const k = { 'tile-nepse': 'NEPSE', 'tile-gold': t('goldK'), 'tile-silver': t('silverK'), 'tile-usd': t('usdK'),
-              'tile-weather': cityCoords().name, 'tile-aqi': t('aqiK') }[id];
+              'tile-weather': cityCoords().name, 'tile-aqi': t('aqiK'), 'tile-fuel': t('fuelK'), 'tile-quake': t('quakeK') }[id];
   el.innerHTML = `<div class="tile-top"><span class="tile-k">${esc(k)}</span></div>
     <div class="tile-state">${esc(t('tileErr'))}<button type="button" data-retry="${mod}">${esc(t('retry'))}</button></div>`;
 }
@@ -1067,6 +1231,20 @@ const WMO = {
   ne:{0:['सफा आकाश','☀️'],1:['प्रायः सफा','🌤️'],2:['आंशिक बादल','⛅'],3:['बदली','☁️'],45:['कुहिरो','🌫️'],48:['कुहिरो','🌫️'],51:['हल्का झरी','🌦️'],53:['झरी','🌦️'],55:['भारी झरी','🌧️'],61:['हल्का पानी','🌦️'],63:['पानी','🌧️'],65:['भारी पानी','🌧️'],66:['असिना पानी','🌧️'],71:['हल्का हिउँ','🌨️'],73:['हिउँ','🌨️'],75:['भारी हिउँ','❄️'],80:['पानीको झरी','🌦️'],81:['झरी','🌧️'],82:['भारी झरी','⛈️'],85:['हिउँ झरी','🌨️'],95:['आँधीबेहरी','⛈️'],96:['असिनासहित आँधी','⛈️'],99:['असिनासहित आँधी','⛈️']}
 };
 const CITY_NE = { Kathmandu: 'काठमाडौं', Pokhara: 'पोखरा', Biratnagar: 'विराटनगर', Nepalgunj: 'नेपालगञ्ज', Dhangadhi: 'धनगढी', Janakpur: 'जनकपुर' };
+/* personalization: the city chosen on Weather, Explore or the account page opens here first too */
+(function myCity() {
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem('nlive-city') || 'null'); } catch (e) { /* storage blocked */ }
+  if (!c || !c.en || !isFinite(c.lat) || !isFinite(c.lon)) return;
+  const sel = $('city-select');
+  let opt = [...sel.options].find(o => o.value.split(',')[2] === c.en);
+  if (!opt) {
+    opt = new Option(c.en, `${(+c.lat).toFixed(4)},${(+c.lon).toFixed(4)},${c.en}`);
+    sel.add(opt);
+    if (c.ne) CITY_NE[c.en] = c.ne;
+  }
+  sel.value = opt.value;
+})();
 function cityCoords() {
   const [lat, lon, name] = $('city-select').value.split(',');
   return { lat, lon, name: LANG === 'ne' ? (CITY_NE[name] || name) : name };
@@ -1275,9 +1453,20 @@ async function refreshAir() {
 
 /* --- Earthquakes --- */
 function magColor(m) { return m >= 6 ? '#b3263f' : m >= 5 ? '#e0344e' : m >= 4 ? '#ea7a1e' : '#d39e00'; }
+function quakeTile(feats) {
+  if (!feats.length) {
+    tile('tile-quake', { k: t('quakeK'), icon: 'quake', v: '—', d: esc(t('quakeNoneShort')), foot: 'USGS · M3.5+', ts: Date.now() });
+    return;
+  }
+  const f = feats[0], p = f.properties || {}, c = (f.geometry || {}).coordinates || [];
+  tile('tile-quake', { k: t('quakeK'), icon: 'quake', v: `M${fmtNum(p.mag, 1)}`, d: esc(p.place || ''),
+    extra: `<div class="tile-d" style="margin-top:2px">${agoSpan(p.time)}${c[2] != null ? ' · ' + Math.round(c[2]) + ' km ' + esc(t('deep')) : ''}</div>`,
+    foot: 'USGS', ts: Date.now() });
+}
 function renderQuakes() {
   const feats = state.cache.quakes;
   if (!feats) return;
+  quakeTile(feats);
   $('src-quakes').textContent = t('srcQuakes');
   if (!feats.length) {
     $('quakes-body').innerHTML = NL.emptyState(t('quakesNone'), { icon: 'quake', sub: t('quakesNoneSub') });
@@ -1495,10 +1684,11 @@ function renderSports() {
     if (!days) return;
     const pick = sportPick(days);
     $(id).innerHTML = pick.length ? pick.map((ev, i) => NL.sport.card(ev, i, { compact: true })).join('')
-      : NL.emptyState(t('noSports'), { icon: 'calendar', compact: true });
+      : state.spPending ? NL.skeleton('list') : NL.emptyState(t('noSports'), { icon: 'calendar', compact: true });
   });
 }
 async function loadSportsPreview() {
+  state.spPending = 0;
   await Promise.all([['Soccer', 'sp-football'], ['Cricket', 'sp-cricket']].map(async ([sport, id]) => {
     if (!state.cache['sp' + sport]) $(id).innerHTML = NL.skeleton('list');
     try {
@@ -1506,7 +1696,9 @@ async function loadSportsPreview() {
       try {
         const r = await fetch(`/api/sport-range?s=${sport}&past=2&future=10`, { cache: 'no-store' });
         if (!r.ok) throw new Error('proxy');
-        days = (await r.json()).days || [];
+        const j = await r.json();
+        days = j.days || [];
+        state.spPending += j.pending || 0;
       } catch (e) {
         const date = NL.sport.nptISO(0);
         const j = await (await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${sport}`)).json();
@@ -1518,10 +1710,16 @@ async function loadSportsPreview() {
     }
   }));
   renderSports();
+  /* the server is still filling in some days (rate-limited feed); check back */
+  if (state.spPending && (state.spRetry = (state.spRetry || 0) + 1) <= 8) setTimeout(loadSportsPreview, 12000);
 }
 
 /* --- Search providers --- */
 function registerSearch() {
+  NL.search.add({ group: () => t('gAlerts'), limit: 5,
+    items: () => ((state.cache.alerts || {}).items || []).filter(a => a.active).map(a => ({
+      title: (LANG === 'ne' && a.titleNe) || a.title, sub: `${a.location || ''} · ${NL.ago(Date.parse(a.time))}`,
+      href: '/alerts', icon: 'bell', kw: `${a.category} ${a.district || ''} alert` })) });
   NL.search.add({ group: () => t('gNews'), limit: 8, recent: 5, recentLabel: () => t('topStories'),
     items: () => (state.cache.news || []).map(i => ({ title: i.title, sub: `${srcName(i.source)} · ${NL.ago(storyTs(i))}`,
       href: i.link, external: true, img: i.image, icon: 'doc', kw: `${topicLabel(i.topic)} ${i.topic || ''} ${i.category || ''}` })) });
@@ -1562,10 +1760,220 @@ function registerSearch() {
       kw: `${sport === 'Cricket' ? 'cricket' : 'football soccer'} ${ev.strCountry || ''}` }))) });
 }
 
+/* --- Fuel (Nepal Oil Corporation retail price) --- */
+NL.icon.fuel = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V5.5A1.5 1.5 0 0 1 6.5 4h6A1.5 1.5 0 0 1 14 5.5V20M4 20h11M5 10h9"/><path d="M14 8.5h1.5A1.5 1.5 0 0 1 17 10v6a1.5 1.5 0 0 0 3 0V9l-2.5-2.5"/></svg>';
+function renderFuelTile() {
+  const f = state.cache.fuel;
+  if (!f || !f.current) return;
+  const c = f.current, p = f.previous, chg = p ? +(c.petrol - p.petrol).toFixed(2) : null;
+  tile('tile-fuel', { k: t('fuelK'), icon: 'fuel', v: `Rs ${fmtNum(c.petrol, 2)}<small>/L</small>`,
+    d: chg == null ? '&nbsp;' : chg === 0 ? esc(t('unchanged')) : `${arrow(chg)} ${signed(chg, 2)} ${esc(t('vsPrev'))}`, dir: chg ? dirOf(chg) : '',
+    extra: `<div class="tile-d" style="margin-top:2px">${esc(t('dieselK'))} Rs ${fmtNum(c.diesel, 2)} · LPG Rs ${fmtNum(c.lpg, 0)}</div>`,
+    foot: `NOC · ${c.date}`, ts: (state.okAt || {}).fuel || Date.now() });
+}
+async function refreshFuel() {
+  try {
+    state.cache.fuel = await getJSON('/api/fuel', null);
+    state.okAt = { ...(state.okAt || {}), fuel: Date.now() };
+    renderFuelTile();
+    finish('fuel', true);
+  } catch (e) { setError('fuel', t('errFuel')); finish('fuel', false); }
+}
+
+/* --- Nepal Today: highlights. Each is a value a source published; only the
+   sentence is written here. --- */
+const HL_ICON = { nepse: 'chart', gold: 'coin', usd: 'fx', alerts: 'bell', quake: 'quake', roads: 'road', aqi: 'wind', fuel: 'fuel', story: 'flame' };
+function hlItem(h) {
+  const b = (v, cls) => `<b${cls && cls !== 'flat' ? ` class="${cls}"` : ''}>${v}</b>`;
+  let html = '', cls = '', meta = esc(h.source), when = '';
+  switch (h.type) {
+    case 'nepse': {
+      const d = dirOf(h.change); cls = d === 'flat' ? '' : d;
+      html = tf(d === 'up' ? 'hl_nepse_up' : d === 'down' ? 'hl_nepse_down' : 'hl_nepse_flat',
+        { pts: b(fmtNum(Math.abs(h.change), 2), d), pct: b(signed(h.pct, 2), d), val: b(fmtNum(h.value, 2)) });
+      if (h.open != null) meta += ' · ' + esc(h.open ? t('marketOpen') : t('marketClosed'));
+      when = NL.fresh('updated', h.time);
+      break;
+    }
+    case 'gold': {
+      const d = h.change == null ? 'flat' : dirOf(h.change); cls = d === 'flat' ? '' : d;
+      html = tf(d === 'up' ? 'hl_gold_up' : d === 'down' ? 'hl_gold_down' : 'hl_gold_flat',
+        { chg: b(fmtNum(Math.abs(h.change || 0), 0), d), price: b('Rs ' + fmtNum(h.price, 0)) });
+      meta += ' · ' + esc(tf('rateFor', { d: h.date }));
+      break;
+    }
+    case 'usd': {
+      const d = h.change == null ? 'flat' : dirOf(Number(h.change.toFixed(2))); cls = d === 'flat' ? '' : d;
+      html = tf('hl_usd', { val: b(fmtNum(h.value, 2)), chg: d === 'flat' ? '' : ' · ' + b(arrow(h.change) + ' ' + fmtNum(Math.abs(h.change), 2), d) });
+      meta += ' · ' + esc(tf('rateFor', { d: h.date }));
+      break;
+    }
+    case 'alerts': {
+      const title = h.top ? (LANG === 'ne' && h.top.titleNe ? h.top.titleNe : h.top.title) : '';
+      html = h.active ? tf('hl_alerts', { n: b(h.active), title: esc(title) }) : esc(t('hl_alerts_none'));
+      cls = h.active ? 'warn' : '';
+      break;
+    }
+    case 'quake': html = tf('hl_quake', { mag: b(fmtNum(h.mag, 1)), place: esc(h.place) }); cls = 'warn'; when = NL.fresh('reported', h.time); break;
+    case 'roads':
+      html = h.closures ? tf(h.closures === 1 ? 'hl_roads_one' : 'hl_roads', { n: b(h.closures) }) + (h.top ? ' — ' + esc(h.top) : '') : esc(t('hl_roads_none'));
+      cls = h.closures ? 'warn' : '';
+      break;
+    case 'aqi':
+      html = tf('hl_aqi', { station: esc(h.station), aqi: b(h.aqi) }); cls = 'warn';
+      when = NL.fresh(Date.now() - Date.parse(h.time) < 90 * 60e3 ? 'live' : 'measured', h.time);
+      break;
+    case 'fuel': {
+      const d = dirOf(h.change); cls = d === 'flat' ? '' : d;
+      html = d === 'flat' ? tf('hl_fuel_flat', { p: b(fmtNum(h.petrol, 2)), d: b(fmtNum(h.diesel, 2)) })
+        : tf(d === 'up' ? 'hl_fuel_up' : 'hl_fuel_down', { chg: b(fmtNum(Math.abs(h.change), 2), d), p: b(fmtNum(h.petrol, 2)) });
+      meta += ' · ' + esc(tf('effective', { d: h.date }));
+      break;
+    }
+    case 'story': html = tf('hl_story', { term: esc(h.term), n: b(h.headlines), s: b(h.sources) }); break;
+    default: return '';
+  }
+  return `<li class="hl-item"><a href="${esc(h.href)}"><span class="hl-ic ${cls}">${NL.icon[HL_ICON[h.type]] || ''}</span>
+    <span class="hl-t">${html}<span class="hl-m">${meta}${when ? ' · ' + when : ''}</span></span></a></li>`;
+}
+function renderHighlights() {
+  const d = state.cache.highlights;
+  if (!d) return;
+  $('hl-list').innerHTML = d.items.map(hlItem).join('');
+}
+
+/* --- Home: alerts, roads, trending modules --- */
+function renderHomeAlerts() {
+  const d = state.cache.alerts;
+  if (!d) return;
+  $('ha-bar').innerHTML = NL.levels.map(l => `<span class="as-lv lv-${l}${d.counts[l] ? '' : ' zero'}">${NL.levelBadge(l)}<b>${d.counts[l]}</b></span>`).join('');
+  const act = d.items.filter(a => a.active).slice(0, 4);
+  $('ha-list').innerHTML = act.length ? act.map(a => NL.alertCard(a, { compact: true })).join('')
+    : NL.emptyState(t('noAlerts'), { icon: 'shield', sub: t('noAlertsSub') });
+}
+function renderHomeRoads() {
+  const d = state.cache.roads;
+  if (!d) return;
+  const rep = d.corridors.filter(c => c.status === 'reported');
+  $('hr-list').innerHTML = d.closures.length ? d.closures.slice(0, 4).map(c => NL.alertCard(c, { compact: true })).join('')
+    : NL.emptyState(t('noClosures'), { icon: 'shield', compact: true });
+  $('hr-foot').innerHTML = `<span>${esc(rep.length ? tf('corReported', { n: rep.length, names: rep.slice(0, 3).map(c => LANG === 'ne' ? c.ne : c.en).join(', ') }) : t('corNone'))}</span>`
+    + `<span>${esc(t('noTraffic'))}</span>`;
+}
+function renderHomeTrending() {
+  const d = state.cache.trending;
+  if (!d) return;
+  $('ht-list').innerHTML = d.topics.length ? d.topics.slice(0, 10).map((x, i) =>
+    `<a class="trend-chip" href="/trending"><span class="rk">${i + 1}</span><span${langAttr(x.term)}>${esc(x.term)}</span><span class="n">${x.headlines}</span></a>`).join('')
+    : `<p class="muted">${esc(t('trendNone'))}</p>`;
+  $('ht-basis').textContent = tf('trendBasis', { h: d.basis.headlines, s: d.basis.sources, hrs: d.basis.hours });
+}
+function feedLoader(key, url, render, stampId, errBox, errKey) {
+  return async () => {
+    try {
+      state.cache[key] = await getJSON(url, null);
+      NL.guard(key, render)();
+      if (stampId) NL.stamp(stampId, true);
+      finish(key, true);
+    } catch (e) {
+      if (!state.cache[key] && errBox && $(errBox)) $(errBox).innerHTML = NL.errorState(t(errKey), { mod: key, compact: true });
+      if (stampId) NL.stamp(stampId, false);
+      finish(key, false);
+    }
+  };
+}
+const refreshHighlights = feedLoader('highlights', '/api/highlights', renderHighlights, 'stamp-highlights', 'hl-list', 'errHighlights');
+const refreshHomeAlerts = feedLoader('alerts', '/api/alerts', renderHomeAlerts, 'stamp-home-alerts', 'ha-list', 'errAlerts');
+const refreshHomeRoads = feedLoader('roads', '/api/roads', renderHomeRoads, 'stamp-home-roads', 'hr-list', 'errRoads');
+const refreshHomeTrending = feedLoader('trending', '/api/trending', renderHomeTrending, null, 'ht-list', 'errTrending');
+
+/* --- Home: jobs, events, government, Nepali date --- */
+const JOB_CHIPS = ['it', 'banking', 'education', 'engineering', 'healthcare', 'marketing', 'hospitality', 'internship', 'remote', 'government'];
+function renderHomeJobs() {
+  const d = state.cache.jobs;
+  if (!d) return;
+  $('hj-cats').innerHTML = JOB_CHIPS.filter(k => k === 'government' || d.facets.tags[k]).map(k =>
+    `<a href="/jobs?cat=${k}">${esc(t('jc_' + k))}${d.facets.tags[k] ? `<span class="n">${d.facets.tags[k]}</span>` : ''}</a>`).join('');
+  $('hj-list').innerHTML = d.items.length ? d.items.slice(0, 6).map(j => {
+    const dl = Date.parse(j.deadline);
+    return `<a class="hj-item" href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">`
+      + (j.logo ? `<span class="hj-logo"><img src="${esc(j.logo)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.remove()"></span>` : '')
+      + `<span class="hj-b"><span class="hj-t"${langAttr(j.title)}>${esc(j.title)}</span><span class="hj-m">${esc([j.company, j.location].filter(Boolean).join(' · '))}</span>`
+      + `<span class="hj-dl">${isFinite(dl) ? esc(tf('applyBy', { d: NL.dfmt.day(dl) })) + ' · ' : ''}<span class="muted">${esc(t('viaMj'))} ↗</span></span></span></a>`;
+  }).join('') : NL.emptyState(t('jobsNone'), { icon: 'inbox', compact: true });
+  $('hj-basis').textContent = tf('hjBasis', { n: d.all });
+}
+function renderHomeEvents() {
+  const d = state.cache.events;
+  if (!d) return;
+  const up = d.items.filter(i => i.date >= d.today).slice(0, 6);
+  $('he-list').innerHTML = up.length ? up.map(i => {
+    const ms = Date.parse(i.date + 'T12:00:00+05:45'), title = LANG === 'ne' && i.titleNe ? i.titleNe : i.title;
+    const kind = i.category === 'holiday' ? (i.restricted ? 'ev_holidayLtd' : 'ev_holiday') : 'ev_' + i.category;
+    return `<a class="he-item${i.category === 'holiday' ? ' hol' : ''}" href="/events">`
+      + `<span class="he-date"><b>${new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: 'numeric' }).format(ms)}</b><span>${esc(new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', { timeZone: TZ, month: 'short' }).format(ms))}</span><span>${esc(NL.dfmt.weekday(ms))}</span></span>`
+      + `<span class="he-b"><span class="he-t"${langAttr(title)}>${esc(title)}</span>`
+      + `<span class="he-m">${i.category === 'holiday' ? `<b>${esc(t(kind))}</b>` : esc(t(kind))} · ${esc(i.location || t('nationwide'))}</span></span></a>`;
+  }).join('') : NL.emptyState(t('evNone'), { icon: 'calendar', compact: true });
+}
+/* official sources only; names as the offices use them */
+const GOV_QUICK = [
+  ['shield', 'Passport', 'राहदानी', 'https://nepalpassport.gov.np/'],
+  ['road', 'Driving licence', 'सवारी चालक अनुमतिपत्र', 'https://dotm.gov.np/'],
+  ['building', 'PAN & tax', 'प्यान र कर', 'https://ird.gov.np/'],
+  ['shield', 'Citizenship', 'नागरिकता', 'https://moha.gov.np/'],
+  ['shield', 'National ID', 'राष्ट्रिय परिचयपत्र', 'https://donidcr.gov.np/'],
+  ['building', 'Lok Sewa — government jobs', 'लोक सेवा आयोग', 'https://psc.gov.np/'],
+  ['shield', 'Immigration & visas', 'अध्यागमन र भिसा', 'https://immigration.gov.np/'],
+  ['calendar', 'Public holidays', 'सार्वजनिक बिदा', '/calendar'],
+];
+function renderHomeGov() {
+  $('hg-list').innerHTML = GOV_QUICK.map(([ic, en, ne, url]) => {
+    const ext = /^https?:/.test(url);
+    return `<a class="hg-item" href="${url}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''}><span class="hg-ic">${NL.icon[ic] || NL.icon.building}</span>`
+      + `<span><span class="hg-t"${LANG === 'ne' ? ' lang="ne"' : ''}>${esc(LANG === 'ne' ? ne : en)}</span>`
+      + `<span class="hg-d">${ext ? esc(new URL(url).hostname) + ' · ' + esc(t('officialSrc')) : esc(t('calSrc'))} →</span></span></a>`;
+  }).join('');
+  $('hg-note').textContent = t('hgNote');
+}
+const BS_MON = { en: ['Baisakh', 'Jestha', 'Asar', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'],
+  ne: ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'] };
+const neDigits = (n) => String(n).replace(/\d/g, (x) => '०१२३४५६७८९'[x]);
+function renderHeroBs() {
+  const c = state.cache.calToday, el = $('hero-bs');
+  if (!el || !c || !c.day) return;
+  const [y, m, d] = c.day.bs;
+  el.textContent = LANG === 'ne' ? `${c.day.bsNp || neDigits(d)} ${BS_MON.ne[m - 1]} ${neDigits(y)}` : `${d} ${BS_MON.en[m - 1]} ${y} BS`;
+  el.hidden = false;
+}
+/* Explore teaser: the seven provinces (official names), each opening the map on that province */
+const PROVINCES = [
+  ['NP01', 'Koshi', 'कोशी', 14, [['Biratnagar', 'विराटनगर'], ['Dharan', 'धरान'], ['Itahari', 'इटहरी']]],
+  ['NP02', 'Madhesh', 'मधेश', 8, [['Janakpur', 'जनकपुर'], ['Birgunj', 'वीरगन्ज'], ['Rajbiraj', 'राजविराज']]],
+  ['NP03', 'Bagmati', 'बागमती', 13, [['Kathmandu', 'काठमाडौं'], ['Lalitpur', 'ललितपुर'], ['Bharatpur', 'भरतपुर']]],
+  ['NP04', 'Gandaki', 'गण्डकी', 11, [['Pokhara', 'पोखरा'], ['Gorkha', 'गोरखा'], ['Baglung', 'बागलुङ']]],
+  ['NP05', 'Lumbini', 'लुम्बिनी', 12, [['Butwal', 'बुटवल'], ['Nepalgunj', 'नेपालगन्ज'], ['Ghorahi', 'घोराही']]],
+  ['NP06', 'Karnali', 'कर्णाली', 10, [['Birendranagar', 'वीरेन्द्रनगर'], ['Jumla', 'जुम्ला'], ['Simikot', 'सिमिकोट']]],
+  ['NP07', 'Sudurpashchim', 'सुदूरपश्चिम', 9, [['Dhangadhi', 'धनगढी'], ['Mahendranagar', 'महेन्द्रनगर']]],
+];
+function renderHomeExplore() {
+  const ne = LANG === 'ne';
+  $('hx-list').innerHTML = PROVINCES.map(([id, en, np, n, cities], i) =>
+    `<a class="hx-item" href="/explore?p=${id}"><span class="hx-n">${ne ? '०१२३४५६७८९'[i + 1] : i + 1}</span>`
+    + `<span class="hx-b"><span class="hx-t"${ne ? ' lang="ne"' : ''}>${esc(ne ? np : en)}</span>`
+    + `<span class="hx-m">${esc(tf('hxDistricts', { n: ne ? String(n).replace(/\d/g, d => '०१२३४५६७८९'[d]) : n }))} · ${esc(cities.map(c => c[ne ? 1 : 0]).join(', '))}</span></span></a>`).join('');
+}
+const refreshHomeJobs = feedLoader('jobs', '/api/jobs', renderHomeJobs, 'stamp-home-jobs', 'hj-list', 'errJobs');
+const refreshHomeEvents = feedLoader('events', '/api/events', renderHomeEvents, null, 'he-list', 'errEvents');
+const refreshCalToday = feedLoader('calToday', '/api/calendar/today', renderHeroBs, null, null, null);
+
 /* --- Static chrome --- */
 function heroDate() {
   $('hero-date').textContent = new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', {
     timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  const k = $('today-kicker');
+  if (k) k.textContent = t('todayK') + ' · ' + new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', {
+    timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 function applyStaticI18n() {
   const set = (id, k, html) => { const el = $(id); if (el) el[html ? 'innerHTML' : 'textContent'] = t(k); };
@@ -1579,6 +1987,16 @@ function applyStaticI18n() {
   set('nepse-title', 'nepseTitle'); set('gold-title', 'goldTitle'); set('rates-title', 'ratesTitle');
   set('weather-title', 'weatherTitle'); set('air-title', 'airTitle'); set('quakes-title', 'quakesTitle');
   set('nf-all', 'newsAll');
+  set('today-title', 'todayTitle'); set('today-sub', 'todaySub'); set('numbers-label', 'numbersLabel'); set('hl-label', 'hlLabel');
+  set('ha-kicker', 'haKicker'); set('ha-title', 'haTitle'); set('ha-all', 'haAll');
+  set('hr-kicker', 'hrKicker'); set('hr-title', 'hrTitle'); set('hr-all', 'hrAll');
+  set('ht-kicker', 'htKicker'); set('ht-title', 'htTitle'); set('ht-all', 'htAll');
+  set('hj-kicker', 'hjKicker'); set('hj-title', 'hjTitle'); set('hj-all', 'hjAll');
+  set('he-kicker', 'heKicker'); set('he-title', 'heTitle'); set('he-all', 'heAll'); set('he-cal', 'heCal');
+  set('hg-kicker', 'hgKicker'); set('hg-title', 'hgTitle'); set('hg-all', 'hgAll');
+  set('hx-kicker', 'hxKicker'); set('hx-title', 'hxTitle'); set('hx-all', 'hxAll');
+  set('wx-kicker', 'wxKicker'); set('wx-sec-title', 'wxSecTitle');
+  set('mk-all', 'mkAll'); set('wx-all', 'wxAll'); set('eq-all', 'eqAll'); set('sp-all', 'spAll'); set('np-all', 'npAll');
   [...$('city-select').options].forEach(o => { const n = o.value.split(',')[2]; o.textContent = LANG === 'ne' ? (CITY_NE[n] || n) : n; });
   heroDate();
   NL.renderFooter([
@@ -1589,12 +2007,20 @@ function applyStaticI18n() {
     { name: 'USGS — earthquakes', url: 'https://earthquake.usgs.gov/' },
     { name: 'OnlineKhabar · Khabarhub · Nagarik · Setopati', url: 'https://www.onlinekhabar.com/' },
     { name: 'TheSportsDB — scores', url: 'https://www.thesportsdb.com/' },
+    { name: 'BIPAD Portal — alerts & road closures', url: 'https://bipadportal.gov.np/' },
+    { name: 'Nepal Oil Corporation — fuel prices', url: 'https://noc.org.np/retailprice' },
+    { name: 'merojob.com — job listings', url: 'https://merojob.com/' },
+    { name: 'Hamro Patro — calendar & events', url: 'https://www.hamropatro.com/calendar' },
   ]);
 }
 function rerenderAll() {
   const g = NL.guard;
   g('gold', renderGold)(); g('nepse', renderNepse)(); g('rates', renderRates)(); g('weather', renderWeather)();
   g('air', renderAir)(); g('quakes', renderQuakes)(); g('news', renderNews)(); g('sports', renderSports)();
+  g('fuel', renderFuelTile)(); g('highlights', renderHighlights)(); g('alerts', renderHomeAlerts)();
+  g('roads', renderHomeRoads)(); g('trending', renderHomeTrending)();
+  g('jobs', renderHomeJobs)(); g('events', renderHomeEvents)(); g('gov', renderHomeGov)(); g('calToday', renderHeroBs)();
+  g('explore', renderHomeExplore)();
 }
 document.addEventListener('nl:lang', () => {
   LANG = NL.lang();
@@ -1606,7 +2032,9 @@ document.addEventListener('nl:lang', () => {
 
 /* ============ boot ============ */
 const MODULES = { gold: refreshGold, nepse: refreshNepse, rates: refreshRates, weather: refreshWeather,
-                  air: refreshAir, quakes: refreshQuakes, news: refreshNews };
+                  air: refreshAir, quakes: refreshQuakes, news: refreshNews, fuel: refreshFuel,
+                  highlights: refreshHighlights, alerts: refreshHomeAlerts, roads: refreshHomeRoads, trending: refreshHomeTrending,
+                  jobs: refreshHomeJobs, events: refreshHomeEvents, calToday: refreshCalToday };
 const lastRun = {};
 const run = (mod) => { lastRun[mod] = Date.now(); return MODULES[mod](); };
 
@@ -1638,6 +2066,9 @@ $('featured').innerHTML = NL.skeleton('feature');
 $('top-list').innerHTML = NL.skeleton('stories');
 $('news-body').innerHTML = NL.skeleton('grid');
 ['gold', 'nepse', 'rates', 'weather', 'air', 'quakes'].forEach(m => { $(m + '-body').innerHTML = NL.skeleton(m === 'quakes' ? 'rows' : 'block'); });
+['hl-list', 'ha-list', 'hr-list', 'hj-list', 'he-list'].forEach(id => { $(id).innerHTML = NL.skeleton('rows'); });
+NL.guard('gov', renderHomeGov)();
+NL.guard('explore', renderHomeExplore)();
 tileSkeletons();
 
 applyStaticI18n();

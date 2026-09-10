@@ -40,7 +40,7 @@
   NL.page = root.getAttribute('data-page') || 'home';
   var HOME = NL.page === 'home';
   /* in-page anchors on the homepage, cross-page links elsewhere */
-  var home = function (hash) { return (HOME ? '' : 'index.html') + hash; };
+  var home = function (hash) { return (HOME ? '' : '/') + hash; };
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var noop = function () {};
 
@@ -65,7 +65,13 @@
       skip: 'Skip to main content', tickerLabel: 'Live market ticker',
       kathmandu: 'Kathmandu',
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
-      aboutTitle: 'About Nepal Live'
+      aboutTitle: 'About Nepal Live',
+      alerts: 'Alerts', roads: 'Roads', trending: 'Trending', home: 'Home', sportsNav: 'Sports', moreNav: 'More', nepalSports: 'Nepal sports',
+      jobs: 'Jobs', events: 'Events', calendar: 'Calendar', government: 'Government services', explore: 'Explore',
+      account: 'Account', signIn: 'Log in', save: 'Save', unsave: 'Remove from saved', savedToast: 'Saved to your account',
+      unsavedToast: 'Removed from saved', signInToSave: 'Log in to save items', seeAll: 'See all results for “{q}”',
+      measured: 'Measured', updatedW: 'Updated', issued: 'Issued', reported: 'Reported',
+      aboutData: 'Nepal Live aggregates information from external providers — publishers, government agencies and data services. Every module names its source and when it was last updated, and news opens on the original publisher’s site.'
     },
     ne: {
       news: 'समाचार', markets: 'बजार', football: 'फुटबल', cricket: 'क्रिकेट', more: 'थप',
@@ -86,7 +92,13 @@
       skip: 'मुख्य सामग्रीमा जानुहोस्', tickerLabel: 'प्रत्यक्ष बजार टिकर',
       kathmandu: 'काठमाडौं',
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
-      aboutTitle: 'नेपाल लाइभको बारेमा'
+      aboutTitle: 'नेपाल लाइभको बारेमा',
+      alerts: 'सतर्कता', roads: 'सडक', trending: 'चर्चामा', home: 'गृहपृष्ठ', sportsNav: 'खेलकुद', moreNav: 'थप', nepalSports: 'नेपाली खेलकुद',
+      jobs: 'जागिर', events: 'कार्यक्रम', calendar: 'पात्रो', government: 'सरकारी सेवा', explore: 'अन्वेषण',
+      account: 'खाता', signIn: 'लग इन', save: 'सेभ गर्नुहोस्', unsave: 'सेभबाट हटाउनुहोस्', savedToast: 'तपाईंको खातामा सेभ भयो',
+      unsavedToast: 'सेभबाट हटाइयो', signInToSave: 'सेभ गर्न लग इन गर्नुहोस्', seeAll: '“{q}” का सबै नतिजा हेर्नुहोस्',
+      measured: 'मापन', updatedW: 'अपडेट', issued: 'जारी', reported: 'रिपोर्ट',
+      aboutData: 'नेपाल लाइभले बाह्य स्रोत — प्रकाशक, सरकारी निकाय र तथ्यांक सेवा — बाट जानकारी संकलन गर्छ। हरेक खण्डमा स्रोत र अन्तिम अपडेट समय देखाइन्छ, र समाचार मूल प्रकाशककै साइटमा खुल्छ।'
     }
   };
   var s = function (k) {
@@ -123,14 +135,34 @@
     building: svg('<path d="M4 21V5l8-2v18M12 9h8v12M8 8h.01M8 12h.01M8 16h.01M16 13h.01M16 17h.01"/>'),
     alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3h.01"/>'),
     calendar: svg('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/>'),
+    user: svg('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6"/>'),
+    bookmark: svg('<path d="M6.5 3.5h11v17l-5.5-4-5.5 4z"/>'),
+    map: svg('<path d="M9 4.5 3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/>'),
     inbox: svg('<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/>'),
-    refresh: svg('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>')
+    refresh: svg('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'),
+    road: svg('<path d="M8 3L4 21M16 3l4 18M12 4v2.5M12 10.5v3M12 17.5V20"/>'),
+    home: svg('<path d="M3.5 10.5L12 4l8.5 6.5V20a1 1 0 0 1-1 1H15v-6h-6v6H4.5a1 1 0 0 1-1-1z"/>'),
+    news: svg('<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5"/>'),
+    bell: svg('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>'),
+    grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>'),
+    trophy: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20.5h7"/>'),
+    flame: svg('<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.1 2.1-4.9 3.6-7.1.5 1.7 1.4 2.8 2.6 3.3C11.4 7.6 12.6 5 15 3c.2 3 3.5 5.6 3.5 10.3 0 4.6-2.8 7.7-6.5 7.7z"/>')
   };
   NL.icon = ICON;
 
-  var FLAG = '<svg class="wm-flag" viewBox="0 0 30 38" aria-hidden="true"><path d="M2.5 2.5L27 17.2H11.4L27 35.5H2.5z"/></svg>';
+  /* The official flag of Nepal (Constitution, Schedule 1): fixed national colours in every
+     theme, crimson #DC143C with a #003893 border, white moon and sun. Flattened from the
+     standard construction into plain paths, so it can repeat on a page without duplicate ids. */
+  var FLAG = '<svg class="wm-flag" viewBox="-17.582 -4.664 71.571 87.246" aria-hidden="true">'
+    + '<path d="M-15,37.574h60L-15,0v80h60L-15,20z" fill="#DC143C" stroke="#003893" stroke-width="5.165" stroke-linejoin="round" paint-order="stroke"/>'
+    + '<g fill="#fff"><path d="M-11.95,23.483A12.84,12.84 0 0 0 11.95,23.483A11.95,11.95 0 0 1-11.95,23.483"/>'
+    + '<circle cy="29.045" r="5.561"/>'
+    + '<path d="M2.128,23.907L1.507,21.47L0,23.484ZM3.932,25.113L4.291,22.623L2.128,23.907ZM5.138,26.917L6.422,24.754L3.932,25.113ZM5.561,29.045L7.575,27.538L5.138,26.917ZM5.138,31.173L7.575,30.552L5.561,29.045ZM3.932,32.977L6.422,33.336L5.138,31.173ZM-2.128,23.907L-1.507,21.47L0,23.484ZM-3.932,25.113L-4.291,22.623L-2.128,23.907ZM-5.138,26.917L-6.422,24.754L-3.932,25.113ZM-5.561,29.045L-7.575,27.538L-5.138,26.917ZM-5.138,31.173L-7.575,30.552L-5.561,29.045ZM-3.932,32.977L-6.422,33.336L-5.138,31.173Z"/>'
+    + '<circle cy="58.787" r="8.143"/>'
+    + '<path d="M2.108,66.653L0,71.627L-2.108,66.653ZM-2.108,66.653L-6.42,69.907L-5.758,64.545ZM-5.758,64.545L-11.12,65.207L-7.866,60.895ZM-7.866,60.895L-12.84,58.787L-7.866,56.679ZM-7.866,56.679L-11.12,52.367L-5.758,53.029ZM-5.758,53.029L-6.42,47.667L-2.108,50.921ZM-2.108,50.921L0,45.947L2.108,50.921ZM2.108,50.921L6.42,47.667L5.758,53.029ZM5.758,53.029L11.12,52.367L7.866,56.679ZM7.866,56.679L12.84,58.787L7.866,60.895ZM7.866,60.895L11.12,65.207L5.758,64.545ZM5.758,64.545L6.42,69.907L2.108,66.653Z"/>'
+    + '</g></svg>';
   var wordmark = function (tag) {
-    return '<' + (tag || 'a') + ' class="wordmark" href="index.html" aria-label="Nepal Live — home">'
+    return '<' + (tag || 'a') + ' class="wordmark" href="/" aria-label="Nepal Live — home">'
       + FLAG + '<span class="wm-text">NEPAL <b>LIVE</b></span><span class="wm-dot" aria-hidden="true"></span></' + (tag || 'a') + '>';
   };
 
@@ -145,6 +177,11 @@
     if (sec < 3600) return Math.max(1, Math.round(sec / 60)) + ' ' + s('minAgo');
     if (sec < 86400) return Math.round(sec / 3600) + ' ' + s('hAgo');
     return Math.round(sec / 86400) + ' ' + s('dAgo');
+  };
+  /* "Updated 5 min ago" / "Reported 2 h ago" / "Measured …" / "Issued …" */
+  NL.freshText = function (kind, ts) {
+    var k = { measured: 'measured', updated: 'updatedW', issued: 'issued', reported: 'reported' }[kind] || 'updatedW';
+    return s(k) + ' ' + NL.ago(ts);
   };
   var fmtN = function (n, d) {
     return Number(n).toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -193,25 +230,35 @@
   /* ----------------------------------------------------------------- header */
   var NAV = function () {
     return [
-      ['news', home('#news'), s('news')],
-      ['markets', home('#markets'), s('markets')],
-      ['football', 'football.html', s('football')],
-      ['cricket', 'cricket.html', s('cricket')]
+      ['news', '/news', s('news')],
+      ['money', '/money', s('markets')],
+      ['weather', '/weather', s('weather')],
+      ['alerts', '/alerts', s('alerts')],
+      ['sports', '/sports', s('sportsNav')]
     ];
   };
   var MORE = function () {
     return [
-      [home('#card-weather'), ICON.sun2, s('weather')],
-      [home('#card-air'), ICON.wind, s('air')],
-      [home('#card-quakes'), ICON.quake, s('quakes')],
-      [home('#card-rates'), ICON.fx, s('fx')],
+      ['/football', ICON.ball, s('football')],
+      ['/cricket', ICON.bat, s('cricket')],
+      ['/nepal-sports', ICON.trophy, s('nepalSports')],
+      ['/explore', ICON.map, s('explore')],
+      ['/jobs', ICON.building, s('jobs')],
+      ['/events', ICON.calendar, s('events')],
+      ['/calendar', ICON.calendar, s('calendar')],
+      ['/government', ICON.shield, s('government')],
+      ['/roads', ICON.road, s('roads')],
+      ['/trending', ICON.flame, s('trending')],
+      ['/weather#air', ICON.wind, s('air')],
+      ['/earthquakes', ICON.quake, s('quakes')],
+      ['/money#fx', ICON.fx, s('fx')],
       [home('#card-analysis'), ICON.compass, s('pulse')]
     ];
   };
   var kbdHint = /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
 
   function headerHTML() {
-    var active = NL.page;
+    var active = { football: 'sports', cricket: 'sports', 'nepal-sports': 'sports' }[NL.page] || NL.page;
     return '<div class="wrap nl-head-in">'
       + wordmark()
       + '<nav class="nl-nav" aria-label="Primary">'
@@ -232,15 +279,26 @@
       + '<button class="icon-btn search-icon-btn" type="button" data-search aria-label="' + esc(s('search')) + '">' + ICON.search + '</button>'
       + '<button class="lang-btn desk" type="button" data-lang-toggle aria-label="' + esc(s('langOtherLabel')) + '">' + esc(s('langOther')) + '</button>'
       + '<button class="icon-btn desk" id="theme-btn" type="button" data-theme-toggle>' + ICON.moon + ICON.sun + '</button>'
+      + '<a class="icon-btn acct-btn" id="acct-btn" href="/account" aria-label="' + esc(s('signIn')) + '" title="' + esc(s('signIn')) + '">' + ICON.user
+      + '<span class="acct-badge" id="acct-badge" hidden></span></a>'
       + '<button class="icon-btn nav-toggle" id="nav-btn" type="button" aria-label="' + esc(s('menu')) + '" aria-expanded="false" aria-controls="nl-drawer">' + ICON.menu + '</button>'
       + '</div></div>';
   }
 
   function drawerHTML() {
     var links = NAV().concat([
-      ['weather', home('#card-weather'), s('weather')],
-      ['air', home('#card-air'), s('air')],
-      ['quakes', home('#card-quakes'), s('quakes')]
+      ['football', '/football', s('football')],
+      ['cricket', '/cricket', s('cricket')],
+      ['nepal-sports', '/nepal-sports', s('nepalSports')],
+      ['explore', '/explore', s('explore')],
+      ['jobs', '/jobs', s('jobs')],
+      ['events', '/events', s('events')],
+      ['calendar', '/calendar', s('calendar')],
+      ['government', '/government', s('government')],
+      ['roads', '/roads', s('roads')],
+      ['trending', '/trending', s('trending')],
+      ['air', '/weather#air', s('air')],
+      ['earthquakes', '/earthquakes', s('quakes')]
     ]);
     return '<div class="drawer-top">' + wordmark()
       + '<button class="icon-btn" type="button" data-drawer-close aria-label="' + esc(s('close')) + '">' + ICON.x + '</button></div>'
@@ -250,6 +308,7 @@
         }).join('')
       + '</nav>'
       + '<div class="drawer-row">'
+      + '<a class="btn" href="/account">' + ICON.user + esc(s('account')) + '</a>'
       + '<button class="btn" type="button" data-lang-toggle>' + esc(s('langOther')) + '</button>'
       + '<button class="btn" type="button" data-theme-toggle>' + ICON.moon + ICON.sun + '<span class="tt"></span></button>'
       + '</div>'
@@ -291,6 +350,26 @@
       scrim.addEventListener('click', function () { openDrawer(false); });
     }
     drawer.innerHTML = drawerHTML();
+    /* phones get an app-style bottom bar for the most-used sections */
+    var bn = document.getElementById('nl-bottom');
+    if (!bn) {
+      bn = document.createElement('nav');
+      bn.id = 'nl-bottom';
+      bn.className = 'nl-bottom';
+      document.body.appendChild(bn);
+      document.body.classList.add('has-bottom');
+    }
+    bn.setAttribute('aria-label', s('menu'));
+    var pg = NL.page, sportsOn = ['football', 'cricket', 'sports', 'nepal-sports'].indexOf(pg) >= 0;
+    var bItem = function (href, icon, label, on) {
+      return '<a href="' + href + '"' + (on ? ' class="on" aria-current="page"' : '') + '>' + icon + '<span>' + esc(label) + '</span></a>';
+    };
+    bn.innerHTML = bItem('/', ICON.home, s('home'), pg === 'home')
+      + bItem('/news', ICON.news, s('news'), pg === 'news')
+      + bItem('/money', ICON.chart, s('markets'), pg === 'money')
+      + bItem('/sports', ICON.trophy, s('sportsNav'), sportsOn)
+      + bItem('/explore', ICON.map, s('explore'), pg === 'explore')
+      + '<button type="button" data-drawer-open aria-controls="nl-drawer">' + ICON.grid + '<span>' + esc(s('moreNav')) + '</span></button>';
     var skip = document.querySelector('.skip-link');
     if (skip) skip.textContent = s('skip');
     if (searchDlg) {
@@ -404,7 +483,7 @@
     nepse: function (idx) {
       return { k: ne() ? 'नेप्से' : 'NEPSE', v: fmtN(idx.currentValue, 2),
         d: arrow(idx.change) + ' ' + fmtN(Math.abs(idx.perChange), 2) + '%', dir: dirOf(idx.change),
-        href: home('#card-nepse'), title: 'NEPSE Index' };
+        href: '/money#nepse', title: 'NEPSE Index' };
     },
     metal: function (key, price, prev) {
       var chg = prev != null ? price - prev : null;
@@ -412,20 +491,20 @@
       var label = key === 'gold' ? (ne() ? 'सुन' : 'GOLD') : (ne() ? 'चाँदी' : 'SILVER');
       return { k: label, v: 'Rs ' + fmtN(price, 0),
         d: pct == null ? (ne() ? '/तोला' : '/tola') : arrow(chg) + ' ' + fmtN(Math.abs(pct), 2) + '%', dir: pct == null ? 'flat' : dirOf(chg),
-        href: home('#card-gold'), title: (key === 'gold' ? 'Gold (hallmark)' : 'Silver') + ' per tola · Hamro Patro / FEGOD' };
+        href: '/money#metals', title: (key === 'gold' ? 'Gold (hallmark)' : 'Silver') + ' per tola · Hamro Patro / FEGOD' };
     },
     fx: function (code, value, change, pct) {
       var dp = value < 10 ? 3 : 2;
       return { k: code, v: 'Rs ' + fmtN(value, dp),
         d: change == null ? '' : (Number(change.toFixed(dp)) === 0 ? '• 0.00%' : arrow(change) + ' ' + fmtN(Math.abs(pct), 2) + '%'),
         dir: change == null ? 'flat' : dirOf(Number(change.toFixed(dp))),
-        href: home('#card-rates'), title: code + '/NPR · Nepal Rastra Bank' };
+        href: '/money#fx', title: code + '/NPR · Nepal Rastra Bank' };
     },
     weather: function (temp, city) {
-      return { k: city || s('kathmandu'), v: Math.round(temp) + '°C', href: home('#card-weather') };
+      return { k: city || s('kathmandu'), v: Math.round(temp) + '°C', href: '/weather' };
     },
     aqi: function (v, label, color) {
-      return { k: 'AQI', v: String(Math.round(v)), d: label, sw: color, dir: 'flat', href: home('#card-air'), title: 'US AQI · Open-Meteo' };
+      return { k: 'AQI', v: String(Math.round(v)), d: label, sw: color, dir: 'flat', href: '/weather#air', title: 'US AQI · Open-Meteo' };
     }
   };
 
@@ -519,6 +598,9 @@
     document.querySelectorAll('.stamp[data-ts], .stamp.err').forEach(paintStamp);
     document.querySelectorAll('[data-ago]').forEach(function (el) {
       el.textContent = NL.ago(+el.getAttribute('data-ago'));
+    });
+    document.querySelectorAll('[data-fresh]').forEach(function (el) {
+      el.textContent = NL.freshText(el.getAttribute('data-fresh'), +el.getAttribute('data-ts'));
     });
     paintFootUpdated();
   }
@@ -704,15 +786,27 @@
   var SECTIONS = function () {
     var ne2 = ne();
     return [
-      { title: s('news'), sub: ne2 ? 'नेपाली समाचार कक्षका ताजा शीर्षक' : 'Latest headlines from Nepali newsrooms', href: home('#news'), icon: 'doc', kw: 'news headlines samachar समाचार latest' },
-      { title: s('markets'), sub: ne2 ? 'नेप्से, सुन, विनिमय दर' : 'NEPSE, gold, silver, exchange rates', href: home('#markets'), icon: 'chart', kw: 'markets prices बजार' },
-      { title: 'NEPSE', sub: ne2 ? 'सूचकांक, कारोबार र शीर्ष कम्पनी' : 'Index, turnover, top gainers & losers', href: home('#card-nepse'), icon: 'chart', kw: 'nepse share stock index company नेप्से सेयर' },
-      { title: s('gold'), sub: ne2 ? 'प्रति तोला आधिकारिक दर' : 'Official rate per tola & kg', href: home('#card-gold'), icon: 'coin', kw: 'gold silver sun chandi tola सुन चाँदी' },
-      { title: s('fx'), sub: ne2 ? 'नेपाल राष्ट्र बैंक दर र रूपान्तरण' : 'NRB rates & converter · USD INR EUR', href: home('#card-rates'), icon: 'fx', kw: 'forex exchange usd dollar inr euro rupee converter डलर' },
-      { title: s('weather'), sub: ne2 ? 'काठमाडौं र अन्य सहर' : 'Kathmandu & other cities · 7-day', href: home('#card-weather'), icon: 'sun2', kw: 'weather forecast rain temperature मौसम kathmandu pokhara' },
-      { title: s('air'), sub: 'US AQI · PM2.5', href: home('#card-air'), icon: 'wind', kw: 'aqi air pollution pm2.5 हावा प्रदूषण' },
-      { title: s('quakes'), sub: ne2 ? 'पछिल्लो ७ दिन · USGS' : 'Last 7 days near Nepal · USGS', href: home('#card-quakes'), icon: 'quake', kw: 'earthquake quake seismic भूकम्प' },
+      { title: s('news'), sub: ne2 ? 'नेपाली समाचार कक्षका ताजा शीर्षक' : 'Latest headlines from Nepali newsrooms', href: '/news', icon: 'doc', kw: 'news headlines samachar समाचार latest' },
+      { title: s('alerts'), sub: ne2 ? 'बाढी, पहिरो, सडक बन्द, भूकम्प' : 'Floods, landslides, road closures, earthquakes', href: '/alerts', icon: 'bell', kw: 'alerts warning flood landslide emergency disaster बाढी पहिरो सतर्कता चेतावनी' },
+      { title: s('roads'), sub: ne2 ? 'सडक विभागका अवरोध र राजमार्ग' : 'Highway closures from the Department of Roads', href: '/roads', icon: 'road', kw: 'roads highway closure blocked traffic prithvi mugling सडक राजमार्ग अवरुद्ध' },
+      { title: s('trending'), sub: ne2 ? 'सबैभन्दा बढी कभर भएका विषय' : 'Most covered topics right now', href: '/trending', icon: 'flame', kw: 'trending popular topics चर्चा' },
+      { title: s('markets'), sub: ne2 ? 'नेप्से, सुन, विनिमय दर' : 'NEPSE, gold, silver, exchange rates', href: '/money', icon: 'chart', kw: 'markets prices बजार' },
+      { title: 'NEPSE', sub: ne2 ? 'सूचकांक, कारोबार र शीर्ष कम्पनी' : 'Index, turnover, top gainers & losers', href: '/money#nepse', icon: 'chart', kw: 'nepse share stock index company नेप्से सेयर' },
+      { title: s('gold'), sub: ne2 ? 'प्रति तोला आधिकारिक दर' : 'Official rate per tola & kg', href: '/money#metals', icon: 'coin', kw: 'gold silver sun chandi tola सुन चाँदी' },
+      { title: s('fx'), sub: ne2 ? 'नेपाल राष्ट्र बैंक दर र रूपान्तरण' : 'NRB rates & converter · USD INR EUR', href: '/money#fx', icon: 'fx', kw: 'forex exchange usd dollar inr euro rupee converter डलर' },
+      { title: s('weather'), sub: ne2 ? 'काठमाडौं र अन्य सहर' : 'Kathmandu & other cities · 7-day', href: '/weather', icon: 'sun2', kw: 'weather forecast rain temperature मौसम kathmandu pokhara' },
+      { title: s('air'), sub: 'US AQI · PM2.5', href: '/weather#air', icon: 'wind', kw: 'aqi air pollution pm2.5 हावा प्रदूषण' },
+      { title: s('quakes'), sub: ne2 ? 'पछिल्लो ७ दिन · USGS' : 'Last 7 days near Nepal · USGS', href: '/earthquakes', icon: 'quake', kw: 'earthquake quake seismic भूकम्प' },
+      { title: ne2 ? 'इन्धन मूल्य' : 'Fuel prices', sub: ne2 ? 'पेट्रोल, डिजेल, एलपी ग्यास · नेपाल आयल निगम' : 'Petrol, diesel, LPG · Nepal Oil Corporation', href: '/money#fuel', icon: 'fx', kw: 'fuel petrol diesel lpg gas kerosene noc इन्धन पेट्रोल डिजेल ग्यास' },
       { title: s('pulse'), sub: ne2 ? 'सुन र नेप्से किन चलिरहेको छ' : 'Why gold and NEPSE are moving', href: home('#card-analysis'), icon: 'compass', kw: 'analysis pulse why market विश्लेषण' },
+      { title: s('explore'), sub: ne2 ? 'प्रदेश र सहरको नक्सा — मौसम, हावा, भूकम्प, सतर्कता' : 'Province & city map — weather, air, quakes, alerts', href: '/explore', icon: 'map', kw: 'explore map province pradesh koshi madhesh bagmati gandaki lumbini karnali sudurpashchim नक्सा प्रदेश' },
+      { title: s('account'), sub: ne2 ? 'सेभ गरिएका, सतर्कता र प्राथमिकता' : 'Saved items, alerts & preferences', href: '/account', icon: 'user', kw: 'account login sign in sign up profile saved bookmarks alerts खाता लग इन' },
+      { title: s('jobs'), sub: ne2 ? 'आईटी, बैंकिङ, शिक्षा र अन्य रिक्त पद' : 'IT, banking, education & more vacancies', href: '/jobs', icon: 'building', kw: 'jobs vacancy career hiring internship जागिर रोजगार' },
+      { title: s('events'), sub: ne2 ? 'चाडपर्व, बिदा र खेल' : 'Festivals, holidays & fixtures', href: '/events', icon: 'calendar', kw: 'events festival holiday concert कार्यक्रम चाडपर्व' },
+      { title: s('calendar'), sub: ne2 ? 'विक्रम संवत् र ईस्वी मिति, बिदा' : 'BS & AD dates, public holidays', href: '/calendar', icon: 'calendar', kw: 'calendar nepali date bs ad patro holiday पात्रो मिति बिदा' },
+      { title: s('government'), sub: ne2 ? 'राहदानी, लाइसेन्स, प्यान, नागरिकता' : 'Passport, licence, PAN, citizenship, ID', href: '/government', icon: 'shield', kw: 'government passport license licence pan tax citizenship national id immigration lok sewa सरकारी राहदानी नागरिकता' },
+      { title: s('sportsNav'), sub: ne2 ? 'फुटबल, क्रिकेट र अन्य खेलका स्कोर' : 'Football, cricket & other sports scores', href: '/sports', icon: 'trophy', kw: 'sports scores basketball hockey baseball rugby volleyball खेलकुद' },
+      { title: s('nepalSports'), sub: ne2 ? 'राष्ट्रिय टोली र नेपाली खेल समाचार' : 'National teams & Nepal sports news', href: '/nepal-sports', icon: 'trophy', kw: 'nepal cricket team football anfa can national team नेपाली टोली' },
       { title: ne2 ? 'फुटबल लाइभ' : 'Football Live', sub: ne2 ? 'प्रत्यक्ष स्कोर र तालिका' : 'Live scores, fixtures & results', href: 'football.html', icon: 'ball', kw: 'football soccer scores league फुटबल' },
       { title: ne2 ? 'क्रिकेट लाइभ' : 'Cricket Live', sub: ne2 ? 'प्रत्यक्ष स्कोर र तालिका' : 'Live scores, fixtures & results', href: 'cricket.html', icon: 'bat', kw: 'cricket scores t20 odi क्रिकेट' },
       { title: s('about'), sub: s('tagline'), sheet: 'about', icon: 'info', kw: 'about sources contact' },
@@ -871,6 +965,9 @@
       html = '<div class="s-empty">' + ICON.search + '<p>' + esc(s('noResults')) + ' <b>“' + esc(q.trim()) + '”</b></p>'
         + '<div class="s-chips">' + CHIPS[NL.lang()].map(function (c) { return '<button type="button" data-q="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div></div>';
     }
+    /* the dialog searches what this page has loaded; the search page searches everything */
+    if (toks.length) html += '<a class="s-all" href="/search?q=' + encodeURIComponent(q.trim()) + '">' + ICON.search
+      + '<span>' + esc(s('seeAll').replace('{q}', q.trim())) + '</span><span aria-hidden="true">→</span></a>';
     body.innerHTML = html;
     var cnt = searchDlg.querySelector('#s-count');
     if (cnt) cnt.textContent = toks.length ? results.length + ' ' + s('results') : '';
@@ -896,8 +993,12 @@
       contactBody: 'Questions, a broken feed, or a source you would like added?',
       noEmail: 'Contact details are not published yet — reach the maintainer, ' + MAINTAINER + ', through the site you found this on.',
       privacyBody:
-        '<h4>What we collect</h4><p>Nothing. Nepal Live has no accounts, no sign-in, no analytics scripts, '
+        '<h4>What we collect</h4><p>Nothing, unless you create an account. Nepal Live has no analytics scripts, '
         + 'no advertising and no tracking cookies.</p>'
+        + '<h4>If you create an account</h4><p>We store your email address, an optional name, a salted hash of your password '
+        + '(never the password itself), the items you save and your alert and display preferences. One sign-in cookie '
+        + '(HttpOnly, used for nothing else) keeps you logged in for up to 30 days. You can delete your account and '
+        + 'everything in it from your account page at any time.</p>'
         + '<h4>What stays on your device</h4><p>Two small preferences are kept in your browser’s local storage — '
         + 'your language choice (English or नेपाली) and your light/dark theme. They never leave your device '
         + 'and are not readable by us. Clearing your browser data removes them.</p>'
@@ -933,8 +1034,11 @@
       contactBody: 'प्रश्न, नचलेको फिड, वा थप्नुपर्ने स्रोत छ?',
       noEmail: 'सम्पर्क ठेगाना अझै प्रकाशित छैन।',
       privacyBody:
-        '<h4>हामी के संकलन गर्छौं</h4><p>केही पनि होइन। नेपाल लाइभमा खाता, साइन-इन, एनालिटिक्स, '
+        '<h4>हामी के संकलन गर्छौं</h4><p>तपाईंले खाता नबनाएसम्म केही पनि होइन। नेपाल लाइभमा एनालिटिक्स, '
         + 'विज्ञापन वा ट्र्याकिङ कुकी छैनन्।</p>'
+        + '<h4>खाता बनाउनुभयो भने</h4><p>हामी तपाईंको इमेल, ऐच्छिक नाम, पासवर्डको सुरक्षित ह्यास (पासवर्ड आफैं होइन), '
+        + 'सेभ गरिएका सामग्री र सतर्कता तथा प्रदर्शन प्राथमिकता राख्छौं। लग इन कायम राख्न एउटा साइन-इन कुकी (HttpOnly, '
+        + 'अरू कुनै काममा प्रयोग नहुने) बढीमा ३० दिन रहन्छ। खाता पृष्ठबाट जुनसुकै बेला खाता र त्यसका सबै विवरण मेटाउन सकिन्छ।</p>'
         + '<h4>तपाईंकै यन्त्रमा रहने</h4><p>दुई सानो प्राथमिकता मात्र ब्राउजरको लोकल स्टोरेजमा रहन्छ — '
         + 'भाषा (English वा नेपाली) र थिम (उज्यालो/अँध्यारो)। ती तपाईंको यन्त्रबाट कतै जाँदैनन्।</p>'
         + '<h4>अन्य सेवाहरूमा अनुरोध</h4><p>तथ्यांक नेपाल लाइभको सर्भरले ल्याउँछ, तपाईंको ब्राउजरले होइन। '
@@ -965,15 +1069,20 @@
       + '<p class="foot-tag">' + esc(s('tagline')) + '</p>'
       + '<p class="foot-upd"><span class="tk-dot" aria-hidden="true"></span>' + esc(s('lastUpd')) + ' <b id="foot-upd">' + esc(s('waiting')) + '</b></p></div>'
       + '<div class="foot-col"><h4>' + esc(s('explore')) + '</h4><ul>'
-      + link(home('#news'), s('news')) + link(home('#markets'), s('markets'))
-      + link('football.html', s('football')) + link('cricket.html', s('cricket')) + '</ul></div>'
+      + link('/news', s('news')) + link('/money', s('markets')) + link('/weather', s('weather')) + link('/earthquakes', s('quakes'))
+      + link('/alerts', s('alerts'))
+      + link('/roads', s('roads')) + link('/trending', s('trending'))
+      + link('/sports', s('sportsNav')) + link('/nepal-sports', s('nepalSports')) + link('/explore', s('explore')) + link('/jobs', s('jobs'))
+      + link('/events', s('events')) + link('/calendar', s('calendar')) + link('/government', s('government')) + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('company')) + '</h4><ul>'
       + sheet('about') + sheet('contact') + sheet('privacy') + sheet('terms') + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('sources')) + '</h4><ul>'
       + (sources || []).map(function (x) {
-          return '<li><a class="ext" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(x.name) + ' <span aria-hidden="true">↗</span></a></li>';
+          var ext = /^https?:/.test(x.url);
+          return '<li><a class="ext" href="' + esc(x.url) + '"' + (ext ? ' target="_blank" rel="noopener noreferrer"' : '') + '>'
+            + esc(x.name) + (ext ? ' <span aria-hidden="true">↗</span>' : '') + '</a></li>';
         }).join('')
-      + '</ul></div>'
+      + '</ul><p class="foot-data">' + esc(s('aboutData')) + '</p></div>'
       + '</div>'
       + '<div class="foot-disclaimer"><b>' + esc(s('disclaimer')) + '. </b>' + F().disclaimerShort + '</div>'
       + '<div class="foot-bottom">'
@@ -1010,9 +1119,104 @@
   }
   NL.openSheet = openSheet;
 
+  /* ---------------------------------------------------------------- account */
+  /* Who is signed in, their saved-item keys and unread alert count. The session
+     cookie is HttpOnly, so the page asks the server (one small request). */
+  var me = { user: null, saved: {}, unread: 0 };
+  function acctFetch(method, url, body) {
+    return fetch(url, {
+      method: method, credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var err = new Error(j.error || ('HTTP ' + r.status)); err.code = j.code; err.status = r.status; throw err; }
+        return j;
+      });
+    });
+  }
+  /* must match the server's key: type + ':' + (id || url) */
+  function saveKey(it) { return (it.type + ':' + (String(it.id == null ? '' : it.id).trim().slice(0, 200) || it.url)).slice(0, 240); }
+  function paintSaves() {
+    document.querySelectorAll('[data-save]').forEach(function (b) {
+      var on = !!me.saved[b.getAttribute('data-key')];
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', on ? s('unsave') : s('save'));
+      b.title = on ? s('unsave') : s('save');
+    });
+  }
+  function setSaved(list) { me.saved = {}; (list || []).forEach(function (k) { me.saved[k] = true; }); paintSaves(); }
+  function paintAccount() {
+    var b = document.getElementById('acct-btn');
+    if (!b) return;
+    b.classList.toggle('in', !!me.user);
+    var label = me.user ? s('account') + ' — ' + me.user.email : s('signIn');
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    paintBadge(me.unread);
+  }
+  function paintBadge(n) {
+    me.unread = n || 0;
+    var el = document.getElementById('acct-badge');
+    if (el) { el.textContent = me.unread > 9 ? '9+' : String(me.unread); el.hidden = !me.unread; }
+  }
+  NL.me = {
+    load: function () {
+      return acctFetch('GET', '/api/me').then(function (d) {
+        me.user = d.user;
+        setSaved(d.user ? d.user.saved : []);
+        paintBadge(0);
+        paintAccount();
+        if (d.user && d.user.prefs.alerts.enabled) {
+          acctFetch('GET', '/api/me/notifications').then(function (n) { paintBadge(n.unread); }).catch(function () {});
+        }
+        return d;
+      }).catch(function () { return { user: null }; });
+    },
+    user: function () { return me.user; },
+    setSaved: setSaved, fetch: acctFetch, badge: paintBadge
+  };
+  NL.saveBtn = function (it) {
+    if (!it || !it.type || !it.url || !it.title) return '';
+    var key = saveKey(it), on = !!me.saved[key], label = on ? s('unsave') : s('save');
+    return '<button class="save-btn' + (on ? ' on' : '') + '" type="button" data-save="' + esc(JSON.stringify(it)) + '" data-key="' + esc(key)
+      + '" aria-pressed="' + on + '" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + ICON.bookmark + '</button>';
+  };
+  function toggleSave(btn) {
+    if (!me.user) {
+      NL.toast(s('signInToSave'));
+      setTimeout(function () { location.href = '/account?tab=login&next=' + encodeURIComponent(location.pathname + location.search + location.hash); }, 800);
+      return;
+    }
+    var key = btn.getAttribute('data-key'), on = !!me.saved[key], item;
+    try { item = JSON.parse(btn.getAttribute('data-save')); } catch (e) { return; }
+    btn.disabled = true;
+    (on ? acctFetch('DELETE', '/api/me/saved?key=' + encodeURIComponent(key)) : acctFetch('POST', '/api/me/saved', item))
+      .then(function (r) { setSaved(r.saved); NL.toast(on ? s('unsavedToast') : s('savedToast')); })
+      .catch(function (err) { if (err.status === 401) { me.user = null; paintAccount(); } NL.toast(err.message || s('failed')); })
+      .finally(function () { btn.disabled = false; });
+  }
+  NL.toast = function (msg) {
+    var el = document.getElementById('nl-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'nl-toast'; el.className = 'nl-toast';
+      el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  };
+  document.addEventListener('nl:lang', function () { paintAccount(); paintSaves(); });
+  NL.me.load();
+
   /* ------------------------------------------------------------- delegation */
   document.addEventListener('click', function (e) {
     var t = e.target;
+    var sv = t.closest('[data-save]');
+    if (sv) { e.preventDefault(); toggleSave(sv); return; }
     var b = t.closest('[data-retry]');
     if (b) {
       var fn = NL.retryHandlers[b.getAttribute('data-retry')];
@@ -1027,6 +1231,7 @@
     if (t.closest('[data-lang-toggle]')) { NL.setLang(NL.lang() === 'ne' ? 'en' : 'ne'); return; }
     if (t.closest('[data-theme-toggle]')) { NL.theme.toggle(); return; }
     if (t.closest('#nav-btn')) { openDrawer(!drawer.classList.contains('open')); return; }
+    if (t.closest('[data-drawer-open]')) { openDrawer(true); return; }
     if (t.closest('[data-drawer-close]')) { openDrawer(false); return; }
     var sh = t.closest('[data-sheet]');
     if (sh) { e.preventDefault(); closeMore(); openDrawer(false); openSheet(sh.getAttribute('data-sheet')); return; }
