@@ -1,0 +1,6 @@
+# account store (user emails and password hashes) — never commit
+data/
+# local secrets (Supabase keys)
+.env
+*.tmp
+node_modules/
