@@ -98,6 +98,41 @@ async function cached(key, ttlMs, producer) {
 /* ---------------- RSS parser ----------------
  * splitSource=true  → Google News style "Title - Source" titles
  * splitSource=false → direct site feeds; source = defaultSource   */
+/* Feeds label themselves en/ne, but several mix scripts item-by-item
+   (Nagarik's "EN" feed is mostly Devanagari). Trust the text, not the label. */
+const DEVANAGARI = /[\u0900-\u097F]/;
+const isNepali = (s) => DEVANAGARI.test(String(s || ''));
+
+/* First usable image in the item: media:*, an image enclosure, or the first
+   <img> inside description/content:encoded. */
+const IMG_PATTERNS = [
+  /<media:content[^>]*\burl="([^"]+)"[^>]*>/i,
+  /<media:thumbnail[^>]*\burl="([^"]+)"/i,
+  /<enclosure[^>]*\burl="([^"]+)"[^>]*\btype="image/i,
+  /<enclosure[^>]*\btype="image[^>]*\burl="([^"]+)"/i,
+  /<img[^>]+src="([^"]+)"/i,
+  /<img[^>]+src='([^']+)'/i,
+];
+function firstImage(block) {
+  for (const re of IMG_PATTERNS) {
+    const m = block.match(re);
+    if (m && /^https?:\/\//i.test(m[1])) {
+      /* skip tracking pixels and tiny spacers */
+      if (/\b(1x1|pixel|spacer|blank)\b/i.test(m[1])) continue;
+      return m[1].replace(/&amp;/g, '&');
+    }
+  }
+  return '';
+}
+function firstCategory(block) {
+  const m = block.match(/<category[^>]*>([\s\S]*?)<\/category>/i);
+  if (!m) return '';
+  const c = m[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, '').trim();
+  /* housekeeping categories some WordPress feeds emit */
+  if (!c || /^(cover|home|uncategor)/i.test(c) || c.length > 28) return '';
+  return c;
+}
+
 function parseRSS(xml, defaultSource = '', splitSource = true, limit = 14) {
   const items = [];
   const re = /<item>([\s\S]*?)<\/item>/g;
@@ -123,7 +158,11 @@ function parseRSS(xml, defaultSource = '', splitSource = true, limit = 14) {
       if (dash > 0 && raw.slice(dash + 3).length <= 40) { title = raw.slice(0, dash); source = raw.slice(dash + 3); }
     }
     const pubDate = get('pubDate');
-    if (title) items.push({ title, source, link: get('link'), pubDate });
+    if (title) items.push({
+      title, source, link: get('link'), pubDate,
+      image: firstImage(block),
+      category: firstCategory(block),
+    });
   }
   return { items, fetchedAt: new Date().toISOString() };
 }
@@ -181,7 +220,36 @@ const num = (v, dflt) => {
 };
 
 const PAGES = new Set(['index.html', 'football.html', 'cricket.html']);
-const ASSETS = new Set(['sport-page.js']);
+const ASSETS = new Map([
+  ['sport-page.js', 'application/javascript'],
+  ['app.js', 'application/javascript'],
+  ['app.css', 'text/css'],
+]);
+
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://nepal-live.onrender.com';
+
+const ROBOTS = [
+  'User-agent: *',
+  'Allow: /',
+  'Disallow: /api/',
+  '',
+  `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+  '',
+].join('\n');
+
+function sitemap() {
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = [
+    { loc: '/', priority: '1.0', freq: 'hourly' },
+    { loc: '/football.html', priority: '0.8', freq: 'hourly' },
+    { loc: '/cricket.html', priority: '0.8', freq: 'hourly' },
+  ];
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+    + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + urls.map((u) => `  <url><loc>${SITE_ORIGIN}${u.loc}</loc><lastmod>${today}</lastmod>`
+        + `<changefreq>${u.freq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')
+    + '\n</urlset>\n';
+}
 
 /* ---------------- routes ---------------- */
 const server = http.createServer(async (req, res) => {
@@ -195,8 +263,21 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, fs.readFileSync(path.join(__dirname, file), 'utf8'), true);
     }
     if (ASSETS.has(p.slice(1))) {
-      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+      /* short max-age: long enough to help repeat views, short enough that a
+         Render deploy is picked up without a hard refresh */
+      res.writeHead(200, {
+        'Content-Type': `${ASSETS.get(p.slice(1))}; charset=utf-8`,
+        'Cache-Control': 'public, max-age=600',
+      });
       return res.end(fs.readFileSync(path.join(__dirname, p.slice(1)), 'utf8'));
+    }
+    if (p === '/robots.txt') {
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+      return res.end(ROBOTS);
+    }
+    if (p === '/sitemap.xml') {
+      res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+      return res.end(sitemap());
     }
     if (p === '/healthz') return send(res, 200, { ok: true });
 
@@ -403,7 +484,7 @@ const server = http.createServer(async (req, res) => {
           NEPAL_FEEDS.map(async (f) => {
             const r = await fetchURL(f.url);
             return parseRSS(r.body, f.name, false, 15).items
-              .map((it) => ({ ...it, source: f.name, lang: f.lang }));
+              .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en' }));
           })
         );
         let items = [];

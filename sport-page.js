@@ -17,6 +17,11 @@ const S_I18N = {
     today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow',
     upcoming: 'UPCOMING', live: 'LIVE',
     recent: 'Recent', upcomingDays: 'Upcoming', final: 'Final',
+    liveNow: 'Live now', finished: 'Finished', scheduled: 'Upcoming',
+    venue: 'Venue', noneToday: 'No matches in the feed for the next few days. Check back soon.',
+    errMatches: 'Unable to load the match list right now. Please try again.',
+    errNews: 'Unable to load news right now. Please try again.',
+    lastGood: 'Last good update',
     updated: 'Updated', failed: 'Failed — retrying', round: 'Round',
     agoS: 's ago', agoM: 'm ago', agoH: 'h ago', agoD: 'd ago',
     noSoccer: 'No football matches scheduled for this day in the feed. Try another day, or check the news below.',
@@ -34,6 +39,11 @@ const S_I18N = {
     today: 'आज', yesterday: 'हिजो', tomorrow: 'भोलि',
     upcoming: 'आगामी', live: 'प्रत्यक्ष',
     recent: 'हालैका', upcomingDays: 'आगामी', final: 'समाप्त',
+    liveNow: 'प्रत्यक्ष', finished: 'सकिएका', scheduled: 'आगामी',
+    venue: 'मैदान', noneToday: 'आउँदा केही दिनका लागि फिडमा खेल छैनन्। केही बेरमा फेरि हेर्नुहोस्।',
+    errMatches: 'खेलको सूची लोड गर्न सकिएन। फेरि प्रयास गर्नुहोस्।',
+    errNews: 'समाचार लोड गर्न सकिएन। फेरि प्रयास गर्नुहोस्।',
+    lastGood: 'अन्तिम सफल अपडेट',
     updated: 'अपडेट', failed: 'असफल — पुनः प्रयास', round: 'चरण',
     agoS: 'सेकेन्ड अघि', agoM: 'मिनेट अघि', agoH: 'घण्टा अघि', agoD: 'दिन अघि',
     noSoccer: 'यो दिनका लागि फिडमा फुटबल खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
@@ -79,7 +89,9 @@ function timeAgo(ts) {
   if (s < 172800) return Math.round(s / 3600) + ' ' + st('agoH');
   return Math.round(s / 86400) + ' ' + st('agoD');
 }
+const S_LAST = {};
 function stamp(id, ok = true) {
+  if (ok) S_LAST[id.replace('stamp-', '')] = nptTime(new Date(), true);
   const el = $(id);
   if (!el) return;
   el.textContent = ok ? st('updated') + ' ' + nptTime(new Date(), true) : st('failed');
@@ -171,6 +183,7 @@ function matchCardApple(ev, i = 0) {
       ? `<span class="ap-time">${nptTime(kickoff)}</span><span class="ap-sub">NPT</span>`
       : `<span class="ap-st">${st('upcoming')}</span>`;
 
+  const venue = ev.strVenue ? `<div class="ap-venue">${esc(ev.strVenue)}</div>` : '';
   return `<div class="match ${cls}" style="--i:${i}">
     <div class="ap-league">${esc(ev.strLeague || '')}${ev.strCountry ? ' · ' + esc(ev.strCountry) : ''}</div>
     <div class="ap-main">
@@ -180,6 +193,7 @@ function matchCardApple(ev, i = 0) {
       </div>
       <div class="ap-status">${status}</div>
     </div>
+    ${venue}
   </div>`;
 }
 
@@ -191,23 +205,54 @@ function daySection(title, inner){
 function subDay(date, events){
   return `<div class="subday">${nptDay(date)}</div><div class="day-grid">${events.map((ev,i)=>cardFn(ev,i)).join('')}</div>`;
 }
+/* Matches are grouped by what the viewer cares about first — what is on now,
+   then what is coming, then what finished — with day sub-headings inside the
+   last two. */
+function group(kind, label, count, inner){
+  return `<section class="grp ${kind}">
+    <div class="grp-h"><span class="lbl">${label}</span><span class="n">${count}</span></div>
+    ${inner}
+  </section>`;
+}
+function byDay(events, newestFirst){
+  const map = new Map();
+  events.forEach((ev) => {
+    const d = ev._date || (ev.dateEvent || '');
+    if (!map.has(d)) map.set(d, []);
+    map.get(d).push(ev);
+  });
+  const dates = [...map.keys()].sort((a, b) => newestFirst ? b.localeCompare(a) : a.localeCompare(b));
+  return dates.map((d) =>
+    `<div class="subday">${nptDay(d)}</div><div class="day-grid">${map.get(d).map((ev,i)=>cardFn(ev,i)).join('')}</div>`
+  ).join('');
+}
+function kickoffMs(ev){
+  const t = ev.strTimestamp ? Date.parse(ev.strTimestamp.replace(' ', 'T') + 'Z') : NaN;
+  return Number.isFinite(t) ? t : Date.parse((ev.dateEvent || '') + 'T00:00:00Z') || 0;
+}
 function renderMatches(cfg){
   const days = S_CACHE.matches;
   if(!days) return;
-  const today = kathmanduDateISO(0);
-  const past = days.filter(d=>d.date<today).sort((a,b)=>b.date.localeCompare(a.date));
-  const now  = days.filter(d=>d.date===today);
-  const fut  = days.filter(d=>d.date>today).sort((a,b)=>a.date.localeCompare(b.date));
-  let html='';
-  if(past.length) html += daySection(st('recent'), past.map(d=>subDay(d.date,d.events)).join(''));
-  if(now.length)  html += daySection(st('today'), `<div class="day-grid">${now[0].events.map((ev,i)=>cardFn(ev,i)).join('')}</div>`);
-  if(fut.length)  html += daySection(st('upcomingDays'), fut.map(d=>subDay(d.date,d.events)).join(''));
-  if(!html) html = `<div class="loading">😴 ${st(cfg.sport==='Cricket'?'noCricket':'noSoccer')}</div>`;
-  $('matches-body').innerHTML = html;
+  const all = [];
+  days.forEach((d) => (d.events || []).forEach((ev) => all.push(Object.assign({ _date: d.date }, ev))));
+
+  const live = all.filter((e) => classify(e) === 'live').sort((a,b)=>kickoffMs(a)-kickoffMs(b));
+  const soon = all.filter((e) => { const c = classify(e); return c === 'ns' || c === 'off'; })
+                  .sort((a,b)=>kickoffMs(a)-kickoffMs(b));
+  const done = all.filter((e) => classify(e) === 'done').sort((a,b)=>kickoffMs(b)-kickoffMs(a));
+
+  let html = '';
+  if (live.length) html += group('is-live', st('liveNow'), live.length,
+    `<div class="day-grid">${live.map((ev,i)=>cardFn(ev,i)).join('')}</div>`);
+  if (soon.length) html += group('is-soon', st('scheduled'), soon.length, byDay(soon, false));
+  if (done.length) html += group('is-done', st('finished'), done.length, byDay(done, true));
+
+  $('matches-body').innerHTML = html || NL.emptyState(st('noneToday'));
 }
 
 async function loadMatches(cfg){
   try{
+    if (!S_CACHE.matches) $('matches-body').innerHTML = NL.skeleton('cards');
     let d;
     try{
       const r = await fetch(`/api/sport-range?s=${cfg.sport}&past=2&future=10`, { cache:'no-store' });
@@ -223,7 +268,10 @@ async function loadMatches(cfg){
     renderMatches(cfg);
     stamp('stamp-matches', true);
   }catch(e){
-    $('matches-body').innerHTML = `<div class="error-msg">⚠️ ${st('failed')}…</div>`;
+    $('matches-body').innerHTML = NL.errorState(st('errMatches'), {
+      mod: 'matches',
+      stale: S_LAST.matches ? st('lastGood') + ' ' + S_LAST.matches : '',
+    });
     stamp('stamp-matches', false);
   }
 }
@@ -259,13 +307,19 @@ function renderNews(which) {
   const body = $(`news${which}-body`);
   if (!items) return;
   if (!items.length) {
-    body.innerHTML = `<div class="error-msg">⚠️ ${st('failed')}…</div>`;
+    body.innerHTML = NL.errorState(st('errNews'), {
+      mod: 'news' + which,
+      stale: S_LAST['news' + which] ? st('lastGood') + ' ' + S_LAST['news' + which] : '',
+    });
     return;
   }
   body.innerHTML = `<div class="news-list">` + items.slice(0, 12).map((i, idx) =>
-    `<a class="news-item" style="--i:${idx}" href="${esc(i.link)}" target="_blank" rel="noopener">
-       <div class="t">${esc(i.title)}</div>
-       <div class="m"><b>${esc(i.source || 'News')}</b> · ${timeAgo(Date.parse(i.pubDate) || Date.now())}</div>
+    `<a class="news-item" style="--i:${idx}" href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">
+       <div class="news-body">
+         <div class="t">${esc(i.title)}</div>
+         <div class="m"><span class="src-badge">${esc(i.source || 'News')}</span>
+           <span>${timeAgo(Date.parse(i.pubDate) || Date.now())}</span></div>
+       </div>
      </a>`).join('') + `</div>`;
 }
 
@@ -289,17 +343,21 @@ function applySportI18n(cfg) {
   if ($('news2-title')) $('news2-title').textContent = cfg.sport === 'Cricket' ? st('nepalNewsC') : st('nepalNewsF');
   if ($('prev-day')) $('prev-day').textContent = st('prev');
   if ($('next-day')) $('next-day').textContent = st('next');
-  if ($('sp-footer')) $('sp-footer').innerHTML = cfg.sport === 'Cricket' ? st('footerCricket') : st('footerSoccer');
-  if ($('credit')) $('credit').innerHTML = '♥ ' + st('credit');
+  NL.footerSources = [
+    { name: 'TheSportsDB — fixtures, scores & badges', url: 'https://www.thesportsdb.com/' },
+    { name: 'Google News — sports headlines', url: 'https://news.google.com/' },
+    { name: 'Nepal Live dashboard — gold, NEPSE, weather', url: 'index.html' },
+  ];
+  NL.renderFooter(NL.footerSources);
 }
 function setSportLang(cfg, lang) {
   S_LANG = lang;
   localStorage.setItem('nlive-lang', lang);
   document.documentElement.setAttribute('data-lang', lang);
   document.documentElement.setAttribute('lang', lang === 'ne' ? 'ne' : 'en');
-  const be = $('lang-en'), bn = $('lang-ne');
-  if (be) be.classList.toggle('active', lang === 'en');
-  if (bn) bn.classList.toggle('active', lang === 'ne');
+  document.querySelectorAll('[data-lang]').forEach((b) =>
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+  document.dispatchEvent(new CustomEvent('nl:lang', { detail: { lang } }));
   applySportI18n(cfg);
   renderMatches(cfg);
   renderNews(1); renderNews(2);
@@ -362,14 +420,22 @@ function initParallax() {
 /* ---------- init ---------- */
 function initSportPage(cfg) {
   cardFn = cfg.cardStyle === 'apple' ? matchCardApple : matchCard;
+  NL.retryHandlers = {
+    matches: () => loadMatches(cfg),
+    news1: () => loadNews(cfg, 1),
+    news2: () => loadNews(cfg, 2),
+  };
   $('refresh-matches').addEventListener('click', (e) => {
     e.currentTarget.classList.add('spinning');
     loadMatches(cfg).finally(() => e.currentTarget.classList.remove('spinning'));
   });
   $('refresh-news1').addEventListener('click', () => loadNews(cfg, 1));
   $('refresh-news2').addEventListener('click', () => loadNews(cfg, 2));
-  if ($('lang-en')) $('lang-en').addEventListener('click', (e) => switchSportLang(cfg, 'en', e.currentTarget));
-  if ($('lang-ne')) $('lang-ne').addEventListener('click', (e) => switchSportLang(cfg, 'ne', e.currentTarget));
+  /* delegated so the header switch and the one in the mobile menu both work */
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-lang]');
+    if (b) switchSportLang(cfg, b.getAttribute('data-lang'), b);
+  });
 
   setSportLang(cfg, S_LANG);
   initParallax();

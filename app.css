@@ -1,0 +1,534 @@
+/* =============================================================================
+   Nepal Live — shared design system
+   Loaded by index.html, football.html, cricket.html. Page-specific component
+   CSS stays inline in each page; everything below is the common shell.
+
+   Colour is token-driven so the whole site themes from one place. Light is the
+   default; dark is applied by <html data-theme="dark"> (set before first paint
+   by the inline script in each page's <head>) and by system preference when the
+   visitor has expressed no choice.
+
+   Legacy token names (--card, --muted, --glass …) are kept as aliases so the
+   existing per-page component rules re-tone themselves for free.
+   ============================================================================= */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --bg: #f2f2f7;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #f2f2f7;
+  --bg-hover: #e9e9ee;
+  --sep: rgba(60, 60, 67, .16);
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.04);
+
+  /* text */
+  --text: #111114;
+  --text-2: #56565e;
+  --text-3: #8a8a94;
+
+  /* Nepal identity — flag crimson + flag blue */
+  --brand: #dc143c;
+  --brand-ink: #ffffff;
+  --brand-2: #003893;
+  --brand-wash: rgba(220, 20, 60, .1);
+
+  /* data semantics */
+  --up: #0a7d34;
+  --down: #c9243f;
+  --live: #d70015;
+  --gold: #b8860b;
+  --info: #0a5fd0;
+
+  /* per-page accent (overridden by [data-page]) */
+  --accent: var(--brand);
+  --accent-wash: var(--brand-wash);
+
+  --radius: 16px;
+  --radius-sm: 12px;
+  --tap: 44px;
+  --ease: cubic-bezier(.32, .72, 0, 1);
+  --maxw: 1180px;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+          "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Helvetica Neue", Arial, sans-serif;
+
+  /* ---- aliases used by existing page CSS ---- */
+  --card: var(--bg-elev);
+  --card-hi: var(--bg-elev-2);
+  --dim: var(--text-3);
+  --muted: var(--text-2);
+  --glass: var(--bg-elev);
+  --glass-brd: var(--sep);
+  --panel: var(--bg-elev);
+  --panel2: var(--bg-elev-2);
+  --line: var(--sep);
+  --green: var(--up);
+  --red: var(--down);
+  --accent2: var(--info);
+  --font-display: var(--font);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --bg-elev: #1c1c1e;
+  --bg-elev-2: #2c2c2e;
+  --bg-hover: #3a3a3c;
+  --sep: rgba(84, 84, 88, .45);
+  --shadow: none;
+
+  --text: #ffffff;
+  --text-2: #98989f;
+  --text-3: #6b6b70;
+
+  --brand: #ff375f;
+  --brand-ink: #ffffff;
+  --brand-2: #5b8def;
+  --brand-wash: rgba(255, 55, 95, .16);
+
+  --up: #30d158;
+  --down: #ff453a;
+  --live: #ff453a;
+  --gold: #ffd60a;
+  --info: #0a84ff;
+}
+
+/* Visitors who have never chosen follow the OS. The inline head script stamps
+   data-theme explicitly, so this only matters if scripting is off. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #000000; --bg-elev: #1c1c1e; --bg-elev-2: #2c2c2e; --bg-hover: #3a3a3c;
+    --sep: rgba(84,84,88,.45); --shadow: none;
+    --text: #ffffff; --text-2: #98989f; --text-3: #6b6b70;
+    --brand: #ff375f; --brand-2: #5b8def; --brand-wash: rgba(255,55,95,.16);
+    --up: #30d158; --down: #ff453a; --live: #ff453a; --gold: #ffd60a; --info: #0a84ff;
+  }
+}
+
+/* per-page accents */
+:root[data-page="football"] { --accent: #0a7d34; --accent-wash: rgba(10,125,52,.12); }
+:root[data-theme="dark"][data-page="football"] { --accent: #30d158; --accent-wash: rgba(48,209,88,.16); }
+:root[data-page="cricket"] { --accent: #9a6700; --accent-wash: rgba(154,103,0,.12); }
+:root[data-theme="dark"][data-page="cricket"] { --accent: #ffd60a; --accent-wash: rgba(255,214,10,.16); }
+
+/* ============================ base ============================ */
+* { box-sizing: border-box; margin: 0; padding: 0 }
+html { background: var(--bg); scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.45;
+}
+a { color: inherit; text-decoration: none }
+img { max-width: 100% }
+button, input, select, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip-link {
+  position: absolute; left: 50%; translate: -50% -140%; z-index: 200;
+  background: var(--bg-elev); color: var(--text); padding: 10px 18px; border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow); transition: translate .2s;
+}
+.skip-link:focus { translate: -50% 0 }
+
+@keyframes rise { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes spin { to { transform: rotate(360deg) } }
+@keyframes pulseDot { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+@keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+@keyframes valueIn { from { opacity: .35 } to { opacity: 1 } }
+
+/* ============================ header ============================ */
+.site-head {
+  position: relative; z-index: 70;
+  width: min(var(--maxw), calc(100% - 32px));
+  margin: 20px auto 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.brand { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1 }
+.brand-mark {
+  width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center;
+  border-radius: 11px; background: var(--brand); color: var(--brand-ink);
+  box-shadow: var(--shadow);
+}
+.brand-mark svg { width: 24px; height: 24px; display: block }
+.brand-mark.flag { background: none; box-shadow: none; border-radius: 0; width: auto; height: 40px }
+.brand-mark.flag svg { width: auto; height: 40px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)) }
+.brand-text { min-width: 0 }
+.brand h1 {
+  font-size: 22px; font-weight: 800; letter-spacing: -.6px; line-height: 1.15;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.brand h1 .np { color: var(--brand) }
+.brand .tag {
+  font-size: 12px; color: var(--text-2); margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.head-tools { display: flex; align-items: center; gap: 8px; flex: 0 0 auto }
+
+.live-pill {
+  display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px;
+  border-radius: 999px; background: var(--bg-elev); box-shadow: var(--shadow);
+  font-size: 11.5px; font-weight: 700; letter-spacing: .6px; color: var(--text-2);
+}
+.live-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3) }
+.live-pill.is-live .dot { background: var(--up); animation: pulseDot 2s ease-in-out infinite }
+.live-pill.is-live { color: var(--up) }
+.live-pill.is-degraded .dot { background: var(--gold) }
+.live-pill.is-degraded { color: var(--gold) }
+
+.clockbox { text-align: right; line-height: 1.25 }
+.clockbox #clock { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.2px }
+.clockbox #clock .sec { color: var(--text-3); font-size: 12.5px }
+.clockbox .date { font-size: 11.5px; color: var(--text-2); white-space: nowrap }
+.clockbox .date-ne { font-size: 11.5px; color: var(--text-3); white-space: nowrap }
+.npt {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 5px;
+  background: var(--bg-elev-2); color: var(--text-2);
+  font-size: 9.5px; font-weight: 700; letter-spacing: .5px; vertical-align: 1px;
+}
+
+/* segmented pill: language switch */
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--bg-elev-2); border-radius: 999px }
+.seg button {
+  min-height: 32px; padding: 0 13px; border: none; border-radius: 999px; background: transparent;
+  color: var(--text-2); font-size: 12.5px; font-weight: 600; cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.seg button.active { background: var(--bg-elev); color: var(--text); box-shadow: var(--shadow) }
+.seg button:hover:not(.active) { color: var(--text) }
+
+/* icon buttons — always at least a comfortable tap target */
+.icon-btn {
+  width: var(--tap); height: var(--tap); flex: 0 0 auto;
+  display: grid; place-items: center; border: none; border-radius: 12px;
+  background: transparent; color: var(--text-2); cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.icon-btn:hover { background: var(--bg-hover); color: var(--text) }
+.icon-btn svg { width: 20px; height: 20px }
+.icon-btn .i-sun { display: none }
+:root[data-theme="dark"] .icon-btn .i-sun { display: block }
+:root[data-theme="dark"] .icon-btn .i-moon { display: none }
+
+.nav-toggle { display: none }
+.site-nav .nav-extra { display: none }
+
+/* ============================ nav ============================ */
+.site-nav {
+  position: sticky; top: 8px; z-index: 60;
+  width: max-content; max-width: calc(100% - 32px);
+  margin: 16px auto 0; padding: 3px;
+  display: flex; gap: 2px;
+  background: color-mix(in srgb, var(--bg-elev) 88%, transparent);
+  border-radius: 13px; box-shadow: var(--shadow);
+  backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+.site-nav a {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px; padding: 0 15px; border-radius: 10px;
+  font-size: 13.5px; font-weight: 600; color: var(--text-2);
+  transition: background .2s, color .2s; white-space: nowrap;
+}
+.site-nav a svg { width: 15px; height: 15px }
+.site-nav a:hover { color: var(--text) }
+.site-nav a.active { background: var(--brand); color: var(--brand-ink) }
+
+/* ============================ layout ============================ */
+main {
+  width: min(var(--maxw), calc(100% - 32px));
+  margin: 22px auto 30px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* ============================ card ============================ */
+.card {
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: var(--shadow);
+  animation: rise .45s var(--ease) both;
+  min-width: 0;
+}
+.card.wide { grid-column: 1 / -1 }
+.card > div:not(.card-head) { flex: 1; display: flex; flex-direction: column; min-width: 0 }
+.card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: var(--tap) }
+.card-head h2 { min-width: 0; flex: 1 1 auto }
+.card-head .spacer { display: none }
+.card-head .stamp { order: 9; flex: 1 0 100%; text-align: left; margin-top: -3px }
+.card-head .ico { display: inline-flex; align-items: center; color: var(--accent) }
+.card-head .ico svg { width: 17px; height: 17px }
+.card-head h2 { font-size: 16.5px; font-weight: 700; letter-spacing: -.35px; color: var(--text) }
+.card-head .spacer { flex: 1 }
+.stamp { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0 }
+.stamp.err { color: var(--down) }
+
+.rbtn {
+  width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center;
+  border: none; border-radius: 50%; background: var(--bg-elev-2); color: var(--text-2);
+  cursor: pointer; font-size: 14px; line-height: 1; transition: background .2s, color .2s;
+}
+.rbtn:hover { background: var(--bg-hover); color: var(--text) }
+.rbtn.spinning { animation: spin 1s linear infinite }
+
+select, .fld {
+  min-height: 34px; padding: 0 9px; border: 1px solid transparent; border-radius: 9px;
+  background: var(--bg-elev-2); color: var(--text); font-size: 12.5px; cursor: pointer; outline: none;
+}
+select:focus-visible, .fld:focus-visible { border-color: var(--brand) }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
+  border-radius: 7px; padding: 3px 8px; background: var(--bg-elev-2); color: var(--text-2);
+}
+.chip.up { background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up) }
+.chip.down { background: color-mix(in srgb, var(--down) 16%, transparent); color: var(--down) }
+.chip.open { background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up) }
+.chip.closed { background: var(--bg-elev-2); color: var(--text-2) }
+.chip.live { background: var(--live); color: #fff }
+
+/* trend arrows */
+.trend { font-variant-numeric: tabular-nums; font-weight: 700 }
+.trend.up { color: var(--up) }
+.trend.down { color: var(--down) }
+.trend.flat { color: var(--text-3) }
+
+/* value refresh flash — subtle, once */
+.value-in { animation: valueIn .5s ease both }
+
+/* ============================ skeleton / states ============================ */
+.sk { background: var(--bg-elev-2); border-radius: 8px; position: relative; overflow: hidden }
+.sk::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 7%, transparent), transparent);
+  background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+}
+.sk-line { height: 12px; margin-bottom: 9px }
+.sk-line.lg { height: 30px; width: 62%; margin-bottom: 13px }
+.sk-line.sm { height: 10px; width: 45% }
+.sk-block { height: 74px; margin-bottom: 11px }
+.sk-row { display: flex; gap: 10px; margin-bottom: 11px }
+.sk-row .sk { flex: 1 }
+.skeleton { padding: 4px 0; animation: fadeIn .3s ease both }
+
+.state {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  padding: 18px 4px; color: var(--text-2); font-size: 13.5px; animation: fadeIn .3s ease both;
+}
+.state .state-i { font-size: 22px; line-height: 1 }
+.state .state-msg { line-height: 1.5; max-width: 46ch }
+.state.is-error .state-msg { color: var(--text) }
+.state .retry {
+  min-height: 36px; padding: 0 15px; border: none; border-radius: 999px; cursor: pointer;
+  background: var(--brand); color: var(--brand-ink); font-size: 13px; font-weight: 600;
+  transition: filter .2s;
+}
+.state .retry:hover { filter: brightness(1.08) }
+/* legacy hooks used by existing render code */
+.loading { color: var(--text-2); font-size: 13.5px; padding: 14px 2px; animation: fadeIn .4s ease both }
+.error-msg { color: var(--text); font-size: 13.5px; padding: 14px 2px }
+
+/* ============================ news ============================ */
+.news-filters { display: flex; gap: 6px; flex-wrap: wrap }
+.news-filters button {
+  min-height: 34px; padding: 0 14px; border: none; border-radius: 999px; cursor: pointer;
+  background: var(--bg-elev-2); color: var(--text-2); font-size: 12.5px; font-weight: 600;
+  transition: background .2s, color .2s;
+}
+.news-filters button.active { background: var(--text); color: var(--bg-elev) }
+.news-filters button:hover:not(.active) { background: var(--bg-hover); color: var(--text) }
+
+.news-lead {
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: 0;
+  border-radius: var(--radius); overflow: hidden; background: var(--bg-elev-2);
+  margin-bottom: 14px; animation: rise .45s var(--ease) both;
+}
+.news-lead:hover { background: var(--bg-hover) }
+.news-lead .lead-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 9px; justify-content: center }
+.news-lead .lead-kicker {
+  display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
+  font-size: 10px; font-weight: 800; letter-spacing: 1px; color: var(--brand);
+}
+.news-lead h3 { font-size: 21px; line-height: 1.28; font-weight: 800; letter-spacing: -.5px }
+.news-lead .lead-meta { font-size: 12px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.news-lead .lead-img { position: relative; min-height: 168px; background: var(--bg-hover) }
+.news-lead .lead-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover }
+.news-lead.no-img { grid-template-columns: 1fr }
+
+/* cards size to their own content — a card without a thumbnail must not
+   stretch to match an illustrated neighbour and leave a dead gap */
+.news-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px;
+  align-content: start; align-items: start }
+.news-item {
+  background: var(--bg-elev-2); border-radius: var(--radius-sm); overflow: hidden;
+  display: flex; flex-direction: column; transition: background .2s;
+  animation: rise .4s var(--ease) both;
+}
+.news-item:hover { background: var(--bg-hover) }
+.news-thumb { position: relative; aspect-ratio: 16 / 9; background: var(--bg-hover); overflow: hidden }
+.news-thumb img { width: 100%; height: 100%; object-fit: cover; display: block }
+.news-body { padding: 12px 13px 13px; display: flex; flex-direction: column; gap: 6px; flex: 1 }
+.news-item .t { font-size: 14px; font-weight: 600; line-height: 1.38; letter-spacing: -.15px; color: var(--text) }
+.news-item .m { font-size: 11.5px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: auto }
+.news-cat {
+  font-size: 9.5px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-wash); border-radius: 5px; padding: 2px 6px;
+}
+.src-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .2px;
+  padding: 2px 7px; border-radius: 6px; background: var(--bg-elev); color: var(--text-2);
+}
+.news-note { font-size: 11px; color: var(--text-3); line-height: 1.5 }
+
+/* ============================ footer ============================ */
+.site-foot {
+  width: min(var(--maxw), calc(100% - 32px));
+  margin: 8px auto 0; padding: 22px 0 34px;
+  border-top: 1px solid var(--sep);
+  color: var(--text-2); font-size: 12.5px; line-height: 1.65;
+}
+.foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 22px; margin-bottom: 20px }
+.foot-grid h4 {
+  font-size: 11px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 9px;
+}
+.foot-grid p { max-width: 46ch }
+.foot-grid ul { list-style: none; display: flex; flex-direction: column; gap: 3px }
+.foot-grid a { color: var(--text-2); display: inline-block; padding: 4px 0; transition: color .2s }
+.foot-grid a:hover { color: var(--brand) }
+.foot-disclaimer {
+  background: var(--bg-elev); border-radius: var(--radius-sm); padding: 13px 15px;
+  font-size: 12px; color: var(--text-2); line-height: 1.6;
+}
+.foot-disclaimer b { color: var(--text) }
+.foot-bottom {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--sep);
+  font-size: 12px; color: var(--text-3);
+}
+.foot-bottom b { color: var(--text-2); font-weight: 700 }
+
+/* dialogs for policy text — no extra pages to host */
+dialog.sheet {
+  width: min(640px, calc(100% - 32px)); max-height: 82vh; padding: 0;
+  border: none; border-radius: var(--radius); background: var(--bg-elev); color: var(--text);
+  box-shadow: 0 24px 60px rgba(0,0,0,.3);
+}
+dialog.sheet::backdrop { background: rgba(0,0,0,.45); backdrop-filter: blur(2px) }
+dialog.sheet .sheet-head {
+  position: sticky; top: 0; display: flex; align-items: center; gap: 10px;
+  padding: 15px 16px; background: var(--bg-elev); border-bottom: 1px solid var(--sep);
+}
+dialog.sheet h3 { font-size: 17px; font-weight: 700; flex: 1 }
+dialog.sheet .sheet-body { padding: 16px; overflow-y: auto; font-size: 13.5px; line-height: 1.65; color: var(--text-2) }
+dialog.sheet .sheet-body h4 { color: var(--text); font-size: 13.5px; margin: 14px 0 5px }
+dialog.sheet .sheet-body h4:first-child { margin-top: 0 }
+dialog.sheet .sheet-body ul { margin: 6px 0 6px 18px }
+dialog.sheet .sheet-body a { color: var(--brand) }
+
+/* ============================ responsive ============================ */
+@media (max-width: 860px) {
+  .site-head { flex-wrap: wrap; gap: 10px; margin-top: 14px }
+  .clockbox { text-align: left }
+  main { grid-template-columns: 1fr; gap: 14px }
+  .news-lead { grid-template-columns: 1fr }
+  .news-lead .lead-img { order: -1; min-height: 0; aspect-ratio: 16 / 9 }
+  .foot-grid { grid-template-columns: 1fr 1fr; gap: 18px }
+  .foot-grid > :first-child { grid-column: 1 / -1 }
+}
+
+@media (max-width: 720px) {
+  body { font-size: 15px }
+  .nav-toggle { display: grid }
+  .brand h1 { font-size: 19px }
+  .brand .tag { display: none }
+  .brand-mark { width: 34px; height: 34px; border-radius: 10px }
+  /* keep Nepal time visible on phones, just compact */
+  .head-tools .clockbox .date,
+  .head-tools .clockbox .date-ne { display: none }
+  .head-tools .clockbox #clock { font-size: 14.5px }
+  .head-tools .clockbox #clock .sec { display: none }
+  .head-tools .seg { display: none }
+
+  /* nav becomes a drawer under the header */
+  .site-nav {
+    position: fixed; inset: 0 0 auto 0; top: 0; width: 100%; max-width: none;
+    margin: 0; padding: 68px 14px 14px;
+    flex-direction: column; gap: 4px;
+    background: var(--bg-elev); border-radius: 0 0 20px 20px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.28);
+    transform: translateY(-104%); transition: transform .28s var(--ease);
+    z-index: 65;
+  }
+  .site-nav.open { transform: none }
+  .site-nav a { min-height: var(--tap); padding: 0 14px; font-size: 15px; border-radius: 11px }
+  .site-nav a svg { width: 18px; height: 18px }
+  .site-nav .nav-extra { display: flex; gap: 8px; align-items: center; padding: 10px 4px 2px; border-top: 1px solid var(--sep); margin-top: 6px }
+  .site-nav .nav-extra .seg { display: inline-flex; flex: 1 }
+  .site-nav .nav-extra .seg button { flex: 1; min-height: 38px }
+  .nav-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 64;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .nav-scrim.open { opacity: 1; pointer-events: auto }
+  body.nav-open { overflow: hidden }
+
+  main { margin-top: 16px }
+  .card { padding: 14px; border-radius: 14px }
+  .card-head h2 { font-size: 16px }
+  .news-list { grid-template-columns: 1fr }
+  .news-lead h3 { font-size: 18px }
+  .foot-grid { grid-template-columns: 1fr }
+  .site-foot { font-size: 13px }
+}
+
+@media (max-width: 380px) {
+  .site-head { gap: 8px }
+  .brand h1 { font-size: 17.5px }
+  .live-pill { padding: 0; width: 34px; justify-content: center }
+  .live-pill #status-text { display: none }
+}
+
+/* Touch devices get a 44px minimum hit area everywhere (WCAG 2.5.5 / HIG).
+   !important because each page's own stylesheet loads after this one. */
+@media (pointer: coarse) {
+  .rbtn,
+  .fx-swap { width: var(--tap) !important; height: var(--tap) !important }
+  .seg button,
+  .site-nav .nav-extra .seg button,
+  .news-filters button,
+  .site-nav a,
+  .icon-btn,
+  select, .fld, .fx-amt { min-height: var(--tap) !important }
+  .brand { min-height: var(--tap) }
+  .q-link,
+  .mini-headlines a,
+  .foot-grid a,
+  .site-foot .foot-bottom a { min-height: var(--tap) !important; padding-block: 12px !important }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important }
+}
+
+@media print {
+  .site-nav, .head-tools, .rbtn, .news-filters { display: none !important }
+  body { background: #fff; color: #000 }
+}

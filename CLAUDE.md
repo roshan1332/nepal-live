@@ -9,9 +9,19 @@ Football/Cricket fixtures. Built by Roshan Mainali ("Made by Roshan Mainali" cre
 node server.js        # http://localhost:3000  (PORT env to change)
 ```
 **Zero npm dependencies** — plain Node `http` server. Do NOT add a package manager / deps.
+`SITE_ORIGIN` env overrides the origin used in robots.txt / sitemap.xml (default `https://nepal-live.onrender.com`).
 
 ## Files
-- `server.js` — static file server + `/api/*` proxy with in-memory caching. Also serves pages.
+- `server.js` — static file server + `/api/*` proxy with in-memory caching. Also serves pages,
+  `/robots.txt` and a generated `/sitemap.xml`.
+- `app.css` — **shared design system**: light/dark tokens, header, nav (+ mobile drawer), cards,
+  skeletons, error states, news components, footer. Loaded by all three pages; page-specific
+  component CSS stays inline in each page.
+- `app.js` — **shared shell**: theme (persisted in `localStorage['nlive-theme']`, system default,
+  set pre-paint by an inline snippet in each `<head>`), mobile nav drawer, footer + policy dialogs,
+  and the `NL.skeleton` / `NL.errorState` / `NL.emptyState` / `NL.retryHandlers` helpers.
+  Everything hangs off `window.NL` — it shares global scope with the page scripts, so it must not
+  declare bare top-level names.
 - `nepse/nepse-client.js` + `nepse/css.wasm` — NEPSE token flow (prove → prune token via wasm). Loaded leniently (`./nepse/nepse-client` or flattened `./nepse-client`).
 - `index.html` — main dashboard (inline `<script>` + `<style>`).
 - `football.html`, `cricket.html` — sports pages (share `sport-page.js`).
@@ -27,11 +37,12 @@ node server.js        # http://localhost:3000  (PORT env to change)
 ## Frontend conventions
 - Vanilla JS, per-page inline scripts. Helpers: `$`, `esc`, `fmtNum`, `animateCounts` (counts from cached previous value via `COUNT_CACHE`, keyed by `data-key`).
 - i18n: `I18N`/`S_I18N` en/ne dicts, `t()`/`st()`, `data-lang` on `<html>`, persisted in `localStorage['nlive-lang']`. Language toggle animates via `langSwap`.
-- Theme: Apple-style dark (all three pages). True-black canvas, systemGray6 `#1c1c1e` cards, systemGray5 `#2c2c2e` insets,
-  no glass/blur/lift/shadow, SF-style system font, sentence-case bold section titles. CSS vars in `:root`
-  (`--card`, `--card-hi`, `--sep`, `--muted`, `--dim`, `--accent`, `--radius`). Per-page accent: dashboard orange
-  `#ff9f0a`, football green `#30d158`, cricket yellow `#ffd60a`. **Each page carries its own copy of the stylesheet —
-  restyle all three together.**
+- Theme: light **and** dark, driven entirely by tokens in `app.css`. Brand colour is Nepal-flag crimson
+  (`--brand`); per-page data accent via `<html data-page="football|cricket">`. Legacy token names
+  (`--card`, `--muted`, `--glass` …) are kept as aliases so older page rules re-tone for free.
+  **Never hard-code a colour in page CSS** — use a token, or light mode breaks.
+- Touch targets: `@media (pointer: coarse)` in `app.css` enforces a 44px minimum (with `!important`,
+  since page stylesheets load after it).
 - Animations are CSS keyframes; respect `prefers-reduced-motion`.
 - **Keep all existing class names** — JS templates depend on them. Restyle via CSS only.
 
