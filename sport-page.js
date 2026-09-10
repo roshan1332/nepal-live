@@ -16,6 +16,7 @@ const S_I18N = {
   en: {
     today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow',
     upcoming: 'UPCOMING', live: 'LIVE',
+    recent: 'Recent', upcomingDays: 'Upcoming', final: 'Final',
     updated: 'Updated', failed: 'Failed — retrying', round: 'Round',
     agoS: 's ago', agoM: 'm ago', agoH: 'h ago', agoD: 'd ago',
     noSoccer: 'No football matches scheduled for this day in the feed. Try another day, or check the news below.',
@@ -32,6 +33,7 @@ const S_I18N = {
   ne: {
     today: 'आज', yesterday: 'हिजो', tomorrow: 'भोलि',
     upcoming: 'आगामी', live: 'प्रत्यक्ष',
+    recent: 'हालैका', upcomingDays: 'आगामी', final: 'समाप्त',
     updated: 'अपडेट', failed: 'असफल — पुनः प्रयास', round: 'चरण',
     agoS: 'सेकेन्ड अघि', agoM: 'मिनेट अघि', agoH: 'घण्टा अघि', agoD: 'दिन अघि',
     noSoccer: 'यो दिनका लागि फिडमा फुटबल खेलहरू छैनन्। अर्को दिन हेर्नुहोस् वा तलका समाचार पढ्नुहोस्।',
@@ -137,11 +139,57 @@ function matchCard(ev, i = 0) {
   </div>`;
 }
 
+/* Apple Sports layout: each team gets its own row (badge · name · score) and the
+   match status sits in a column on the right. Opt-in via cfg.cardStyle:'apple'. */
+function matchCardApple(ev, i = 0) {
+  const cls = classify(ev);
+  const hs = ev.strHomeScore ?? ev.intHomeScore;
+  const as = ev.strAwayScore ?? ev.intAwayScore;
+  const hasScore = hs != null && as != null && String(hs) !== '' && String(as) !== '';
+  const hn = Number(hs), an = Number(as);
+  const decided = hasScore && cls === 'done' && Number.isFinite(hn) && Number.isFinite(an) && hn !== an;
+  const kickoff = ev.strTimestamp ? new Date(ev.strTimestamp.replace(' ', 'T') + 'Z') : null;
+  const raw = String(ev.strStatus || '').trim();
+
+  const row = (team, badge, score, dim) =>
+    `<div class="ap-row${dim ? ' dim' : ''}">
+       <span class="ap-badge">${badge ? `<img src="${esc(badge)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}</span>
+       <span class="ap-name">${esc(team || '—')}</span>
+       <span class="ap-score">${hasScore ? esc(score) : ''}</span>
+     </div>`;
+
+  let status;
+  if (cls === 'live')
+    status = `<span class="ap-st hot"><i class="ap-dot"></i>${st('live')}</span>`
+      + (raw && raw.toUpperCase() !== 'LIVE' ? `<span class="ap-sub">${esc(raw)}</span>` : '');
+  else if (cls === 'done')
+    status = `<span class="ap-st">${raw && raw.toUpperCase() !== 'FT' ? esc(raw) : st('final')}</span>`;
+  else if (cls === 'off')
+    status = `<span class="ap-st">${esc(raw || 'Postponed')}</span>`;
+  else
+    status = kickoff
+      ? `<span class="ap-time">${nptTime(kickoff)}</span><span class="ap-sub">NPT</span>`
+      : `<span class="ap-st">${st('upcoming')}</span>`;
+
+  return `<div class="match ${cls}" style="--i:${i}">
+    <div class="ap-league">${esc(ev.strLeague || '')}${ev.strCountry ? ' · ' + esc(ev.strCountry) : ''}</div>
+    <div class="ap-main">
+      <div class="ap-teams">
+        ${row(ev.strHomeTeam, ev.strHomeTeamBadge, hs, decided && hn < an)}
+        ${row(ev.strAwayTeam, ev.strAwayTeamBadge, as, decided && an < hn)}
+      </div>
+      <div class="ap-status">${status}</div>
+    </div>
+  </div>`;
+}
+
+let cardFn = matchCard;
+
 function daySection(title, inner){
   return `<div class="day-sec"><div class="day-h">${title}</div>${inner}</div>`;
 }
 function subDay(date, events){
-  return `<div class="subday">${nptDay(date)}</div><div class="day-grid">${events.map((ev,i)=>matchCard(ev,i)).join('')}</div>`;
+  return `<div class="subday">${nptDay(date)}</div><div class="day-grid">${events.map((ev,i)=>cardFn(ev,i)).join('')}</div>`;
 }
 function renderMatches(cfg){
   const days = S_CACHE.matches;
@@ -152,7 +200,7 @@ function renderMatches(cfg){
   const fut  = days.filter(d=>d.date>today).sort((a,b)=>a.date.localeCompare(b.date));
   let html='';
   if(past.length) html += daySection(st('recent'), past.map(d=>subDay(d.date,d.events)).join(''));
-  if(now.length)  html += daySection(st('today'), `<div class="day-grid">${now[0].events.map((ev,i)=>matchCard(ev,i)).join('')}</div>`);
+  if(now.length)  html += daySection(st('today'), `<div class="day-grid">${now[0].events.map((ev,i)=>cardFn(ev,i)).join('')}</div>`);
   if(fut.length)  html += daySection(st('upcomingDays'), fut.map(d=>subDay(d.date,d.events)).join(''));
   if(!html) html = `<div class="loading">😴 ${st(cfg.sport==='Cricket'?'noCricket':'noSoccer')}</div>`;
   $('matches-body').innerHTML = html;
@@ -313,6 +361,7 @@ function initParallax() {
 
 /* ---------- init ---------- */
 function initSportPage(cfg) {
+  cardFn = cfg.cardStyle === 'apple' ? matchCardApple : matchCard;
   $('refresh-matches').addEventListener('click', (e) => {
     e.currentTarget.classList.add('spinning');
     loadMatches(cfg).finally(() => e.currentTarget.classList.remove('spinning'));

@@ -326,9 +326,16 @@ const server = http.createServer(async (req, res) => {
       const lat = num(u.searchParams.get('lat'), 27.7172);
       const lon = num(u.searchParams.get('lon'), 85.324);
       const data = await cached(`air:${lat}:${lon}`, 900e3, async () => {
+        /* current = concentrations plus the per-pollutant US AQI sub-indices (so the
+           dominant pollutant is upstream's, not ours); hourly us_aqi across
+           yesterday..tomorrow feeds the ±12 h trend line. */
         const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
           + `?latitude=${lat}&longitude=${lon}`
-          + '&current=pm2_5,pm10,us_aqi&timezone=Asia%2FKathmandu';
+          + '&current=pm2_5,pm10,us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_ozone,'
+          + 'us_aqi_nitrogen_dioxide,us_aqi_sulphur_dioxide,us_aqi_carbon_monoxide,'
+          + 'ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide'
+          + '&hourly=us_aqi&past_days=1&forecast_days=2'
+          + '&timezone=Asia%2FKathmandu';
         const r = await fetchURL(url);
         return openMeteo(r.body, 'current');
       });

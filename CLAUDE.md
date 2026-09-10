@@ -15,7 +15,9 @@ node server.js        # http://localhost:3000  (PORT env to change)
 - `nepse/nepse-client.js` + `nepse/css.wasm` — NEPSE token flow (prove → prune token via wasm). Loaded leniently (`./nepse/nepse-client` or flattened `./nepse-client`).
 - `index.html` — main dashboard (inline `<script>` + `<style>`).
 - `football.html`, `cricket.html` — sports pages (share `sport-page.js`).
-- `sport-page.js` — shared sports logic + i18n + animations.
+- `sport-page.js` — shared sports logic + i18n + animations. Two match-card renderers: `matchCardApple` (stacked team
+  rows with per-team scores + right-hand status column; loser dims on decided finals) and the older side-by-side
+  `matchCard`. Pages pick one with `cardStyle:'apple'` in `initSportPage`; both pages currently opt in.
 - `render.yaml`, `package.json` — Render deploy (start: `node server.js`).
 
 ## API endpoints (all cached, `Cache-Control: no-store` to browser)
@@ -25,7 +27,11 @@ node server.js        # http://localhost:3000  (PORT env to change)
 ## Frontend conventions
 - Vanilla JS, per-page inline scripts. Helpers: `$`, `esc`, `fmtNum`, `animateCounts` (counts from cached previous value via `COUNT_CACHE`, keyed by `data-key`).
 - i18n: `I18N`/`S_I18N` en/ne dicts, `t()`/`st()`, `data-lang` on `<html>`, persisted in `localStorage['nlive-lang']`. Language toggle animates via `langSwap`.
-- Theme: gold/plum dark. CSS vars in `:root` (`--accent:#f0b429`, `--glass`, `--radius`, `--font-display`). Serif headings.
+- Theme: Apple-style dark (all three pages). True-black canvas, systemGray6 `#1c1c1e` cards, systemGray5 `#2c2c2e` insets,
+  no glass/blur/lift/shadow, SF-style system font, sentence-case bold section titles. CSS vars in `:root`
+  (`--card`, `--card-hi`, `--sep`, `--muted`, `--dim`, `--accent`, `--radius`). Per-page accent: dashboard orange
+  `#ff9f0a`, football green `#30d158`, cricket yellow `#ffd60a`. **Each page carries its own copy of the stylesheet —
+  restyle all three together.**
 - Animations are CSS keyframes; respect `prefers-reduced-motion`.
 - **Keep all existing class names** — JS templates depend on them. Restyle via CSS only.
 

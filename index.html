@@ -7,112 +7,92 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🇳🇵%3C/text%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#0e0a18; --panel:#1a1428; --panel2:#140f20; --line:#2c2444;
-    --text:#f4f0fb; --muted:#a29abf; --accent:#f0b429; --accent2:#4cc3ff;
-    --gold:#f5c542; --green:#2ecc71; --red:#e0344e;
-    --radius:24px;
-    --glass:rgba(30,22,48,.66);
-    --glass-brd:rgba(255,255,255,.09);
-    --ease:cubic-bezier(.22,1,.36,1);
-    --font-display:Georgia,'Times New Roman',serif;
+    /* Apple system palette (dark) — shared with football.html / cricket.html */
+    --bg:#000; --panel:#1c1c1e; --panel2:#2c2c2e; --line:rgba(84,84,88,.45);
+    --text:#fff; --muted:#98989f; --accent:#ff9f0a; --accent2:#0a84ff;
+    --gold:#ffd60a; --green:#30d158; --red:#ff453a;
+    --radius:16px;
+    --glass:#1c1c1e;
+    --glass-brd:rgba(84,84,88,.35);
+    --card:#1c1c1e; --card-hi:#2c2c2e; --sep:rgba(84,84,88,.45); --dim:#6b6b70;
+    --ease:cubic-bezier(.32,.72,0,1);
+    --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",
+      "Segoe UI Variable Display","Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Helvetica Neue",Arial,sans-serif;
+    color-scheme:dark;
   }
   *{box-sizing:border-box; margin:0; padding:0}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth; background:#000}
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Helvetica Neue",Arial,sans-serif;
-    background:
-      radial-gradient(1200px 500px at 80% -10%, rgba(224,52,78,.12), transparent 60%),
-      radial-gradient(900px 420px at 10% -10%, rgba(47,111,237,.12), transparent 60%),
-      linear-gradient(160deg,#070b16 0%,#0a1020 40%,#0d1730 70%,#070b16 100%);
-    background-size:auto,auto,300% 300%;
-    animation:bgShift 26s ease-in-out infinite;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",
+      "Segoe UI Variable Text","Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Helvetica Neue",Arial,sans-serif;
+    background:#000; background-color:#000;
     color:var(--text); min-height:100vh; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
   }
-  @keyframes bgShift{0%,100%{background-position:0 0,0 0,0% 50%}50%{background-position:0 0,0 0,100% 50%}}
-  @keyframes hueDrift{from{filter:blur(90px) hue-rotate(0deg)}to{filter:blur(90px) hue-rotate(45deg)}}
-  /* ---- animated background orbs ---- */
-  body::before, body::after{
-    content:""; position:fixed; border-radius:50%; pointer-events:none; z-index:0;
-    filter:blur(90px); opacity:.22;
-  }
-  body::before{ width:540px;height:540px; left:-140px; top:-140px;
-    background:radial-gradient(circle,#f0b429,transparent 70%);
-    animation:drift1 20s ease-in-out infinite alternate, hueDrift 14s ease-in-out infinite alternate;}
-  body::after{ width:640px;height:640px; right:-180px; bottom:-180px;
-    background:radial-gradient(circle,#4cc3ff,transparent 70%);
-    animation:drift2 26s ease-in-out infinite alternate, hueDrift 18s ease-in-out infinite alternate;}
-  @keyframes drift1{to{transform:translate(150px,110px) scale(1.18)}}
-  @keyframes drift2{to{transform:translate(-150px,-90px) scale(1.12)}}
   header, nav.pages, .ticker, main, footer{position:relative; z-index:1}
   a{color:inherit; text-decoration:none}
 
   /* ---- entrance animation ---- */
-  @keyframes rise{from{opacity:0; transform:translateY(20px) scale(.985)} to{opacity:1; transform:none}}
+  @keyframes rise{from{opacity:0; transform:translateY(7px)} to{opacity:1; transform:none}}
   @keyframes fadeIn{from{opacity:0} to{opacity:1}}
 
   header{display:grid; grid-template-columns:1fr auto auto; gap:22px; align-items:center;
-    width:min(1240px, calc(100% - 44px)); margin:18px auto 0; padding:16px 22px;
-    background:linear-gradient(180deg, var(--glass), rgba(15,20,38,.62));
-    border:1px solid var(--glass-brd); border-radius:20px;
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    box-shadow:0 14px 36px rgba(0,0,0,.4); animation:rise .7s var(--ease) both}
+    width:min(1240px, calc(100% - 44px)); margin:30px auto 0; padding:0;
+    background:none; border:none; box-shadow:none; animation:rise .5s var(--ease) both}
   .brand{display:flex; gap:14px; align-items:center}
-  .brand svg{width:54px; height:auto; filter:drop-shadow(0 6px 16px rgba(224,52,78,.45));
-             transition:transform .4s var(--ease)}
+  .brand svg{width:44px; height:auto; transition:transform .4s var(--ease)}
   .brand:hover svg{transform:translateY(-3px) rotate(-2deg)}
   .brand h1{font-size:27px; letter-spacing:.5px; font-weight:800}
-  .brand h1 .np{background:linear-gradient(120deg,#ffd75e,#f0b429); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .brand h1 .np{color:var(--accent)}
   .brand .tag{color:var(--muted); font-size:13px; margin-top:2px}
   .clockbox{text-align:right}
-  #clock{font-size:34px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:1px}
-  #clock .sec{color:var(--accent); font-size:22px}
+  #clock{font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.4px}
+  #clock .sec{color:var(--dim); font-size:15px}
   .clockbox .date{color:var(--muted); font-size:12.5px}
-  .clockbox .date-ne{color:#b9c2dd; font-size:12.5px}
-  .npt{display:inline-block; margin-left:8px; font-size:10.5px; color:#fff; background:var(--accent);
-       border-radius:6px; padding:2px 6px; vertical-align:middle; letter-spacing:1px}
+  .clockbox .date-ne{color:var(--dim); font-size:12.5px}
+  .npt{display:inline-block; margin-left:7px; font-size:9.5px; color:var(--muted); background:var(--card);
+       border-radius:5px; padding:2px 6px; vertical-align:middle; letter-spacing:.6px; font-weight:700}
   .hdr-right{display:flex; flex-direction:column; gap:9px; align-items:flex-end}
-  .status{display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:2px; color:#d9e2f2;
-    background:rgba(255,255,255,.05); border:1px solid var(--glass-brd); padding:6px 13px; border-radius:999px}
+  .status{display:inline-flex; align-items:center; gap:7px; font-size:11px; letter-spacing:1.1px; color:var(--muted);
+    background:var(--card); border:none; padding:6px 13px; border-radius:999px; font-weight:600}
   .dot{width:10px; height:10px; border-radius:50%; background:#7f8aa8; display:inline-block}
   .dot.live{background:var(--green); box-shadow:0 0 0 0 rgba(46,204,113,.6); animation:pulse 1.6s infinite}
   .dot.degraded{background:#f1c40f}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
-  .lang-toggle{display:flex; border:1px solid var(--glass-brd); border-radius:999px; overflow:hidden; backdrop-filter:blur(6px)}
-  .lang-toggle button{background:rgba(255,255,255,.04); color:var(--muted); border:none; padding:7px 14px;
-    font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
-  .lang-toggle button.active{background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04}
-  .lang-toggle button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
+  .lang-toggle{display:inline-flex; padding:2px; background:var(--card); border-radius:999px}
+  .lang-toggle button{background:transparent; color:var(--muted); border:none; padding:6px 13px; border-radius:999px;
+    font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .2s, color .2s}
+  .lang-toggle button.active{background:var(--card-hi); color:#fff}
+  .lang-toggle button:not(.active):hover{color:#fff}
 
-  nav.pages{position:sticky; top:10px; z-index:60; width:min(1240px, calc(100% - 44px)); margin:12px auto 0; padding:6px;
-    display:flex; gap:6px; flex-wrap:wrap; background:rgba(14,20,36,.82); border:1px solid var(--glass-brd);
-    border-radius:14px; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-    box-shadow:0 10px 26px rgba(0,0,0,.35); animation:rise .7s var(--ease) .08s both}
-  nav.pages a{display:inline-flex; align-items:center; padding:9px 18px; border-radius:10px; font-size:13.5px; font-weight:600;
-    color:var(--muted); background:transparent; border:none; transition:.25s}
-  nav.pages a:hover{color:#fff; background:rgba(255,255,255,.06)}
-  nav.pages a.active{background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04; box-shadow:0 6px 18px rgba(240,180,41,.35)}
+  nav.pages{position:sticky; top:8px; z-index:60; width:max-content; max-width:calc(100% - 44px); margin:20px auto 0; padding:3px;
+    display:flex; gap:2px; flex-wrap:wrap; background:rgba(28,28,30,.86); border:none; border-radius:12px;
+    backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
+    animation:rise .5s var(--ease) .04s both}
+  nav.pages a{display:inline-flex; align-items:center; padding:7px 15px; border-radius:9px; font-size:13.5px; font-weight:600;
+    color:var(--muted); background:transparent; border:none; transition:background .2s, color .2s}
+  nav.pages a:hover{color:#fff}
+  nav.pages a.active{background:var(--card-hi); color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.5)}
 
   .ticker{width:min(1240px, calc(100% - 44px)); margin:12px auto 16px; padding:0; animation:rise .7s var(--ease) .14s both}
-  .ticker-inner{overflow:hidden; white-space:nowrap; background:var(--glass);
-    border:1px solid var(--glass-brd); border-radius:13px; display:flex; align-items:center; backdrop-filter:blur(10px)}
-  .ticker-label{flex:0 0 auto; display:flex; align-items:center; background:linear-gradient(135deg,#ffd75e,#f0b429); color:#241a04; font-weight:700; font-size:12px;
-    letter-spacing:1.5px; padding:10px 15px; border-radius:12px 0 0 12px}
+  .ticker-inner{overflow:hidden; white-space:nowrap; background:var(--card);
+    border:none; border-radius:12px; display:flex; align-items:center}
+  .ticker-label{flex:0 0 auto; display:flex; align-items:center; background:var(--card-hi); color:var(--accent); font-weight:700; font-size:11.5px;
+    letter-spacing:1px; padding:10px 15px}
   .ticker-view{overflow:hidden; flex:1}
   .ticker-track{display:inline-block; white-space:nowrap; padding:10px 0; animation:scroll 70s linear infinite}
-  .ticker-track span{color:#cfd6ec; font-size:13px; padding:0 26px}
+  .ticker-track span{color:#e8e8ed; font-size:13px; padding:0 26px}
   .ticker-track span::before{content:"●"; color:var(--accent); margin-right:26px; font-size:8px; vertical-align:2px}
   @keyframes scroll{from{transform:translateX(0)} to{transform:translateX(-50%)}}
   .ticker-inner:hover .ticker-track{animation-play-state:paused}
 
   main{max-width:1240px; margin:0 auto; padding:0 22px 34px;
        display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:18px}
-  .card{background:linear-gradient(180deg, var(--glass), rgba(15,20,38,.72));
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border:1px solid var(--glass-brd); border-radius:var(--radius); padding:19px;
+  .card{background:var(--card);
+    border:none; border-radius:var(--radius); padding:18px;
     display:flex; flex-direction:column; gap:13px; min-height:210px;
-    box-shadow:0 12px 32px rgba(0,0,0,.38);
-    transition:transform .35s var(--ease), box-shadow .35s, border-color .35s;
-    animation:rise .7s var(--ease) both}
+    box-shadow:none; transition:background .25s;
+    animation:rise .5s var(--ease) both}
   /* staggered entrance */
   main .card:nth-child(1){animation-delay:.16s}
   main .card:nth-child(2){animation-delay:.22s}
@@ -122,13 +102,12 @@
   main .card:nth-child(6){animation-delay:.46s}
   main .card:nth-child(7){animation-delay:.52s}
   main .card:nth-child(8){animation-delay:.58s}
-  .card:hover{transform:translateY(-5px); border-color:rgba(240,180,41,.5);
-    box-shadow:0 22px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(240,180,41,.14)}
+  .card:hover{background:#202022}
   .card.wide{grid-column:1/-1}
   /* fill vertical gaps: let card bodies stretch to the card height */
   .card > div:not(.card-head){flex:1; display:flex; flex-direction:column; justify-content:flex-start; min-width:0}
   .card-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-  .card-head h2{font-size:14.5px; letter-spacing:.6px; text-transform:uppercase; color:#c9d2ee; font-weight:700}
+  .card-head h2{font-size:17px; letter-spacing:-.3px; text-transform:none; color:#fff; font-weight:700}
   .card-head .ico{display:inline-flex; align-items:center; color:var(--accent)}
   .ic{width:18px; height:18px; flex:0 0 auto}
   .nico{display:inline-flex; width:16px; height:16px; margin-right:7px}
@@ -138,36 +117,36 @@
   .spacer{flex:1}
   .stamp{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
   .stamp.err{color:var(--red)}
-  .rbtn{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted); border-radius:8px;
-        width:28px; height:28px; cursor:pointer; font-size:13px; line-height:1; transition:.25s}
-  .rbtn:hover{color:#ffd75e; border-color:var(--accent); background:rgba(240,180,41,.12); transform:rotate(30deg)}
+  .rbtn{background:var(--card-hi); border:none; color:var(--muted); border-radius:50%;
+        width:28px; height:28px; cursor:pointer; font-size:13px; line-height:1; transition:background .2s, color .2s}
+  .rbtn:hover{color:#fff; background:#3a3a3c}
   .rbtn.spinning{animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  select{background:rgba(255,255,255,.05); color:var(--text); border:1px solid var(--glass-brd);
-         border-radius:8px; padding:4px 8px; font-size:12px; outline:none; cursor:pointer}
+  select{background:var(--card-hi); color:var(--text); border:none;
+         border-radius:8px; padding:5px 9px; font-size:12px; outline:none; cursor:pointer; font-family:inherit}
   .loading,.error-msg{color:var(--muted); font-size:13px; padding:14px 2px; animation:fadeIn .5s ease both}
   @keyframes softPulse{0%,100%{opacity:.55}50%{opacity:1}}
   .error-msg{color:#f0a3ae}
   .chip{font-size:10.5px; font-weight:700; letter-spacing:.6px; border-radius:7px; padding:3px 8px}
-  .chip.up{background:rgba(46,204,113,.16); color:var(--green)}
-  .chip.down{background:rgba(224,52,78,.16); color:#ff7b8d}
-  .chip.open{background:rgba(46,204,113,.16); color:var(--green)}
-  .chip.closed{background:rgba(139,148,176,.16); color:var(--muted)}
+  .chip.up{background:rgba(48,209,88,.18); color:var(--green)}
+  .chip.down{background:rgba(255,69,58,.18); color:#ff8a80}
+  .chip.open{background:rgba(48,209,88,.18); color:var(--green)}
+  .chip.closed{background:var(--card-hi); color:var(--muted)}
 
   /* gold */
   .gold-grid{display:grid; grid-template-columns:1fr 1fr; gap:13px; flex:1}
-  .metal{border:1px solid rgba(255,255,255,.06); border-radius:13px; padding:15px; background:rgba(255,255,255,.02);
-         transition:transform .3s var(--ease), border-color .3s, background .3s}
-  .metal:hover{transform:translateY(-2px)}
+  .metal{border:none; border-radius:13px; padding:15px; background:var(--card-hi);
+         transition:background .25s}
+  .metal:hover{background:#3a3a3c}
   .metal.gold-m{border-top:3px solid var(--gold)}
-  .metal.gold-m:hover{background:rgba(245,197,66,.05)}
+  .metal.gold-m:hover{background:#3a3a3c}
   .metal.silver-m{border-top:3px solid #c0c7d4}
-  .metal.silver-m:hover{background:rgba(192,199,212,.05)}
+  .metal.silver-m:hover{background:#3a3a3c}
   .metal .m-head{display:flex; align-items:center; justify-content:space-between; gap:6px}
   .metal .name{font-size:12px; color:var(--muted); letter-spacing:.8px; font-weight:700}
   .metal .usd{font-size:26px; font-weight:800; margin-top:7px; font-variant-numeric:tabular-nums}
   .metal .usd small{font-size:12px; color:var(--muted); font-weight:400}
-  .metal .npr{font-size:15px; margin-top:7px; color:#e6eafb; font-variant-numeric:tabular-nums; font-weight:600}
+  .metal .npr{font-size:15px; margin-top:7px; color:#e8e8ed; font-variant-numeric:tabular-nums; font-weight:600}
   .metal .npr small{color:var(--muted); font-weight:400}
   .metal .spot{font-size:10.5px; color:var(--muted); margin-top:8px; font-variant-numeric:tabular-nums}
   .metal .spark{height:34px; margin-top:8px}
@@ -177,25 +156,25 @@
   .nepse-top{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
   .nepse-top .val{font-size:38px; font-weight:800; font-variant-numeric:tabular-nums}
   .nepse-top .chg{font-size:15px; font-weight:700; font-variant-numeric:tabular-nums}
-  .chg.up{color:var(--green)} .chg.down{color:#ff7b8d}
+  .chg.up{color:var(--green)} .chg.down{color:#ff8a80}
   .nepse-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:9px; margin-top:2px}
-  .nstat{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:11px; padding:9px 11px;
-         transition:border-color .3s, transform .3s var(--ease)}
-  .nstat:hover{border-color:rgba(47,111,237,.4); transform:translateY(-2px)}
+  .nstat{background:var(--card-hi); border:none; border-radius:11px; padding:9px 11px;
+         transition:background .25s}
+  .nstat:hover{background:#3a3a3c}
   .nstat .k{font-size:10.5px; color:var(--muted); letter-spacing:.5px}
   .nstat .v{font-size:13.5px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums}
   .range-bar{position:relative; height:8px; border-radius:5px; margin:15px 0 4px;
-    background:linear-gradient(90deg,#e0344e,#f1c40f,#2ecc71)}
+    background:linear-gradient(90deg,#ff453a,#ffd60a,#30d158)}
   .range-bar .marker{position:absolute; top:-4px; width:4px; height:16px; background:#fff; border-radius:2px;
     box-shadow:0 0 8px rgba(255,255,255,.8); transition:left .6s var(--ease)}
   .range-labels{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted)}
   #nepse-chart{width:100%; height:64px; margin-top:6px}
 
   .rate-grid{display:grid; grid-template-columns:1fr; gap:0; flex:1; align-content:start}
-  .rate-row{display:grid; grid-template-columns:72px 1fr auto; align-items:center; gap:9px; padding:2px 4px;
-            border-bottom:1px dashed rgba(255,255,255,.08); font-size:13px; transition:background .2s; border-radius:6px}
-  .rate-row:hover{background:rgba(255,255,255,.03)}
-  .rate-row .cur{color:#c9d2ee; white-space:nowrap}
+  .rate-row{display:grid; grid-template-columns:72px 1fr auto; align-items:center; gap:9px; padding:4px;
+            border-bottom:1px solid var(--sep); font-size:13px; transition:background .2s; border-radius:6px}
+  .rate-row:hover{background:var(--card-hi)}
+  .rate-row .cur{color:#e8e8ed; white-space:nowrap}
   .rate-row .val{font-weight:700; font-variant-numeric:tabular-nums}
   .rate-row .val small{color:var(--muted); font-weight:400; margin-left:3px}
   .rate-src{font-size:10.5px; color:var(--muted); margin-top:6px}
@@ -204,26 +183,26 @@
   .fx-spark{height:17px; min-width:36px; opacity:.85}
   .fx-num{display:flex; flex-direction:column; align-items:flex-end; line-height:1.18}
   .fx-chg{font-size:10px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted)}
-  .fx-chg.up{color:var(--green)} .fx-chg.down{color:#ff7b8d}
+  .fx-chg.up{color:var(--green)} .fx-chg.down{color:#ff8a80}
   .fx-unit{color:var(--muted); font-size:11px; margin-left:2px}
 
   /* --- FX: converter --- */
-  .fx-conv{background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
-           border-radius:11px; padding:8px 9px; margin-bottom:7px}
+  .fx-conv{background:var(--card-hi); border:none;
+           border-radius:11px; padding:9px 10px; margin-bottom:7px}
   .fx-conv-row{display:flex; align-items:center; gap:6px}
-  .fx-amt{flex:1; min-width:0; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.12);
-          color:var(--text); border-radius:8px; padding:6px 9px; font:inherit; font-size:14px;
-          font-weight:700; font-variant-numeric:tabular-nums; outline:none; transition:border-color .2s, box-shadow .2s}
-  .fx-amt:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(240,180,41,.15)}
-  .fx-sel{background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.12); color:var(--text);
-          border-radius:8px; padding:6px 5px; font:inherit; font-size:12.5px; font-weight:600;
+  .fx-amt{flex:1; min-width:0; background:#1c1c1e; border:1px solid transparent;
+          color:var(--text); border-radius:8px; padding:7px 9px; font:inherit; font-size:14px;
+          font-weight:700; font-variant-numeric:tabular-nums; outline:none; transition:border-color .2s}
+  .fx-amt:focus{border-color:var(--accent)}
+  .fx-sel{background:#1c1c1e; border:1px solid transparent; color:var(--text);
+          border-radius:8px; padding:7px 5px; font:inherit; font-size:12.5px; font-weight:600;
           outline:none; cursor:pointer; max-width:112px}
   .fx-sel:focus{border-color:var(--accent)}
-  .fx-sel option{background:#171a2e; color:#e9edff}
-  .fx-swap{background:rgba(240,180,41,.12); border:1px solid rgba(240,180,41,.3); color:var(--accent);
-           border-radius:8px; width:30px; height:30px; flex:0 0 auto; cursor:pointer; font-size:14px;
+  .fx-sel option{background:#1c1c1e; color:#fff}
+  .fx-swap{background:#1c1c1e; border:none; color:var(--accent);
+           border-radius:8px; width:32px; height:32px; flex:0 0 auto; cursor:pointer; font-size:14px;
            line-height:1; transition:transform .3s, background .2s}
-  .fx-swap:hover{background:rgba(240,180,41,.22)}
+  .fx-swap:hover{background:#3a3a3c}
   .fx-swap.flip{transform:rotate(180deg)}
   .fx-result{margin-top:6px; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums;
              color:var(--accent); letter-spacing:.2px}
@@ -242,7 +221,7 @@
   @keyframes fillbar{from{width:0} to{width:var(--w)}}
   @keyframes shimmerX{from{transform:translateX(-100%)} to{transform:translateX(100%)}}
   .wx-scene{position:relative; overflow:hidden; border-radius:14px; padding:16px; min-height:136px;
-    display:flex; align-items:center; gap:16px; border:1px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; gap:16px; border:none;
     animation:fadeIn .5s ease both}
   .wx-scene.sunny{background:linear-gradient(135deg,#1d4f9e,#2f6fed 55%,#3f8cff)}
   .wx-scene.night{background:linear-gradient(135deg,#0a0f2c,#1a2350)}
@@ -292,8 +271,8 @@
   .wx-desc{color:#eaf1ff; font-size:14px; font-weight:600}
   .wx-meta{color:rgba(255,255,255,.75); font-size:12px; margin-top:3px}
   .wx-gauges{display:flex; gap:9px; margin-top:10px; flex-wrap:wrap}
-  .gauge{flex:1; min-width:96px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
-    border-radius:10px; padding:8px 10px; backdrop-filter:blur(4px)}
+  .gauge{flex:1; min-width:96px; background:rgba(0,0,0,.28); border:none;
+    border-radius:10px; padding:8px 10px}
   .gauge .k{font-size:10px; color:var(--muted); letter-spacing:.5px; text-transform:uppercase}
   .gauge .v{font-size:13px; font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;
     font-variant-numeric:tabular-nums}
@@ -314,11 +293,11 @@
   .wx-hours{display:flex; justify-content:space-between; font-size:10px; color:var(--muted);
     font-variant-numeric:tabular-nums; margin-top:2px}
   .wx-days{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:auto; padding-top:10px}
-  .wx-day{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px;
+  .wx-day{background:var(--card-hi); border:none; border-radius:10px;
           padding:8px 2px; text-align:center; font-size:11px;
           transition:transform .3s var(--ease), border-color .3s, background .3s;
           animation:popIn .5s var(--ease) both; animation-delay:calc(.4s + var(--i) * .07s)}
-  .wx-day:hover{transform:translateY(-4px) scale(1.04); border-color:rgba(47,111,237,.5); background:rgba(47,111,237,.08)}
+  .wx-day:hover{transform:translateY(-3px); background:#3a3a3c}
   .wx-day .d{color:var(--muted)} .wx-day .e{font-size:18px; margin:3px 0}
   .wx-day .t{font-variant-numeric:tabular-nums} .wx-day .t b{color:#fff}
   .wx-day .p{color:#6ea8ff; font-size:10px}
@@ -356,45 +335,76 @@
     background:radial-gradient(circle, rgba(224,52,78,.35), rgba(224,52,78,0) 70%);
     pointer-events:none; z-index:99; transform:scale(0); animation:rippleBurst .6s ease-out forwards}
   @keyframes rippleBurst{to{transform:scale(26); opacity:0}}
-  /* air quality — gauge + bars */
-  .air-wrap{flex:1; display:flex; flex-direction:column; gap:12px}
+  /* air quality — banded gauge + pollutant grid + 24-h trend */
+  .air-wrap{flex:1; display:flex; flex-direction:column; gap:13px}
   .metal .usd span, .nepse-top .val span, .wx-now .big span{font-variant-numeric:tabular-nums; display:inline-block}
-  .aqi-top{display:flex; align-items:center; gap:18px; flex:1}
-  .aqi-gauge{position:relative; width:168px; flex:0 0 auto}
+  .aqi-hero{display:flex; align-items:center; gap:16px}
+  .aqi-gauge{position:relative; width:158px; flex:0 0 auto}
   .aqi-gauge svg{width:100%; display:block; overflow:visible}
-  .aqi-center{position:absolute; left:0; right:0; bottom:-4px; text-align:center}
-  .aqi-center .n{font-size:31px; font-weight:800; line-height:1}
-  .aqi-center .l{font-size:9px; letter-spacing:1.5px; color:var(--muted)}
-  .aqi-side{flex:1; min-width:0}
-  .aqi-cat{font-size:14px; font-weight:700; margin-bottom:10px}
-  .pm-row{margin-bottom:10px}
-  .pm-row .k{display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:3px}
-  .pm-row .k b{color:#e6eafb}
-  .pm-track{height:7px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden}
-  .pm-fill{height:100%; border-radius:4px; width:0; animation:fillbar 1.1s var(--ease) both}
-  .aqi-note{font-size:10.5px; color:var(--muted)}
-  .aqi-who{font-size:11.5px; color:var(--muted); margin:2px 0 8px}
+  .aqi-band{opacity:.32}
+  .aqi-lit{animation:fadeIn .9s var(--ease) .2s both}
+  .aqi-needle{transform-box:view-box; transform-origin:100px 100px; animation:aqiNeedle 1.2s var(--ease) both}
+  @keyframes aqiNeedle{from{transform:rotate(0deg)} to{transform:rotate(var(--deg))}}
+  .aqi-center{position:absolute; left:0; right:0; bottom:-1px; text-align:center}
+  .aqi-center .n{font-size:27px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+  .aqi-center .l{font-size:8.5px; letter-spacing:1.5px; color:var(--muted); margin-top:2px}
+  .aqi-side{flex:1; min-width:0; display:flex; flex-direction:column; gap:7px}
+  .aqi-cat{font-size:14.5px; font-weight:700; line-height:1.25}
+  .aqi-chip{align-self:flex-start; display:inline-flex; align-items:center; gap:6px; font-size:10px;
+    letter-spacing:.4px; text-transform:uppercase; color:var(--muted); border:none;
+    background:var(--card-hi); border-radius:999px; padding:4px 11px}
+  .aqi-chip b{font-size:11.5px; text-transform:none; letter-spacing:0}
+  .aqi-who{font-size:11.5px; color:var(--muted)}
   .aqi-who b{color:#e6eafb; font-size:13px}
-  .aqi-advice{font-size:12px; line-height:1.5; color:#cfd6ec; border-left:3px solid; border-radius:6px;
-    background:rgba(255,255,255,.04); padding:8px 10px}
+
+  .aqi-poll{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .aqi-p{padding:8px 9px 9px; border-radius:11px; border:1px solid transparent;
+    background:var(--card-hi); transition:border-color .3s, background .3s;
+    animation:popIn .5s var(--ease) both; animation-delay:calc(.14s + var(--i) * .06s)}
+  .aqi-p.dom{border-color:var(--c); background:#3a3a3c}
+  .aqi-p .g{display:flex; align-items:baseline; justify-content:space-between; gap:4px}
+  .aqi-p .g .k{font-size:10px; color:var(--muted); letter-spacing:.3px}
+  .aqi-p .g .v{font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--c)}
+  .aqi-p .c{font-size:9.5px; color:#7d86a3; margin-top:1px; font-variant-numeric:tabular-nums}
+  .pm-track{height:5px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:6px}
+  .pm-fill{height:100%; border-radius:4px; width:0; animation:fillbar 1.1s var(--ease) both}
+
+  .aqi-trend{flex:1; min-height:76px; display:flex; flex-direction:column;
+    border-top:1px solid var(--sep); padding-top:10px}
+  .aqi-trend .th{display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+    font-size:9.5px; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+  .aqi-trend .th b{font-variant-numeric:tabular-nums}
+  .aqi-plot{position:relative; flex:1; min-height:46px}
+  .aqi-spark{width:100%; height:100%; display:block}
+  .aqi-spark .seg{fill:none; stroke-width:2.4; stroke-linecap:round; vector-effect:non-scaling-stroke}
+  .aqi-spark .nowline{stroke:rgba(255,255,255,.28); stroke-width:1; stroke-dasharray:2 3; vector-effect:non-scaling-stroke}
+  .aqi-plot .nowdot{position:absolute; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%;
+    box-shadow:0 0 0 2px rgba(14,19,48,.9); animation:popIn .5s var(--ease) .5s both}
+  .aqi-axis{display:flex; justify-content:space-between; font-size:9.5px; color:#6e7794; margin-top:2px}
+  .aqi-advice{font-size:12px; line-height:1.5; color:#e8e8ed; border-left:3px solid; border-radius:6px;
+    background:var(--card-hi); padding:9px 11px}
+  @media (max-width:430px){
+    .aqi-hero{flex-direction:column; align-items:center; gap:10px}
+    .aqi-side{width:100%}
+  }
   /* earthquakes — summary + seismograph + rings */
   .quake-sum{display:flex; gap:8px; margin-bottom:6px}
-  .qsum{flex:1; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:7px 10px; text-align:center}
+  .qsum{flex:1; background:var(--card-hi); border:none; border-radius:10px; padding:8px 10px; text-align:center}
   .qsum .n{font-size:16px; font-weight:800}
   .qsum .k{font-size:9.5px; color:var(--muted); letter-spacing:.5px; text-transform:uppercase}
   .seismo{height:34px; margin:2px 0 6px}
   .seismo path{fill:none; stroke:var(--accent); stroke-width:1.5; stroke-dasharray:1; stroke-dashoffset:1; animation:drawLine 2s var(--ease) forwards}
-  .quake{display:flex; gap:12px; align-items:center; padding:8px 0; border-bottom:1px dashed rgba(255,255,255,.08)}
+  .quake{display:flex; gap:12px; align-items:center; padding:9px 0; border-bottom:1px solid var(--sep)}
   .quake:last-child{border-bottom:none}
   .mring{flex:0 0 auto; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-weight:800; font-size:15px; border:3px solid; position:relative}
   .mring::after{content:""; position:absolute; inset:-3px; border-radius:50%; box-shadow:0 0 0 0 currentColor; opacity:.5; animation:ripple 2.6s ease-out infinite}
   .quake .q-info{flex:1; min-width:0}
-  .quake .q-place{font-size:13.5px; color:#e6eafb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .quake .q-place{font-size:13.5px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .quake .q-time{font-size:11.5px; color:var(--muted); margin-top:2px}
   .quake a.q-link{font-size:11px; color:var(--accent2)}
   .q-legend{margin-top:auto; display:flex; gap:16px; align-items:center; padding-top:10px;
-    border-top:1px dashed rgba(255,255,255,.08); font-size:10.5px; color:var(--muted)}
+    border-top:1px solid var(--sep); font-size:10.5px; color:var(--muted)}
   .q-legend i{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px}
   .q-legend .q-src{margin-left:auto}
 
@@ -403,36 +413,47 @@
   .analysis-col h3{font-size:14px; margin-bottom:8px; display:flex; align-items:center; gap:8px}
   .aico{display:inline-flex; color:var(--accent)} .aico .ic{width:16px; height:16px}
   .analysis-col ul{list-style:none; display:flex; flex-direction:column; gap:9px}
-  .analysis-col li{font-size:13px; line-height:1.55; color:#cfd6ec; padding-left:18px; position:relative}
+  .analysis-col li{font-size:13px; line-height:1.55; color:#e8e8ed; padding-left:18px; position:relative}
   .analysis-col li::before{content:"▸"; position:absolute; left:0; color:var(--accent)}
   .analysis-col li b{color:#fff}
-  .analysis-col .src{font-size:10.5px; color:#5c6580; margin-top:9px}
-  .mini-headlines{margin-top:auto; border-top:1px dashed rgba(255,255,255,.08); padding-top:9px}
-  .mini-headlines a{display:block; font-size:12px; color:#aeb8d8; padding:4px 0; line-height:1.4; transition:color .2s}
+  .analysis-col .src{font-size:10.5px; color:var(--dim); margin-top:9px}
+  .mini-headlines{margin-top:auto; border-top:1px solid var(--sep); padding-top:9px}
+  .mini-headlines a{display:block; font-size:12px; color:#c7c7cc; padding:5px 0; line-height:1.4; transition:color .2s}
   .mini-headlines a:hover{color:#fff}
-  .mini-headlines .m{color:#5c6580; font-size:10.5px}
+  .mini-headlines .m{color:var(--dim); font-size:10.5px}
 
   .news-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:11px; flex:1; align-content:start}
-  .news-item{background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:13px;
-             padding:13px; display:flex; flex-direction:column; gap:6px;
-             transition:transform .3s var(--ease), border-color .3s, background .3s}
-  .news-item:hover{border-color:var(--accent); transform:translateY(-3px); background:rgba(240,180,41,.06)}
-  .news-item .t{font-size:13.5px; line-height:1.45; color:#e6eafb}
+  .news-item{background:var(--card-hi); border:none; border-radius:13px;
+             padding:13px 14px; display:flex; flex-direction:column; gap:6px;
+             transition:background .25s}
+  .news-item:hover{background:#3a3a3c}
+  .news-item .t{font-size:14px; font-weight:600; line-height:1.4; color:#fff; letter-spacing:-.15px}
   .news-item .m{font-size:11px; color:var(--muted)}
-  .news-item .m b{color:#a9b4d6; font-weight:600}
+  .news-item .m b{color:var(--accent); font-weight:600}
   .src-badge{display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px;
-             background:rgba(47,111,237,.16); color:#8fb3ff; letter-spacing:.3px}
+             background:rgba(10,132,255,.2); color:#6cb2ff; letter-spacing:.3px}
   .news-filters{display:flex; gap:6px}
-  .news-filters button{background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); color:var(--muted);
-    border-radius:8px; padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:.25s}
-  .news-filters button.active{background:var(--accent); border-color:var(--accent); color:#241a04}
-  .news-filters button:not(.active):hover{color:#fff; background:rgba(255,255,255,.08)}
-  .news-note{font-size:10.5px; color:#5c6580}
+  .news-filters button{background:var(--card-hi); border:none; color:var(--muted);
+    border-radius:999px; padding:5px 13px; font-size:11.5px; font-weight:600; cursor:pointer; font-family:inherit; transition:.2s}
+  .news-filters button.active{background:#fff; color:#000}
+  .news-filters button:not(.active):hover{color:#fff; background:#3a3a3c}
+  .news-note{font-size:10.5px; color:var(--dim)}
+  .hot-news{display:grid; grid-template-columns:repeat(3,1fr); gap:11px; margin:12px 0 14px}
+  .hot-news-item{position:relative; display:flex; flex-direction:column; gap:8px; min-height:94px;
+    padding:14px 15px 13px 18px; overflow:hidden; border:none;
+    border-radius:13px; background:var(--card-hi);
+    transition:background .25s}
+  .hot-news-item::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent)}
+  .hot-news-item:hover{background:#3a3a3c}
+  .hot-news-item .hot-label{font-size:9px; font-weight:800; letter-spacing:1.1px; color:var(--accent)}
+  .hot-news-item .t{font-size:13.5px; line-height:1.42; color:#fff}
+  .hot-news-item .m{font-size:10.5px; color:var(--muted); margin-top:auto}
+  @media (max-width:760px){.hot-news{grid-template-columns:1fr}}
 
-  footer{max-width:1240px; margin:0 auto; padding:6px 22px 18px; color:#5c6580; font-size:12px; line-height:1.7}
+  footer{max-width:1240px; margin:0 auto; padding:6px 22px 18px; color:var(--dim); font-size:11.5px; line-height:1.7}
   .credit{max-width:1240px; margin:0 auto; padding:2px 22px 30px; text-align:center; color:var(--muted); font-size:12.5px}
-  .credit b{color:var(--accent); font-weight:800; letter-spacing:.3px}
-  footer b{color:#8b94b0}
+  .credit b{color:var(--muted); font-weight:700; letter-spacing:.2px}
+  footer b{color:var(--muted)}
   @media (max-width:900px){
     header{grid-template-columns:1fr; gap:12px}
     .clockbox{text-align:left}
@@ -448,11 +469,11 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none !important; transition:none !important}
   }
-  /* ---- redesign: display typography & accents ---- */
+  /* ---- display typography ---- */
   .brand h1,.card-head h2,.analysis-col h3{font-family:var(--font-display)}
-  .brand h1{font-size:31px; letter-spacing:.3px}
-  .card-head h2{letter-spacing:.8px}
-  ::selection{background:rgba(240,180,41,.35); color:#fff}
+  .brand h1{font-size:34px; letter-spacing:-.9px; line-height:1.1}
+  .card-head h2{letter-spacing:-.3px}
+  ::selection{background:rgba(255,159,10,.35); color:#fff}
 </style>
 </head>
 <body>
@@ -612,6 +633,7 @@
       <button class="rbtn" data-mod="news" title="Refresh now">↻</button>
     </div>
     <div class="news-note" id="news-note"></div>
+    <div class="hot-news" id="hot-news"></div>
     <div id="news-body"><div class="loading">Loading headlines…</div></div>
   </section>
 </main>
@@ -652,6 +674,8 @@ const I18N = {
     wind: "Wind", hourly24: "Next 24 hours", rainChance: "Rain chance",
     days: "days", maxMag: "Max mag",
     whoLine: "× the WHO 24-h guideline",
+    aqiDominant: "Main pollutant", aqiTrendTitle: "24-hour trend",
+    aqiPeak: "peak", aqiPast: "−12 h", aqiNow: "now", aqiNext: "+12 h",
     aqiTips: [
       "Good — air quality is satisfactory; little or no risk.",
       "Moderate — acceptable; unusually sensitive people should limit prolonged outdoor exertion.",
@@ -681,7 +705,7 @@ const I18N = {
     goldSrc: "Sources: World Gold Council · Bullion Trading LLC · GoldSilver.com · BingX Research · Intellectia (Aug 2026)",
     nepseSrc: "Sources: Nepal News (EN) · NEPSE Trading · NepInsights (Jun–Aug 2026)",
     goldHlLabel: "LIVE · GOLD HEADLINES", nepseHlLabel: "LIVE · NEPSE HEADLINES",
-    newsAll: "All", newsEn: "English", newsNe: "नेपाली",
+    newsAll: "All", newsEn: "English", newsNe: "नेपाली", hotNews: "HOT NEWS",
     newsNote: "From Nepali news websites: OnlineKhabar · Khabarhub · Nagarik News · Setopati",
     analysisStamp: "Analysis updated 26 Aug 2026 · live headlines below refresh automatically",
     chartCaption: "Last ~3 months of closing values · official NEPSE feed",
@@ -716,6 +740,8 @@ const I18N = {
     wind: "हावा", hourly24: "आगामी २४ घण्टा", rainChance: "वर्षा सम्भावना",
     days: "दिन", maxMag: "अधिकतम",
     whoLine: "WHO २४-घण्टे सीमाको",
+    aqiDominant: "मुख्य प्रदूषक", aqiTrendTitle: "२४ घण्टे प्रवृत्ति",
+    aqiPeak: "उच्च", aqiPast: "−१२ घण्टा", aqiNow: "अहिले", aqiNext: "+१२ घण्टा",
     aqiTips: [
       "राम्रो — हावाको गुणस्तर सन्तोषजनक; जोखिम नगण्य।",
       "मध्यम — स्वीकार्य; अत्यन्त संवेदनशील व्यक्तिहरूले लामो बाहिरी परिश्रम सीमित गर्दा राम्रो।",
@@ -745,7 +771,7 @@ const I18N = {
     goldSrc: "स्रोत: विश्व सुन परिषद् · बुलियन ट्रेडिङ · गोल्डसिल्भर · बिङएक्स रिसर्च · इन्टलेक्टिया (अगस्ट २०२६)",
     nepseSrc: "स्रोत: नेपाल न्यूज (अङ्ग्रेजी) · नेप्से ट्रेडिङ · नेपइनसाइट्स (जुन–अगस्ट २०२६)",
     goldHlLabel: "प्रत्यक्ष · सुन समाचार", nepseHlLabel: "प्रत्यक्ष · नेप्से समाचार",
-    newsAll: "सबै", newsEn: "English", newsNe: "नेपाली",
+    newsAll: "सबै", newsEn: "English", newsNe: "नेपाली", hotNews: "तातो समाचार",
     newsNote: "नेपाली समाचार वेबसाइटबाट: अनलाइनखबर · खबरहब · नागरिक न्यूज · सेतोपाटी",
     analysisStamp: "विश्लेषण अद्यावधिक: २६ अगस्ट २०२६ · तलका हेडलाइनहरू आफैँ ताजा हुन्छन्",
     chartCaption: "पछिल्ला ~३ महिनाका बन्द मूल्य · आधिकारिक नेप्से फिड",
@@ -772,7 +798,11 @@ const DIRECT = {
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
     + '&timezone=Asia%2FKathmandu&forecast_days=7',
   air: (lat, lon) => 'https://air-quality-api.open-meteo.com/v1/air-quality'
-    + `?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10,us_aqi&timezone=Asia%2FKathmandu`,
+    + `?latitude=${lat}&longitude=${lon}`
+    + '&current=pm2_5,pm10,us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_ozone,'
+    + 'us_aqi_nitrogen_dioxide,us_aqi_sulphur_dioxide,us_aqi_carbon_monoxide,'
+    + 'ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide'
+    + '&hourly=us_aqi&past_days=1&forecast_days=2&timezone=Asia%2FKathmandu',
   quakes: () => {
     const now = new Date(); const week = new Date(now.getTime() - 7 * 864e5);
     return 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
@@ -1289,47 +1319,132 @@ async function refreshWeather() {
 }
 
 /* --- Air quality --- */
+/* US AQI bands: upper bound, colour, label in both languages. The band index
+   doubles as the index into t('aqiTips'). */
+const AQI_BANDS = [
+  { max: 50,       c: '#2ecc71', en: 'Good',                           ne: 'राम्रो' },
+  { max: 100,      c: '#f1c40f', en: 'Moderate',                       ne: 'मध्यम' },
+  { max: 150,      c: '#e67e22', en: 'Unhealthy for sensitive groups', ne: 'संवेदनशील समूहका लागि अस्वस्थ' },
+  { max: 200,      c: '#e0344e', en: 'Unhealthy',                      ne: 'अस्वस्थ' },
+  { max: 300,      c: '#9b59b6', en: 'Very unhealthy',                 ne: 'अत्यन्त अस्वस्थ' },
+  { max: Infinity, c: '#7b2d3b', en: 'Hazardous',                      ne: 'खतरनाक' }
+];
+/* Tiles: US AQI sub-index (Open-Meteo computes it) + the raw concentration. */
+const AQI_POLLUTANTS = [
+  { k: 'PM2.5', a: 'us_aqi_pm2_5',            v: 'pm2_5',            u: 'µg/m³' },
+  { k: 'PM10',  a: 'us_aqi_pm10',             v: 'pm10',             u: 'µg/m³' },
+  { k: 'O₃',    a: 'us_aqi_ozone',            v: 'ozone',            u: 'µg/m³' },
+  { k: 'NO₂',   a: 'us_aqi_nitrogen_dioxide', v: 'nitrogen_dioxide', u: 'µg/m³' },
+  { k: 'SO₂',   a: 'us_aqi_sulphur_dioxide',  v: 'sulphur_dioxide',  u: 'µg/m³' },
+  { k: 'CO',    a: 'us_aqi_carbon_monoxide',  v: 'carbon_monoxide',  u: 'mg/m³', div: 1000, dp: 2 }
+];
+const AQI_ARC = 'M18,100 A82,82 0 0 1 182,100';
+
 function aqiInfo(v) {
-  const en = ['Good', 'Moderate', 'Unhealthy for sensitive groups', 'Unhealthy', 'Very unhealthy', 'Hazardous'];
-  const ne = ['राम्रो', 'मध्यम', 'संवेदनशील समूहका लागि अस्वस्थ', 'अस्वस्थ', 'अत्यन्त अस्वस्थ', 'खतरनाक'];
-  const i = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
-  const colors = ['#2ecc71', '#f1c40f', '#e67e22', '#e0344e', '#9b59b6', '#7b2d3b'];
-  return [LANG === 'ne' ? ne[i] : en[i], colors[i], i];
+  const i = v == null ? 0 : Math.max(0, AQI_BANDS.findIndex(b => v <= b.max));
+  return [LANG === 'ne' ? AQI_BANDS[i].ne : AQI_BANDS[i].en, AQI_BANDS[i].c, i];
 }
+const aqiColor = (v) => aqiInfo(v)[1];
+
+/* Half-dial. The track IS the AQI scale (0–300 across the arc, one coloured
+   segment per band), so the needle reads against the real breakpoints. */
 function aqiGauge(v, color) {
-  const pct = Math.max(0, Math.min(100, v / 300 * 100));
+  const pct = Math.max(0, Math.min(100, (v ?? 0) / 300 * 100));
+  let from = 0;
+  const arcs = [50, 100, 150, 200, 300].map((top, i) => {
+    const to = top / 3, lit = Math.min(Math.max(pct - from, 0), to - from);
+    const seg = (cls, len, off) =>
+      `<path class="${cls}" d="${AQI_ARC}" fill="none" stroke="${AQI_BANDS[i].c}" stroke-width="11"
+         pathLength="100" stroke-dasharray="${len.toFixed(2)} 100" stroke-dashoffset="${(-off).toFixed(2)}"/>`;
+    /* dim band = the scale; lit band = how far up the scale we are */
+    const out = seg('aqi-band', to - from, from) + (lit > 0.01 ? seg('aqi-lit', lit, from) : '');
+    from = to;
+    return out;
+  }).join('');
   return `<div class="aqi-gauge">
-    <svg viewBox="0 0 200 112">
-      <path d="M18,100 A82,82 0 0 1 182,100" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="12" stroke-linecap="round"/>
-      <path d="M18,100 A82,82 0 0 1 182,100" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round"
-        pathLength="100" stroke-dasharray="${pct} 100"/>
-      <line x1="100" y1="100" x2="32" y2="100" stroke="#fff" stroke-width="3" stroke-linecap="round"
-        transform="rotate(${pct * 1.8} 100 100)"/>
-      <circle cx="100" cy="100" r="5" fill="#fff"/>
+    <svg viewBox="0 0 200 148">
+      ${arcs}
+      <line class="aqi-needle" x1="100" y1="100" x2="40" y2="100" stroke="#fff" stroke-width="2.5"
+        stroke-linecap="round" transform="rotate(${(pct * 1.8).toFixed(1)} 100 100)" style="--deg:${(pct * 1.8).toFixed(1)}deg"/>
+      <circle cx="100" cy="100" r="4.5" fill="#fff"/>
     </svg>
-    <div class="aqi-center"><div class="n" style="color:${color}">${Math.round(v)}</div><div class="l">US AQI</div></div>
+    <div class="aqi-center"><div class="n" style="color:${color}">${v == null ? '–' : Math.round(v)}</div><div class="l">US AQI</div></div>
   </div>`;
 }
+
+/* ±12 h AQI line; every segment is coloured by the band it sits in. */
+function aqiTrend(h, nowISO) {
+  if (!h || !h.time || !h.us_aqi || !nowISO) return '';
+  let n = h.time.indexOf(nowISO.slice(0, 13) + ':00');
+  if (n < 0) n = h.time.findIndex(x => x >= nowISO);
+  if (n < 0) return '';
+  const pts = [];
+  for (let i = Math.max(0, n - 12); i <= Math.min(h.time.length - 1, n + 12); i++)
+    if (h.us_aqi[i] != null) pts.push({ i, v: h.us_aqi[i] });
+  if (pts.length < 5) return '';
+
+  const W = 300, H = 54, first = pts[0].i, last = pts[pts.length - 1].i;
+  const vals = pts.map(p => p.v), lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max(8, (hi - lo) * 0.3), y0 = lo - pad, y1 = hi + pad;
+  const X = (i) => (i - first) / (last - first) * W;
+  const Y = (v) => H - (v - y0) / (y1 - y0) * H;
+  const segs = pts.slice(1).map((p, j) => {
+    const a = pts[j];
+    return `<line class="seg" x1="${X(a.i).toFixed(1)}" y1="${Y(a.v).toFixed(1)}" x2="${X(p.i).toFixed(1)}" y2="${Y(p.v).toFixed(1)}" stroke="${aqiColor((a.v + p.v) / 2)}"/>`;
+  }).join('');
+  const now = pts.find(p => p.i === n) || pts[0];
+  const peak = pts.reduce((m, p) => p.v > m.v ? p : m, pts[0]);
+
+  return `<div class="aqi-trend">
+    <div class="th"><span>${t('aqiTrendTitle')}</span>
+      <b style="color:${aqiColor(peak.v)}">${t('aqiPeak')} ${Math.round(peak.v)}</b></div>
+    <div class="aqi-plot">
+      <svg class="aqi-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        ${segs}
+        <line class="nowline" x1="${X(n).toFixed(1)}" y1="0" x2="${X(n).toFixed(1)}" y2="${H}"/>
+      </svg>
+      <i class="nowdot" style="left:${(X(now.i) / W * 100).toFixed(2)}%; top:${(Y(now.v) / H * 100).toFixed(2)}%; background:${aqiColor(now.v)}"></i>
+    </div>
+    <div class="aqi-axis"><span>${t('aqiPast')}</span><span>${t('aqiNow')}</span><span>${t('aqiNext')}</span></div>
+  </div>`;
+}
+
 function renderAir() {
   const c0 = state.cache.air;
   if (!c0) return;
   const c = c0.d.current;
   const [label, color, aqiIdx] = aqiInfo(c.us_aqi);
-  const pm = (x, max) => Math.max(2, Math.min(100, (x ?? 0) / max * 100));
+  const has = c.us_aqi != null;
+
+  const polls = AQI_POLLUTANTS
+    .map(p => ({ ...p, aqi: c[p.a], conc: c[p.v] }))
+    .filter(p => p.aqi != null || p.conc != null);
+  /* Dominant = the pollutant driving the headline AQI (highest sub-index). */
+  const dom = polls.reduce((m, p) => (p.aqi ?? -1) > (m ? m.aqi ?? -1 : -1) ? p : m, null);
+  const bar = (x) => Math.max(3, Math.min(100, (x ?? 0) / 300 * 100)).toFixed(1);
+  const tiles = polls.map((p, i) => {
+    const pc = aqiColor(p.aqi);
+    const conc = p.conc == null ? '–' : (p.conc / (p.div || 1)).toFixed(p.dp ?? 1);
+    return `<div class="aqi-p${dom && p.k === dom.k ? ' dom' : ''}" style="--c:${pc}; --i:${i}">
+      <div class="g"><span class="k">${p.k}</span><span class="v">${p.aqi ?? '–'}</span></div>
+      <div class="c">${conc} ${p.u}</div>
+      <div class="pm-track"><div class="pm-fill" style="--w:${bar(p.aqi)}%; background:${pc}"></div></div>
+    </div>`;
+  }).join('');
+
   $('air-body').innerHTML =
     `<div class="air-wrap">
-       <div class="aqi-top">
+       <div class="aqi-hero">
          ${aqiGauge(c.us_aqi, color)}
          <div class="aqi-side">
-           <div class="aqi-cat" style="color:${color}">${label}</div>
-           <div class="pm-row"><div class="k"><span>PM2.5</span><b>${c.pm2_5?.toFixed(1) ?? '–'} µg/m³</b></div>
-             <div class="pm-track"><div class="pm-fill" style="--w:${pm(c.pm2_5,150)}%; background:${color}"></div></div></div>
-           <div class="pm-row"><div class="k"><span>PM10</span><b>${c.pm10?.toFixed(1) ?? '–'} µg/m³</b></div>
-             <div class="pm-track"><div class="pm-fill" style="--w:${pm(c.pm10,150)}%; background:${color}"></div></div></div>
-           <div class="aqi-who">PM2.5 <b>${(c.pm2_5 != null ? (c.pm2_5 / 15).toFixed(1) : '–')}</b> ${t('whoLine')}</div>
+           <div class="aqi-cat" style="color:${color}">${has ? label : '–'}</div>
+           ${dom ? `<span class="aqi-chip">${t('aqiDominant')} <b style="color:${aqiColor(dom.aqi)}">${dom.k}</b></span>` : ''}
+           <div class="aqi-who">PM2.5 <b>${c.pm2_5 != null ? (c.pm2_5 / 15).toFixed(1) : '–'}</b> ${t('whoLine')}</div>
          </div>
        </div>
-       <div class="aqi-advice" style="border-color:${color}">${t('aqiTips')[aqiIdx]}</div>
+       <div class="aqi-poll">${tiles}</div>
+       ${aqiTrend(c0.d.hourly, c.time)}
+       ${has ? `<div class="aqi-advice" style="border-color:${color}">${t('aqiTips')[aqiIdx]}</div>` : ''}
      </div>`;
 }
 async function refreshAir() {
@@ -1435,6 +1550,12 @@ function renderNews() {
   if (!items) return;
   const f = state.newsFilter || 'all';
   const shown = f === 'all' ? items : items.filter(i => i.lang === f);
+  $('hot-news').innerHTML = shown.slice(0, 3).map(i =>
+    `<a class="hot-news-item" href="${esc(i.link)}" target="_blank" rel="noopener">
+       <span class="hot-label">🔥 ${t('hotNews')}</span>
+       <span class="t">${esc(i.title)}</span>
+       <span class="m">${srcBadge(i.source || 'News')} · ${timeAgo(Date.parse(i.pubDate) || Date.now())}</span>
+     </a>`).join('');
   $('news-body').innerHTML = shown.length
     ? `<div class="news-list">` + shown.slice(0, 18).map(i =>
         `<a class="news-item" href="${esc(i.link)}" target="_blank" rel="noopener">
