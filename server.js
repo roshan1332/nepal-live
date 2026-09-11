@@ -509,6 +509,20 @@ const ACC = require('./accounts')({
   alerts: () => S.alerts(), cities: S.CITIES,
 });
 const SEARCH = require('./search')({ P, S, SDB, site });
+/* server-rendered landing pages for the most-searched live numbers */
+const SEOP = require('./seo-pages')({ P, S, site });
+
+/* share image, app icon and favicons (crawlable, unlike a data: URI) */
+const IMAGES = {
+  '/og.png': ['og.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'],
+  '/favicon.ico': ['favicon-48.png', 'image/png'], '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+};
+/* Search Console / Bing ownership tags for the static homepage and sports pages */
+const VERIFY_META = [
+  process.env.GOOGLE_SITE_VERIFICATION && '<meta name="google-site-verification" content="' + process.env.GOOGLE_SITE_VERIFICATION.replace(/[^\w-]/g, '') + '">',
+  process.env.BING_SITE_VERIFICATION && '<meta name="msvalidate.01" content="' + process.env.BING_SITE_VERIFICATION.replace(/[^\w-]/g, '') + '">',
+].filter(Boolean).join('\n');
+const withVerify = (buf) => (VERIFY_META ? Buffer.from(buf.toString('utf8').replace('</head>', VERIFY_META + '\n</head>')) : buf);
 const isAccountRoute = (p) => p.startsWith('/api/auth/') || p === '/api/me' || p.startsWith('/api/me/');
 
 const ROBOTS = [
@@ -525,6 +539,7 @@ function sitemap() {
   const urls = [
     { loc: '/', priority: '1.0', freq: 'hourly' },
     ...site.paths().map((p) => ({ loc: p, priority: site.PAGES[p].priority || '0.7', freq: site.PAGES[p].changefreq || 'daily' })),
+    ...SEOP.paths().map((p) => ({ loc: p, priority: p.startsWith('/weather/') ? '0.7' : '0.9', freq: p === '/nepali-date' ? 'daily' : 'hourly' })),
     { loc: '/football', priority: '0.8', freq: 'hourly' },
     { loc: '/cricket', priority: '0.8', freq: 'hourly' },
   ];
@@ -722,7 +737,14 @@ const server = http.createServer(async (req, res) => {
     if (p === '/login' || p === '/signup') { res.writeHead(301, { Location: '/account?tab=' + p.slice(1) }); return res.end(); }
 
     if (PAGE_FILES[p]) {
-      return reply(req, res, 200, readStatic(PAGE_FILES[p]), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+      return reply(req, res, 200, withVerify(readStatic(PAGE_FILES[p])), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+    }
+    if (SEOP.has(p)) {
+      return reply(req, res, 200, await SEOP.render(p, SITE_ORIGIN), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+    }
+    if (IMAGES[p] && fs.existsSync(path.join(__dirname, IMAGES[p][0]))) {
+      res.writeHead(200, { 'Content-Type': IMAGES[p][1], 'Cache-Control': 'public, max-age=86400' });
+      return res.end(req.method === 'HEAD' ? undefined : readStatic(IMAGES[p][0]));
     }
     if (site.PAGES[p]) {
       return reply(req, res, 200, site.render(p, SITE_ORIGIN), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });

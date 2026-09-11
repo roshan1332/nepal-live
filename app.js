@@ -68,6 +68,8 @@
       aboutTitle: 'About Nepal Live',
       alerts: 'Alerts', roads: 'Roads', trending: 'Trending', home: 'Home', sportsNav: 'Sports', moreNav: 'More', nepalSports: 'Nepal sports',
       jobs: 'Jobs', events: 'Events', calendar: 'Calendar', government: 'Government services', explore: 'Explore',
+      todayNums: 'Today in Nepal', goldToday: 'Gold price today', nepseToday: 'NEPSE today', dollarToday: 'Dollar rate today',
+      petrolToday: 'Petrol price today', dateToday: 'Nepali date today', ktmWeather: 'Kathmandu weather', pkrWeather: 'Pokhara weather',
       account: 'Account', signIn: 'Log in', save: 'Save', unsave: 'Remove from saved', savedToast: 'Saved to your account',
       unsavedToast: 'Removed from saved', signInToSave: 'Log in to save items', seeAll: 'See all results for “{q}”',
       measured: 'Measured', updatedW: 'Updated', issued: 'Issued', reported: 'Reported',
@@ -95,6 +97,8 @@
       aboutTitle: 'नेपाल लाइभको बारेमा',
       alerts: 'सतर्कता', roads: 'सडक', trending: 'चर्चामा', home: 'गृहपृष्ठ', sportsNav: 'खेलकुद', moreNav: 'थप', nepalSports: 'नेपाली खेलकुद',
       jobs: 'जागिर', events: 'कार्यक्रम', calendar: 'पात्रो', government: 'सरकारी सेवा', explore: 'अन्वेषण',
+      todayNums: 'आज नेपालमा', goldToday: 'आजको सुनको भाउ', nepseToday: 'आजको नेप्से', dollarToday: 'आजको डलर दर',
+      petrolToday: 'आजको पेट्रोल मूल्य', dateToday: 'आजको नेपाली मिति', ktmWeather: 'काठमाडौंको मौसम', pkrWeather: 'पोखराको मौसम',
       account: 'खाता', signIn: 'लग इन', save: 'सेभ गर्नुहोस्', unsave: 'सेभबाट हटाउनुहोस्', savedToast: 'तपाईंको खातामा सेभ भयो',
       unsavedToast: 'सेभबाट हटाइयो', signInToSave: 'सेभ गर्न लग इन गर्नुहोस्', seeAll: '“{q}” का सबै नतिजा हेर्नुहोस्',
       measured: 'मापन', updatedW: 'अपडेट', issued: 'जारी', reported: 'रिपोर्ट',
@@ -799,6 +803,11 @@
       { title: s('quakes'), sub: ne2 ? 'पछिल्लो ७ दिन · USGS' : 'Last 7 days near Nepal · USGS', href: '/earthquakes', icon: 'quake', kw: 'earthquake quake seismic भूकम्प' },
       { title: ne2 ? 'इन्धन मूल्य' : 'Fuel prices', sub: ne2 ? 'पेट्रोल, डिजेल, एलपी ग्यास · नेपाल आयल निगम' : 'Petrol, diesel, LPG · Nepal Oil Corporation', href: '/money#fuel', icon: 'fx', kw: 'fuel petrol diesel lpg gas kerosene noc इन्धन पेट्रोल डिजेल ग्यास' },
       { title: s('pulse'), sub: ne2 ? 'सुन र नेप्से किन चलिरहेको छ' : 'Why gold and NEPSE are moving', href: home('#card-analysis'), icon: 'compass', kw: 'analysis pulse why market विश्लेषण' },
+      { title: s('goldToday'), sub: ne2 ? 'प्रति तोला, आजको दर' : 'Per tola, today’s rate', href: '/gold-price', icon: 'chart', kw: 'gold price today sun bhau tola silver सुन सुनको भाउ चाँदी' },
+      { title: s('nepseToday'), sub: ne2 ? 'सूचकांक, कारोबार, बढी घटी' : 'Index, turnover, gainers & losers', href: '/nepse', icon: 'chart', kw: 'nepse today share market index नेप्से शेयर' },
+      { title: s('dollarToday'), sub: ne2 ? 'राष्ट्र बैंकको विनिमय दर' : 'NRB exchange rates', href: '/exchange-rate', icon: 'chart', kw: 'dollar rate usd exchange rate nrb riyal dirham डलर विनिमय' },
+      { title: s('petrolToday'), sub: ne2 ? 'पेट्रोल, डिजेल, ग्यास' : 'Petrol, diesel, LPG', href: '/fuel-price', icon: 'chart', kw: 'petrol price diesel lpg gas fuel noc पेट्रोल डिजेल ग्यास' },
+      { title: s('dateToday'), sub: ne2 ? 'आजको गते र तिथि' : 'Aaja ko gate, tithi', href: '/nepali-date', icon: 'calendar', kw: 'nepali date today aaja ko gate miti tithi गते मिति' },
       { title: s('explore'), sub: ne2 ? 'प्रदेश र सहरको नक्सा — मौसम, हावा, भूकम्प, सतर्कता' : 'Province & city map — weather, air, quakes, alerts', href: '/explore', icon: 'map', kw: 'explore map province pradesh koshi madhesh bagmati gandaki lumbini karnali sudurpashchim नक्सा प्रदेश' },
       { title: s('account'), sub: ne2 ? 'सेभ गरिएका, सतर्कता र प्राथमिकता' : 'Saved items, alerts & preferences', href: '/account', icon: 'user', kw: 'account login sign in sign up profile saved bookmarks alerts खाता लग इन' },
       { title: s('jobs'), sub: ne2 ? 'आईटी, बैंकिङ, शिक्षा र अन्य रिक्त पद' : 'IT, banking, education & more vacancies', href: '/jobs', icon: 'building', kw: 'jobs vacancy career hiring internship जागिर रोजगार' },
@@ -1074,6 +1083,10 @@
       + link('/roads', s('roads')) + link('/trending', s('trending'))
       + link('/sports', s('sportsNav')) + link('/nepal-sports', s('nepalSports')) + link('/explore', s('explore')) + link('/jobs', s('jobs'))
       + link('/events', s('events')) + link('/calendar', s('calendar')) + link('/government', s('government')) + '</ul></div>'
+      + '<div class="foot-col"><h4>' + esc(s('todayNums')) + '</h4><ul>'
+      + link('/gold-price', s('goldToday')) + link('/nepse', s('nepseToday')) + link('/exchange-rate', s('dollarToday'))
+      + link('/fuel-price', s('petrolToday')) + link('/nepali-date', s('dateToday'))
+      + link('/weather/kathmandu', s('ktmWeather')) + link('/weather/pokhara', s('pkrWeather')) + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('company')) + '</h4><ul>'
       + sheet('about') + sheet('contact') + sheet('privacy') + sheet('terms') + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('sources')) + '</h4><ul>'

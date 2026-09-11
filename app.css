@@ -901,7 +901,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 /* ================================ footer ================================ */
 .nl-foot { margin-top: 96px; border-top: 1px solid var(--border); background: var(--bg-elev) }
 .foot-in { padding: 48px 0 28px }
-.foot-grid { display: grid; grid-template-columns: 1.4fr .8fr .8fr 1.4fr; gap: 36px }
+.foot-grid { display: grid; grid-template-columns: 1.3fr .8fr .9fr .8fr 1.3fr; gap: 32px }
 .foot-brand .wordmark { min-height: 0 }
 .foot-tag { margin-top: 14px; font-size: 15px; font-weight: 600; color: var(--text); max-width: 30ch }
 .foot-upd { margin-top: 12px; font-size: 12.5px; color: var(--text-3); display: flex; align-items: center; gap: 7px; flex-wrap: wrap }
@@ -1738,6 +1738,40 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
   .acct-row, .acct-2 { grid-template-columns: minmax(0, 1fr) }
   .nl-toast { bottom: calc(80px + env(safe-area-inset-bottom)) }
 }
+
+/* ---- server-rendered landing pages: gold, NEPSE, rates, fuel, Nepali date, city weather ---- */
+.crumbs { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 -8px; font-size: 13px; color: var(--text-3) }
+.crumbs a { color: var(--text-2) }
+.crumbs a:hover { color: var(--brand) }
+.ssr-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px }
+.ssr-kpi { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); box-shadow: var(--shadow-sm) }
+.ssr-kl { font-size: 12.5px; font-weight: 600; color: var(--text-3) }
+.ssr-kpi b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums }
+.ssr-chg { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap }
+.ssr-chg.up { color: var(--up) }
+.ssr-chg.down { color: var(--down) }
+.ssr-chg.flat { color: var(--text-3) }
+.ssr-meta { margin-top: 12px; font-size: 13px; color: var(--text-3) }
+.ssr-meta a { color: var(--text-2); text-decoration: underline }
+.ssr-sec { margin-top: 34px }
+.ssr-h2 { margin-bottom: 12px; font-size: 20px; font-weight: 800; letter-spacing: -.01em }
+.ssr-p, .ssr-ul { margin-bottom: 12px; font-size: 15px; line-height: 1.6; color: var(--text-2) }
+.ssr-ul { padding-left: 20px }
+.ssr-ul li + li { margin-top: 6px }
+.ssr-ul a { color: var(--brand); font-weight: 600 }
+.ssr-sub { font-size: 12.5px; font-weight: 500; color: var(--text-3) }
+.dtable-wrap { overflow-x: auto }
+.ssr-table td.num, .ssr-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap }
+.ssr-links { display: flex; flex-wrap: wrap; gap: 8px }
+.ssr-tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--brand-wash); color: var(--brand); font-size: 12px; font-weight: 700 }
+.ssr-date { display: flex; flex-direction: column; gap: 6px; padding: 22px 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); box-shadow: var(--shadow-sm) }
+.ssr-bs { font-size: 38px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15 }
+.ssr-bsne { font-size: 26px; font-weight: 700; line-height: 1.4 }
+.ssr-cities { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px }
+.ssr-cities a { display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev); color: var(--text); font-weight: 600 }
+.ssr-cities a span { color: var(--text-3); font-variant-numeric: tabular-nums }
+.ssr-cities a:hover { border-color: var(--border-strong) }
+@media (max-width: 620px) { .ssr-bs { font-size: 30px } .ssr-kpi b { font-size: 22px } }
 
 /* mobile bottom navigation (app-like; phones only) */
 .nl-bottom { display: none }

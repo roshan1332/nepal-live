@@ -463,22 +463,64 @@ const NOT_FOUND = {
     <div class="state-actions"><a class="btn btn-primary" href="/">Nepal Live home</a><button class="btn" type="button" data-search>Search</button></div></div>`,
 };
 
+/* Short, search-friendly titles and descriptions (Google shows about 60 and
+   155 characters). The longer in-page copy stays in each PAGES entry. */
+const SEO = {
+  '/news': ['Nepal News Today — Latest Nepali Headlines | Nepal Live', 'Latest news from Nepal’s newsrooms — OnlineKhabar, Setopati, Ratopati, The Himalayan Times and more — in English and Nepali, updated all day.'],
+  '/money': ['NEPSE, Gold Price & Exchange Rates in Nepal | Nepal Live', 'Today’s NEPSE index, gold and silver price per tola, Nepal Rastra Bank exchange rates and fuel prices — with charts and history.'],
+  '/weather': ['Nepal Weather Today — Forecast for 32 Cities | Nepal Live', 'Current weather, hourly and 7-day forecasts, rain and air quality for Kathmandu, Pokhara, Biratnagar and 29 more cities in Nepal.'],
+  '/alerts': ['Nepal Disaster Alerts — Flood, Landslide, Quake | Nepal Live', 'Official flood, landslide, earthquake and air-quality alerts across Nepal from BIPAD Portal, USGS and GDACS, with level, place and time.'],
+  '/roads': ['Nepal Road Status Today — Highway Closures | Nepal Live', 'Road closures reported by Nepal’s Department of Roads on the Prithvi, BP, Araniko and other highways, plus the latest road news.'],
+  '/earthquakes': ['Earthquake in Nepal Today — Latest Quakes | Nepal Live', 'Latest earthquakes in and around Nepal from USGS: magnitude, place, depth and distance from Kathmandu, with a 30-day timeline.'],
+  '/sports': ['Live Scores — Football, Cricket & More | Nepal Live', 'Live football and cricket scores, upcoming fixtures and results in Nepal Time, plus basketball, rugby and other sports.'],
+  '/nepal-sports': ['Nepal Cricket & Football Team Fixtures | Nepal Live', 'Nepal national cricket and football team fixtures and results, plus the latest Nepali sports news.'],
+  '/jobs': ['Jobs in Nepal Today — Latest Vacancies | Nepal Live', 'Latest job vacancies in Nepal — IT, banking, teaching, engineering, healthcare and more — with deadlines. Apply on the original listing.'],
+  '/events': ['Events in Nepal — Festivals, Holidays & Fixtures | Nepal Live', 'Upcoming festivals, public holidays, national days and Nepal team fixtures, with dates in both BS and AD.'],
+  '/calendar': ['Nepali Calendar 2083 — Nepali Date Today | Nepal Live', 'Nepali calendar 2083 (BS) with English dates, public holidays, festivals and tithi. See today’s Nepali date and switch between BS and AD.'],
+  '/government': ['Passport, License, PAN & Citizenship in Nepal | Nepal Live', 'Official links for Nepal passport, driving licence, PAN, citizenship, national ID, Lok Sewa and more — plus emergency numbers and holidays.'],
+  '/explore': ['Explore Nepal — Map of the 7 Provinces | Nepal Live', 'Interactive map of Nepal’s seven provinces with live weather, air quality, earthquakes, alerts, road closures and news for each.'],
+  '/trending': ['Trending in Nepal Today | Nepal Live', 'What Nepal’s newsrooms are covering most right now — topics ranked by how many headlines and publishers mention them.'],
+  '/search': ['Search Nepal Live', 'Search Nepali news, cities, NEPSE and exchange rates, fixtures, jobs, events and government services in one place.'],
+};
+/* Search Console / Bing Webmaster ownership tags, from the environment */
+const VERIFY = [
+  process.env.GOOGLE_SITE_VERIFICATION && '<meta name="google-site-verification" content="' + esc(process.env.GOOGLE_SITE_VERIFICATION) + '">',
+  process.env.BING_SITE_VERIFICATION && '<meta name="msvalidate.01" content="' + esc(process.env.BING_SITE_VERIFICATION) + '">',
+].filter(Boolean).join('\n');
+
 function render(pathname, origin, opts = {}) {
   const def = opts.notFound ? NOT_FOUND : PAGES[pathname];
   if (!def) return null;
-  const url = origin + (opts.notFound ? '/' : pathname);
+  return renderDef(def, opts.notFound ? '/' : pathname, origin, opts);
+}
+/* also used by seo-pages.js for the server-rendered landing pages */
+function renderDef(def, pathname, origin, opts = {}) {
+  const url = origin + pathname;
+  const [title, description] = (!opts.notFound && SEO[pathname]) || [def.title, def.description];
   const h1Text = def.h1.replace(/<[^>]+>/g, '');
   const ld = {
-    '@context': 'https://schema.org', '@type': 'WebPage', name: def.title, url, inLanguage: ['en-NP', 'ne-NP'],
-    description: def.description, isPartOf: { '@type': 'WebSite', name: 'Nepal Live', url: origin + '/' },
+    '@context': 'https://schema.org', '@type': 'WebPage', name: title, url, inLanguage: ['en-NP', 'ne-NP'],
+    description: description, isPartOf: { '@type': 'WebSite', name: 'Nepal Live', url: origin + '/' },
   };
+  /* breadcrumbs: an explicit trail for landing pages, otherwise Home › this page */
+  const crumbs = def.crumbs || (pathname === '/' || opts.notFound ? null : [[def.kicker, pathname]]);
+  const graph = [ld];
+  if (crumbs) {
+    graph.push({ '@type': 'BreadcrumbList', itemListElement: [['Nepal Live', '/']].concat(crumbs).map(([name, p], i) => ({ '@type': 'ListItem', position: i + 1, name, item: origin + p })) });
+  }
+  const LD = { '@context': 'https://schema.org', '@graph': graph.map(({ '@context': _c, ...x }) => x) };
+  const crumbsHTML = def.crumbs
+    ? '<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a>' + def.crumbs.map(([n, p], i) => (i === def.crumbs.length - 1
+      ? ' › <span aria-current="page">' + esc(n) + '</span>' : ' › <a href="' + esc(p) + '">' + esc(n) + '</a>')).join('') + '</nav>'
+    : '';
   return `<!doctype html>
 <html lang="en" data-lang="en" data-page="${def.key}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>${esc(def.title)}</title>
-<meta name="description" content="${esc(def.description)}">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}">
+${VERIFY}
 ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${esc(url)}">`}
 <meta name="theme-color" content="#f7f6f3">
 <meta property="og:type" content="website">
@@ -486,12 +528,19 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
 <meta property="og:locale" content="en_NP">
 <meta property="og:locale:alternate" content="ne_NP">
 <meta property="og:url" content="${esc(url)}">
-<meta property="og:title" content="${esc(def.title)}">
-<meta property="og:description" content="${esc(def.description)}">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="${esc(def.title)}">
-<meta name="twitter:description" content="${esc(def.description)}">
-<link rel="icon" href="${FAVICON}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:image" content="${esc(origin)}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Nepal Live — news, NEPSE, gold price, weather and more for Nepal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${esc(origin)}/og.png">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Noto+Sans+Devanagari:wght@400..800&display=swap">
@@ -508,18 +557,19 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
     } catch (e) {}
   })();
 </script>
-<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>
+<script type="application/ld+json">${JSON.stringify(LD).replace(/</g, '\\u003c')}</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="nl-head" id="nl-head"></header>
 <div class="nl-ticker" id="nl-ticker"></div>
 <main id="main" class="wrap">
+${crumbsHTML}
   <section class="page-hero">
     <div>
-      <span class="kicker" data-t="kicker">${esc(def.kicker)}</span>
-      <h1 data-th="h1" aria-label="${esc(h1Text)}">${def.h1}</h1>
-      <p class="hero-sub" data-t="sub">${esc(def.sub)}</p>
+      <span class="kicker"${def.static ? '' : ' data-t="kicker"'}>${esc(def.kicker)}</span>
+      <h1${def.static ? '' : ' data-th="h1"'} aria-label="${esc(h1Text)}">${def.h1}</h1>
+      <p class="hero-sub"${def.static ? '' : ' data-t="sub"'}>${esc(def.sub)}</p>
     </div>
     ${def.side ? `<div class="ph-side">${def.side}</div>` : ''}
   </section>
@@ -534,4 +584,4 @@ ${def.script ? `<script src="/${def.script}"></script>` : ''}
 </html>`;
 }
 
-module.exports = { PAGES, GOV, render, paths: () => Object.keys(PAGES).filter((p) => !PAGES[p].noindex) };
+module.exports = { PAGES, GOV, render, renderDef, esc, paths: () => Object.keys(PAGES).filter((p) => !PAGES[p].noindex) };

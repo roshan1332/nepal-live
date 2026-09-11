@@ -34,6 +34,14 @@ Server
   `store-file.js` (JSON file). Both expose the same async interface — keep them in step.
 - `search.js` — `/api/search?q=&type=` across places, markets, news, sports, jobs, events, government, pages
   (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently.
+- `seo-pages.js` — fully server-rendered landing pages for the most-searched live numbers: `/gold-price`, `/nepse`,
+  `/exchange-rate`, `/fuel-price`, `/nepali-date`, `/weather/<city>` (the 14 cities with live data). Live value in the
+  `<title>`/description, data in plain HTML tables, visible breadcrumbs, related links; `page-static.js` adds the
+  ticker/footer. Rendered through `site.renderDef` (def.static = no client i18n on the hero).
+- SEO plumbing: `SEO` map in site-pages.js (short titles ≤60 / descriptions ≤155 for section pages), BreadcrumbList
+  JSON-LD on every page, share image `og.png` (1200×630), `icon-512.png`, `favicon.svg`, `/favicon.ico`
+  (= `favicon-48.png`) served by server.js, optional `GOOGLE_SITE_VERIFICATION` / `BING_SITE_VERIFICATION` env
+  vars emit ownership meta tags. Sitemap includes the landing pages. Footer "Today in Nepal" column links them.
 - `site-pages.js` — server-rendered section pages (`PAGES` map: title, description, OG/Twitter, canonical, JSON-LD,
   hero, body, `script`, optional `pre` scripts, `noindex`). Also the government directory data `GOV`.
 - `nepse-client.js` + `css.wasm` — NEPSE token flow.
