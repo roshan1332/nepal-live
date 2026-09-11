@@ -14,7 +14,7 @@
       kicker: 'Explore Nepal', h1: 'Explore <em>Nepal</em>', sub: 'Pick a province or a city to see its weather, air, earthquakes, alerts, roads and headlines.',
       lWeather: 'Weather', lAir: 'Air quality', lQuakes: 'Earthquakes', lAlerts: 'Alerts', lRoads: 'Roads',
       mapTitle: 'Map of Nepal’s seven provinces', nepal: 'Nepal', sevenProv: 'Seven provinces', pickHint: 'Choose a province on the map or below, or tap a city.',
-      province: 'Province', thAlerts: 'Active alerts', thRoads: 'Road closures', thQuakes: 'Earthquakes', thQuakes30: 'Earthquakes · 30 days, M4+',
+      province: 'Province', thAlerts: 'Active alerts', thRoads: 'Road closures', thQuakes: 'Quakes', thQuakes30: 'Earthquakes · 30 days, M4+',
       countsBasis: 'Counts use active official alerts that carry a location or district, and M4+ earthquakes located inside each province in the last 30 days.',
       allNepal: 'All of Nepal', nDistricts: '{n} districts', cities: 'Cities', districtsList: 'Districts',
       noAlerts: 'No active official alerts here right now.', noRoads: 'No road closures reported here right now.', noQuakes: 'No M4+ earthquakes located here in the last 30 days.',
@@ -22,7 +22,7 @@
       nationwide: 'Coming up nationwide', fullForecast: 'Full forecast', setMyCity: 'Set as my city', myCity: 'My city', myCitySet: 'Saved as your city',
       feels: 'Feels like', humidity: 'Humidity', wind: 'Wind', rainChance: 'Rain chance today', today: 'Today', aqi: 'Air quality (model)',
       noWx: 'Current conditions for this city are on the Weather page.', near: '{d} km away', within: 'within 100 km',
-      legWeather: 'Current temperature in major cities · Open-Meteo model', legAir: 'US AQI in major cities · Open-Meteo air-quality model',
+      legWeather: 'Current temperature in major cities · Open-Meteo model', legWeatherMet: 'Current temperature in major cities · MET Norway forecast', legAir: 'US AQI in major cities · Open-Meteo air-quality model',
       legQuakes: 'M4+ earthquakes, last 30 days · circle size shows magnitude · USGS', legAlerts: 'Active official alerts that have a location',
       legRoads: 'Road closures reported by the Department of Roads (BIPAD Portal)', legNew: 'last 24 h', updated: 'updated {ago}',
       unavailable: 'Data currently unavailable.', err: 'The map data couldn’t be loaded.', more: 'More', inProv: '{n} in this province',
@@ -40,7 +40,7 @@
       nationwide: 'देशभर आउँदै', fullForecast: 'पूरा पूर्वानुमान', setMyCity: 'मेरो सहर बनाउनुहोस्', myCity: 'मेरो सहर', myCitySet: 'तपाईंको सहरका रूपमा सेभ भयो',
       feels: 'महसुस', humidity: 'आर्द्रता', wind: 'हावा', rainChance: 'आज वर्षाको सम्भावना', today: 'आज', aqi: 'हावाको गुणस्तर (मोडेल)',
       noWx: 'यो सहरको हालको मौसम मौसम पृष्ठमा छ।', near: '{d} किमी टाढा', within: '१०० किमीभित्र',
-      legWeather: 'प्रमुख सहरको हालको तापक्रम · Open-Meteo मोडेल', legAir: 'प्रमुख सहरको US AQI · Open-Meteo वायु मोडेल',
+      legWeather: 'प्रमुख सहरको हालको तापक्रम · Open-Meteo मोडेल', legWeatherMet: 'प्रमुख सहरको हालको तापक्रम · MET Norway पूर्वानुमान', legAir: 'प्रमुख सहरको US AQI · Open-Meteo वायु मोडेल',
       legQuakes: 'पछिल्लो ३० दिनका M4+ भूकम्प · घेराको आकारले म्याग्निच्युड देखाउँछ · USGS', legAlerts: 'स्थान भएका सक्रिय आधिकारिक सतर्कता',
       legRoads: 'सडक विभागले रिपोर्ट गरेका सडक अवरोध (बिपद पोर्टल)', legNew: 'पछिल्लो २४ घण्टा', updated: '{ago} अपडेट',
       unavailable: 'तथ्यांक अहिले उपलब्ध छैन।', err: 'नक्साको तथ्यांक लोड हुन सकेन।', more: 'थप', inProv: 'यो प्रदेशमा {n}',
@@ -157,7 +157,7 @@
   function legend() {
     var L = S.layer, src = { weather: 'wx', air: 'air', quakes: 'quakes', alerts: 'alerts', roads: 'alerts' }[L];
     var raw = S.raw[src], upd = raw && raw.fetchedAt ? ' · ' + t('updated', { ago: NL.ago(Date.parse(raw.fetchedAt)) }) : '';
-    var body = { weather: t('legWeather'), air: t('legAir'), quakes: t('legQuakes'), alerts: t('legAlerts'), roads: t('legRoads') }[L];
+    var body = { weather: S.raw.wx && S.raw.wx.source && S.raw.wx.source.fallback ? t('legWeatherMet') : t('legWeather'), air: t('legAir'), quakes: t('legQuakes'), alerts: t('legAlerts'), roads: t('legRoads') }[L];
     var extra = '';
     if (L === 'air') extra = '<span class="ex-scale">' + NL.aqiScale(null) + '</span>';
     if (L === 'alerts') extra = NL.levels.map(function (l) { return NL.levelBadge(l); }).join('');
@@ -299,7 +299,7 @@
       + (a.pm2_5 != null ? '<span class="muted small">PM2.5 ' + num(Math.round(a.pm2_5)) + ' µg/m³</span>' : '') + '</div>' + NL.aqiScale(a.us_aqi) : '';
     box.innerHTML = '<div class="ex-ph"><button class="ex-back" type="button" data-p="' + pid + '">← ' + esc(pname(pid)) + '</button>'
       + '<span class="kicker">' + esc(c.district) + ' · ' + esc(pname(pid)) + '</span><h2' + (ne() ? ' lang="ne"' : '') + '>' + esc(cname(c)) + '</h2></div>'
-      + block(t('lWeather'), now + (w ? '<p class="small muted">' + esc(t('updated', { ago: NL.ago(Date.parse(S.raw.wx.fetchedAt)) })) + ' · Open-Meteo</p>' : ''))
+      + block(t('lWeather'), now + (w ? '<p class="small muted">' + esc(t('updated', { ago: NL.ago(Date.parse(S.raw.wx.fetchedAt)) })) + ' · ' + esc((S.raw.wx.source && S.raw.wx.source.name) || 'Open-Meteo') + '</p>' : ''))
       + (air ? block(t('aqi'), air) : '')
       + '<div class="ex-actions"><a class="btn btn-primary" href="/weather?city=' + encodeURIComponent(c.id) + '">' + esc(t('fullForecast')) + ' →</a>'
       + '<button class="btn" type="button" data-mycity="' + c.id + '" aria-pressed="' + isMine(c.id) + '">★ ' + esc(isMine(c.id) ? t('myCity') : t('setMyCity')) + '</button>'

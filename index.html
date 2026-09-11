@@ -263,7 +263,7 @@
         <span id="hero-date"></span><span class="npt-tag">NPT</span><span class="hero-bs" id="hero-bs" hidden></span>
       </div>
       <h1 id="hero-title">Everything happening in Nepal, <em>live.</em></h1>
-      <p class="hero-sub" id="hero-sub">Headlines from Nepali newsrooms, markets, weather and scores — in one place, updated through the day.</p>
+      <p class="hero-sub" id="hero-sub">News, markets, weather, sports and important updates — in one place.</p>
     </div>
     <div class="hero-side">
       <span class="hero-status" id="hero-status"><i></i><span id="hero-status-txt">Connecting to live feeds…</span></span>
@@ -351,7 +351,7 @@
         <div class="card-head">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span>
           <h3 id="nepse-title">NEPSE Index</h3><span class="chip closed" id="nepse-status" hidden></span>
-          <span class="stamp" id="stamp-nepse"></span>
+          <span class="stamp" id="stamp-nepse" data-kind="market"></span>
           <button class="rbtn" data-mod="nepse" type="button" aria-label="Refresh NEPSE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
         </div>
         <div class="card-body" id="nepse-body"></div>
@@ -362,7 +362,7 @@
         <div class="card-head">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg></span>
           <h3 id="gold-title">Gold &amp; Silver</h3>
-          <span class="stamp" id="stamp-gold"></span>
+          <span class="stamp" id="stamp-gold" data-kind="daily"></span>
           <button class="rbtn" data-mod="gold" type="button" aria-label="Refresh gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
         </div>
         <div class="card-body" id="gold-body"></div>
@@ -373,7 +373,7 @@
         <div class="card-head">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4"/><path d="M21 7H7"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h14"/></svg></span>
           <h3 id="rates-title">Exchange rates</h3>
-          <span class="stamp" id="stamp-rates"></span>
+          <span class="stamp" id="stamp-rates" data-kind="daily"></span>
           <button class="rbtn" data-mod="rates" type="button" aria-label="Refresh rates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
         </div>
         <div class="card-body" id="rates-body"></div>
@@ -403,8 +403,13 @@
           <select id="city-select" aria-label="Choose city">
             <option value="27.7172,85.3240,Kathmandu">Kathmandu</option>
             <option value="28.2096,83.9856,Pokhara">Pokhara</option>
+            <option value="27.6766,85.3142,Lalitpur">Lalitpur</option>
+            <option value="27.6730,85.4300,Bhaktapur">Bhaktapur</option>
             <option value="26.4453,87.2718,Biratnagar">Biratnagar</option>
+            <option value="27.6803,84.4365,Bharatpur">Bharatpur</option>
+            <option value="27.7005,83.4484,Butwal">Butwal</option>
             <option value="28.0500,81.6167,Nepalgunj">Nepalgunj</option>
+            <option value="26.8144,87.2797,Dharan">Dharan</option>
             <option value="28.7036,80.5626,Dhangadhi">Dhangadhi</option>
             <option value="26.7271,85.9250,Janakpur">Janakpur</option>
           </select>
@@ -453,38 +458,36 @@
   <section class="sec" id="sports" aria-labelledby="sp-title">
     <div class="sec-head"><div><span class="kicker" id="sp-kicker">Sports</span><h2 class="sec-title" id="sp-title">Scores &amp; fixtures</h2></div>
       <div class="sec-actions"><a class="link-more" href="/sports"><span id="sp-all">All sports</span> <span>→</span></a><a class="link-more" href="/nepal-sports"><span id="np-all">Nepal sports</span> <span>→</span></a></div></div>
-    <div class="sp-grid">
-      <div class="sp-col">
-        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z"/><path d="M12 7.6V3.2M16.2 10.6l4-1.3M14.6 15.5l2.5 3.4M9.4 15.5l-2.5 3.4M7.8 10.6l-4-1.3"/></svg><span id="sp-foot-h">Football</span></h3>
-          <a class="link-more" href="/football"><span id="sp-foot-all">All matches</span> <span>→</span></a></div>
-        <div class="sp-list" id="sp-football"></div>
+    <div class="sp-bar">
+      <div class="seg sp-sport" role="tablist" aria-label="Sport" id="sp-sport">
+        <button type="button" role="tab" data-sp="Soccer" aria-selected="true">Football</button><button type="button" role="tab" data-sp="Cricket" aria-selected="false">Cricket</button>
       </div>
-      <div class="sp-col">
-        <div class="sp-col-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 3.5l6 6-9 9a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8z"/><path d="M4 20l2.5-2.5"/><circle cx="18.5" cy="18.5" r="2"/></svg><span id="sp-cric-h">Cricket</span></h3>
-          <a class="link-more" href="/cricket"><span id="sp-cric-all">All matches</span> <span>→</span></a></div>
-        <div class="sp-list" id="sp-cricket"></div>
-      </div>
+      <div class="sp-status" role="tablist" aria-label="Match status" id="sp-status"></div>
     </div>
+    <div class="sb-grid sp-home" id="sp-list" aria-live="polite"></div>
   </section>
 
-  <!-- Jobs -->
-  <section class="sec" id="home-jobs" aria-labelledby="hj-title">
-    <div class="sec-head">
-      <div><span class="kicker" id="hj-kicker">Nepal Jobs</span><h2 class="sec-title" id="hj-title">Latest jobs</h2></div>
-      <div class="sec-actions"><span class="stamp" id="stamp-home-jobs"></span><a class="link-more" href="/jobs"><span id="hj-all">All jobs</span> <span>→</span></a></div>
+  <!-- Jobs & events -->
+  <section class="sec" id="home-jobs" aria-label="Jobs and events">
+    <div class="je-grid">
+      <div class="je-col" aria-labelledby="hj-title">
+        <div class="sec-head">
+          <div><span class="kicker" id="hj-kicker">Nepal Jobs</span><h2 class="sec-title" id="hj-title">Latest jobs</h2></div>
+          <div class="sec-actions"><span class="stamp" id="stamp-home-jobs" data-kind="daily"></span></div>
+        </div>
+        <div class="hj-list" id="hj-list"></div>
+        <p class="basis" id="hj-basis"></p>
+        <a class="link-more je-all" href="/jobs"><span id="hj-all">View all jobs</span> <span>→</span></a>
+      </div>
+      <div class="je-col" id="home-events" aria-labelledby="he-title">
+        <div class="sec-head">
+          <div><span class="kicker" id="he-kicker">Nepal Events</span><h2 class="sec-title" id="he-title">Coming up</h2></div>
+          <div class="sec-actions"><a class="link-more" href="/calendar"><span id="he-cal">Calendar</span> <span>→</span></a></div>
+        </div>
+        <div class="he-list" id="he-list"></div>
+        <a class="link-more je-all" href="/events"><span id="he-all">View all events</span> <span>→</span></a>
+      </div>
     </div>
-    <div class="hj-cats" id="hj-cats"></div>
-    <div class="hj-list" id="hj-list"></div>
-    <p class="basis" id="hj-basis"></p>
-  </section>
-
-  <!-- Events -->
-  <section class="sec" id="home-events" aria-labelledby="he-title">
-    <div class="sec-head">
-      <div><span class="kicker" id="he-kicker">Nepal Events</span><h2 class="sec-title" id="he-title">Coming up</h2></div>
-      <div class="sec-actions"><a class="link-more" href="/events"><span id="he-all">All events</span> <span>→</span></a><a class="link-more" href="/calendar"><span id="he-cal">Calendar</span> <span>→</span></a></div>
-    </div>
-    <div class="he-list" id="he-list"></div>
   </section>
 
   <!-- Trending -->
@@ -527,7 +530,7 @@
 const I18N = {
   en: {
     heroTitle: 'Everything happening in Nepal, <em>live.</em>',
-    heroSub: 'Headlines from Nepali newsrooms, markets, weather and scores — in one place, updated through the day.',
+    heroSub: 'News, markets, weather, sports and important updates — in one place.',
     heroNote: 'Aggregated from official sources & newsrooms',
     statusAll: 'All {n} live feeds updating', statusSome: '{ok} of {n} live feeds updating', statusConn: 'Connecting to live feeds…',
     topStories: 'Top stories', featured: 'Top story',
@@ -540,7 +543,8 @@ const I18N = {
     topics: { all: 'All', nepal: 'Nepal', politics: 'Politics', business: 'Business', technology: 'Technology', sports: 'Sports', entertainment: 'Entertainment', world: 'World' },
     newsAll: 'All', newsEn: 'English', newsNe: 'नेपाली',
     noNews: 'No headlines match this filter right now.', clearFilter: 'Show all news',
-    noSports: 'No matches in the feed right now.', errSports: 'Scores aren’t available right now.',
+    noSports: 'No matches in the feed right now.', spLive: 'Live', spSoon: 'Upcoming', spDone: 'Finished',
+    noLive: 'No live matches right now.', noSoon: 'No upcoming matches found.', noDone: 'No recent results.', errSports: 'Scores aren’t available right now.',
     live: 'LIVE', updated: 'Updated',
     goldTitle: 'Gold & Silver', nepseTitle: 'NEPSE Index', ratesTitle: 'Exchange rates',
     weatherTitle: 'Weather', airTitle: 'Air quality', quakesTitle: 'Earthquakes · 7 days',
@@ -617,11 +621,11 @@ const I18N = {
     htKicker: 'Trending now', htTitle: 'Trending in Nepal', htAll: 'All trending topics',
     trendNone: 'Nothing is covered widely enough to call it trending right now.',
     trendBasis: 'Counted from {h} headlines by {s} publishers in the last {hrs} hours.', errTrending: 'Trending topics aren’t available right now.',
-    hjKicker: 'Nepal Jobs', hjTitle: 'Latest jobs', hjAll: 'All jobs', errJobs: 'Job listings aren’t available right now.', jobsNone: 'No open vacancies are listed right now.',
+    hjKicker: 'Nepal Jobs', hjTitle: 'Latest jobs', hjAll: 'View all jobs', errJobs: 'Job listings aren’t available right now.', jobsNone: 'No open vacancies are listed right now.',
     hjBasis: '{n} open vacancies from merojob.com. Nepal Live is not the employer — each job opens on its original listing.', applyBy: 'Apply by {d}', viaMj: 'via merojob',
     jc_it: 'IT', jc_banking: 'Banking & finance', jc_hospitality: 'Hospitality', jc_education: 'Education', jc_engineering: 'Engineering', jc_healthcare: 'Healthcare',
     jc_marketing: 'Marketing', jc_government: 'Government (Lok Sewa)', jc_internship: 'Internship', 'jc_part-time': 'Part-time', jc_remote: 'Remote',
-    heKicker: 'Nepal Events', heTitle: 'Coming up', heAll: 'All events', heCal: 'Calendar', errEvents: 'Events aren’t available right now.', evNone: 'Nothing is listed for the coming weeks.',
+    heKicker: 'Nepal Events', heTitle: 'Coming up', heAll: 'View all events', heCal: 'Calendar', errEvents: 'Events aren’t available right now.', evNone: 'Nothing is listed for the coming weeks.',
     ev_holiday: 'Public holiday', ev_holidayLtd: 'Holiday for some groups', ev_festival: 'Festival', ev_day: 'Observance', ev_sports: 'Nepal fixture', nationwide: 'Nationwide',
     hgKicker: 'Nepal Government', hgTitle: 'Government services', hgAll: 'All services', officialSrc: 'Official source', calSrc: 'Nepal Calendar',
     hgNote: 'Every link opens the official government site. Nepal Live is an information service, not a government office.',
@@ -645,7 +649,7 @@ const I18N = {
   },
   ne: {
     heroTitle: 'नेपालमा भइरहेका सबै कुरा, <em>प्रत्यक्ष।</em>',
-    heroSub: 'नेपाली समाचार कक्षका शीर्षक, बजार, मौसम र खेलका स्कोर — एकै ठाउँमा, दिनभरि ताजा।',
+    heroSub: 'समाचार, बजार, मौसम, खेलकुद र महत्त्वपूर्ण सूचना — एकै ठाउँमा।',
     heroNote: 'आधिकारिक स्रोत र समाचार कक्षबाट संकलित',
     statusAll: 'सबै {n} प्रत्यक्ष फिड चलिरहेका', statusSome: '{n} मध्ये {ok} प्रत्यक्ष फिड चलिरहेका', statusConn: 'प्रत्यक्ष फिडसँग जडान हुँदै…',
     topStories: 'मुख्य समाचार', featured: 'मुख्य समाचार',
@@ -658,7 +662,8 @@ const I18N = {
     topics: { all: 'सबै', nepal: 'समाचार', politics: 'राजनीति', business: 'व्यापार', technology: 'प्रविधि', sports: 'खेलकुद', entertainment: 'मनोरञ्जन', world: 'विश्व' },
     newsAll: 'सबै', newsEn: 'English', newsNe: 'नेपाली',
     noNews: 'यो फिल्टरमा अहिले कुनै समाचार छैन।', clearFilter: 'सबै समाचार हेर्नुहोस्',
-    noSports: 'फिडमा अहिले कुनै खेल छैन।', errSports: 'स्कोर अहिले उपलब्ध छैन।',
+    noSports: 'फिडमा अहिले कुनै खेल छैन।', spLive: 'लाइभ', spSoon: 'आगामी', spDone: 'सकिएका',
+    noLive: 'अहिले कुनै खेल चलिरहेको छैन।', noSoon: 'आगामी खेल भेटिएन।', noDone: 'हालैका नतिजा छैनन्।', errSports: 'स्कोर अहिले उपलब्ध छैन।',
     live: 'प्रत्यक्ष', updated: 'अपडेट',
     goldTitle: 'सुन–चाँदी', nepseTitle: 'नेप्से सूचकांक', ratesTitle: 'विनिमय दर',
     weatherTitle: 'मौसम', airTitle: 'हावाको गुणस्तर', quakesTitle: 'भूकम्प · ७ दिन',
@@ -735,11 +740,11 @@ const I18N = {
     htKicker: 'अहिले चर्चामा', htTitle: 'नेपालमा चर्चामा', htAll: 'चर्चाका सबै विषय',
     trendNone: 'अहिले चर्चामा भन्न पुग्ने गरी कुनै विषय व्यापक रूपमा कभर भएको छैन।',
     trendBasis: 'पछिल्लो {hrs} घण्टामा {s} प्रकाशकका {h} शीर्षकबाट गनिएको।', errTrending: 'चर्चाका विषय अहिले उपलब्ध छैनन्।',
-    hjKicker: 'नेपालका जागिर', hjTitle: 'पछिल्ला जागिर', hjAll: 'सबै जागिर', errJobs: 'जागिरको सूची अहिले उपलब्ध छैन।', jobsNone: 'अहिले कुनै खुला पद सूचीकृत छैन।',
+    hjKicker: 'नेपालका जागिर', hjTitle: 'पछिल्ला जागिर', hjAll: 'सबै जागिर हेर्नुहोस्', errJobs: 'जागिरको सूची अहिले उपलब्ध छैन।', jobsNone: 'अहिले कुनै खुला पद सूचीकृत छैन।',
     hjBasis: 'merojob.com का {n} खुला पद। नेपाल लाइभ रोजगारदाता होइन — हरेक जागिर मूल सूचीमा खुल्छ।', applyBy: '{d} सम्म आवेदन', viaMj: 'merojob मार्फत',
     jc_it: 'आईटी', jc_banking: 'बैंकिङ र वित्त', jc_hospitality: 'होटल/आतिथ्य', jc_education: 'शिक्षा', jc_engineering: 'इन्जिनियरिङ', jc_healthcare: 'स्वास्थ्य',
     jc_marketing: 'मार्केटिङ', jc_government: 'सरकारी (लोक सेवा)', jc_internship: 'इन्टर्नसिप', 'jc_part-time': 'पार्ट-टाइम', jc_remote: 'रिमोट',
-    heKicker: 'नेपालका कार्यक्रम', heTitle: 'आउँदै गरेका', heAll: 'सबै कार्यक्रम', heCal: 'पात्रो', errEvents: 'कार्यक्रम अहिले उपलब्ध छैनन्।', evNone: 'आगामी हप्ताहरूमा केही सूचीकृत छैन।',
+    heKicker: 'नेपालका कार्यक्रम', heTitle: 'आउँदै गरेका', heAll: 'सबै कार्यक्रम हेर्नुहोस्', heCal: 'पात्रो', errEvents: 'कार्यक्रम अहिले उपलब्ध छैनन्।', evNone: 'आगामी हप्ताहरूमा केही सूचीकृत छैन।',
     ev_holiday: 'सार्वजनिक बिदा', ev_holidayLtd: 'केही समूहलाई मात्र बिदा', ev_festival: 'चाडपर्व', ev_day: 'दिवस', ev_sports: 'नेपालको खेल', nationwide: 'देशभर',
     hgKicker: 'नेपाल सरकार', hgTitle: 'सरकारी सेवा', hgAll: 'सबै सेवा', officialSrc: 'आधिकारिक स्रोत', calSrc: 'नेपाली पात्रो',
     hgNote: 'हरेक लिंकले आधिकारिक सरकारी वेबसाइट खोल्छ। नेपाल लाइभ सूचना सेवा हो, सरकारी कार्यालय होइन।',
@@ -1238,7 +1243,7 @@ const WMO = {
   en:{0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],61:['Light rain','🌦️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],66:['Freezing rain','🌧️'],71:['Light snow','🌨️'],73:['Snow','🌨️'],75:['Heavy snow','❄️'],80:['Rain showers','🌦️'],81:['Showers','🌧️'],82:['Heavy showers','⛈️'],85:['Snow showers','🌨️'],95:['Thunderstorm','⛈️'],96:['Storm + hail','⛈️'],99:['Storm + hail','⛈️']},
   ne:{0:['सफा आकाश','☀️'],1:['प्रायः सफा','🌤️'],2:['आंशिक बादल','⛅'],3:['बदली','☁️'],45:['कुहिरो','🌫️'],48:['कुहिरो','🌫️'],51:['हल्का झरी','🌦️'],53:['झरी','🌦️'],55:['भारी झरी','🌧️'],61:['हल्का पानी','🌦️'],63:['पानी','🌧️'],65:['भारी पानी','🌧️'],66:['असिना पानी','🌧️'],71:['हल्का हिउँ','🌨️'],73:['हिउँ','🌨️'],75:['भारी हिउँ','❄️'],80:['पानीको झरी','🌦️'],81:['झरी','🌧️'],82:['भारी झरी','⛈️'],85:['हिउँ झरी','🌨️'],95:['आँधीबेहरी','⛈️'],96:['असिनासहित आँधी','⛈️'],99:['असिनासहित आँधी','⛈️']}
 };
-const CITY_NE = { Kathmandu: 'काठमाडौं', Pokhara: 'पोखरा', Biratnagar: 'विराटनगर', Nepalgunj: 'नेपालगञ्ज', Dhangadhi: 'धनगढी', Janakpur: 'जनकपुर' };
+const CITY_NE = { Kathmandu: 'काठमाडौं', Pokhara: 'पोखरा', Lalitpur: 'ललितपुर', Bhaktapur: 'भक्तपुर', Biratnagar: 'विराटनगर', Bharatpur: 'भरतपुर', Butwal: 'बुटवल', Nepalgunj: 'नेपालगञ्ज', Dharan: 'धरान', Dhangadhi: 'धनगढी', Janakpur: 'जनकपुर' };
 /* personalization: the city chosen on Weather, Explore or the account page opens here first too */
 (function myCity() {
   let c = null;
@@ -1291,7 +1296,7 @@ function renderWeather() {
     const dayName = i === 0 ? t('todayDay') : new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en', { weekday: 'short', timeZone: 'UTC' }).format(new Date(tm + 'T00:00:00Z'));
     return `<div class="wx-day${i === 0 ? ' today' : ''}"><div class="d">${dayName}</div><div class="e" aria-hidden="true">${e2}</div>
       <div class="t"><b>${Math.round(d.daily.temperature_2m_max[i])}°</b> ${Math.round(d.daily.temperature_2m_min[i])}°</div>
-      <div class="p">${d.daily.precipitation_probability_max?.[i] ?? '–'}%</div></div>`;
+      <div class="p">${d.daily.precipitation_probability_max?.[i] != null ? d.daily.precipitation_probability_max[i] + '%' : '–'}</div></div>`;
   }).join('');
   const city = cityCoords().name;
   $('weather-body').innerHTML =
@@ -1303,15 +1308,15 @@ function renderWeather() {
      <div class="wx-stats">
        <div class="wx-stat"><div class="k">${t('humidity')}</div><div class="v">${c.relative_humidity_2m}%</div></div>
        <div class="wx-stat"><div class="k">${t('wind')}</div><div class="v">${Math.round(c.wind_speed_10m)} km/h</div></div>
-       <div class="wx-stat"><div class="k">${t('rainChance')}</div><div class="v">${rain ?? '–'}%</div></div>
+       <div class="wx-stat"><div class="k">${t('rainChance')}</div><div class="v">${rain != null ? rain + '%' : '–'}</div></div>
      </div>
      ${wxHourly(d)}
      <div class="wx-days">${days}</div>`;
-  $('src-weather').textContent = `${city} · ${t('srcWeather')}`;
+  $('src-weather').textContent = d.source && d.source.name ? `${city} · ${LANG === 'ne' ? 'स्रोत' : 'Source'}: ${d.source.name}` : `${city} · ${t('srcWeather')}`;
   animateCounts($('weather-body'));
   tile('tile-weather', { k: city, icon: 'sun2', v: `${Math.round(c.temperature_2m)}°C`, d: desc,
-    extra: `<div class="tile-d" style="margin-top:2px">${tf('hiLo', { h: hi, l: lo })} · ${t('rainChance')} ${rain ?? '–'}%</div>`,
-    foot: 'Open-Meteo', ts: Date.now() });
+    extra: `<div class="tile-d" style="margin-top:2px">${tf('hiLo', { h: hi, l: lo })} · ${t('rainChance')} ${rain != null ? rain + '%' : '–'}</div>`,
+    foot: (d.source && d.source.name) || 'Open-Meteo', ts: Date.now() });
   NL.ticker.set('weather', NL.tk.weather(c.temperature_2m, city));
 }
 async function refreshWeather() {
@@ -1476,6 +1481,8 @@ function renderQuakes() {
   if (!feats) return;
   quakeTile(feats);
   $('src-quakes').textContent = t('srcQuakes');
+  const q0 = feats[0];
+  if (q0 && q0.properties) NL.ticker.set('quake', NL.tk.quake(q0.properties.mag, q0.properties.place, q0.properties.time));
   if (!feats.length) {
     $('quakes-body').innerHTML = NL.emptyState(t('quakesNone'), { icon: 'quake', sub: t('quakesNoneSub') });
     return;
@@ -1686,19 +1693,42 @@ function sportPick(days) {
   const done = all.filter(e => c(e) === 'done').sort((a, b) => NL.sport.ms(b) - NL.sport.ms(a));
   return live.concat(soon.slice(0, 2), done).slice(0, 3);
 }
+/* Homepage sports: one sport at a time, split into Live / Upcoming / Finished,
+   Nepal's own matches first. Opens on Live when anything is live. */
+const SP_TABS = [['live', 'spLive'], ['ns', 'spSoon'], ['done', 'spDone']];
+const isNepalMatch = (e) => /\bNepal\b/i.test(`${e.strHomeTeam} ${e.strAwayTeam}`);
 function renderSports() {
-  [['Soccer', 'sp-football'], ['Cricket', 'sp-cricket']].forEach(([sport, id]) => {
-    const days = state.cache['sp' + sport];
-    if (!days) return;
-    const pick = sportPick(days);
-    $(id).innerHTML = pick.length ? pick.map((ev, i) => NL.sport.card(ev, i, { compact: true })).join('')
-      : state.spPending ? NL.skeleton('list') : NL.emptyState(t('noSports'), { icon: 'calendar', compact: true });
+  const sport = state.spSport || 'Soccer';
+  const box = $('sp-list');
+  if (!box) return;
+  document.querySelectorAll('#sp-sport [data-sp]').forEach((b) => {
+    b.setAttribute('aria-selected', String(b.dataset.sp === sport));
+    b.textContent = t(b.dataset.sp === 'Soccer' ? 'football' : 'cricket');
   });
+  const days = state.cache['sp' + sport];
+  if (!days) {
+    $('sp-status').innerHTML = '';
+    box.innerHTML = state.spErr && state.spErr[sport] ? NL.errorState(t('errSports'), { mod: 'sports', compact: true }) : NL.skeleton('list');
+    return;
+  }
+  const groups = { live: [], ns: [], done: [] };
+  days.forEach((d) => (d.events || []).forEach((ev) => { const c = NL.sport.classify(ev); if (groups[c]) groups[c].push(ev); }));
+  groups.ns.sort((a, b) => NL.sport.ms(a) - NL.sport.ms(b));
+  groups.done.sort((a, b) => NL.sport.ms(b) - NL.sport.ms(a));
+  Object.keys(groups).forEach((k) => { groups[k] = groups[k].filter(isNepalMatch).concat(groups[k].filter((e) => !isNepalMatch(e))); });
+  let st = state.spStatus;
+  if (!state.spPicked || !groups[st]) st = groups.live.length ? 'live' : groups.ns.length ? 'ns' : 'done';
+  state.spStatus = st;
+  $('sp-status').innerHTML = SP_TABS.map(([k, key]) => `<button type="button" role="tab" class="sp-st${k === 'live' ? ' is-live' : ''}" data-spst="${k}" aria-selected="${k === st}">${esc(t(key))} <span class="n">${groups[k].length}</span></button>`).join('');
+  const list = groups[st].slice(0, 6);
+  box.innerHTML = list.length ? list.map((ev, i) => NL.sport.card(ev, i, {})).join('')
+    : state.spPending ? NL.skeleton('list')
+    : NL.emptyState(t(st === 'live' ? 'noLive' : st === 'ns' ? 'noSoon' : 'noDone'), { icon: 'calendar', compact: true });
 }
 async function loadSportsPreview() {
   state.spPending = 0;
-  await Promise.all([['Soccer', 'sp-football'], ['Cricket', 'sp-cricket']].map(async ([sport, id]) => {
-    if (!state.cache['sp' + sport]) $(id).innerHTML = NL.skeleton('list');
+  state.spErr = state.spErr || {};
+  await Promise.all(['Soccer', 'Cricket'].map(async (sport) => {
     try {
       let days;
       try {
@@ -1713,14 +1743,19 @@ async function loadSportsPreview() {
         days = j.events && j.events.length ? [{ date, events: j.events }] : [];
       }
       state.cache['sp' + sport] = days;
-    } catch (e) {
-      if (!state.cache['sp' + sport]) $(id).innerHTML = NL.errorState(t('errSports'), { mod: 'sports', compact: true });
-    }
+      state.spErr[sport] = false;
+    } catch (e) { state.spErr[sport] = true; }
   }));
   renderSports();
   /* the server is still filling in some days (rate-limited feed); check back */
   if (state.spPending && (state.spRetry = (state.spRetry || 0) + 1) <= 8) setTimeout(loadSportsPreview, 12000);
 }
+document.addEventListener('click', (e) => {
+  const sp = e.target.closest('#sp-sport [data-sp]');
+  if (sp) { state.spSport = sp.dataset.sp; state.spPicked = false; renderSports(); return; }
+  const st = e.target.closest('#sp-status [data-spst]');
+  if (st) { state.spStatus = st.dataset.spst; state.spPicked = true; renderSports(); }
+});
 
 /* --- Search providers --- */
 function registerSearch() {
@@ -1900,9 +1935,9 @@ const JOB_CHIPS = ['it', 'banking', 'education', 'engineering', 'healthcare', 'm
 function renderHomeJobs() {
   const d = state.cache.jobs;
   if (!d) return;
-  $('hj-cats').innerHTML = JOB_CHIPS.filter(k => k === 'government' || d.facets.tags[k]).map(k =>
+  if ($('hj-cats')) $('hj-cats').innerHTML = JOB_CHIPS.filter(k => k === 'government' || d.facets.tags[k]).map(k =>
     `<a href="/jobs?cat=${k}">${esc(t('jc_' + k))}${d.facets.tags[k] ? `<span class="n">${d.facets.tags[k]}</span>` : ''}</a>`).join('');
-  $('hj-list').innerHTML = d.items.length ? d.items.slice(0, 6).map(j => {
+  $('hj-list').innerHTML = d.items.length ? d.items.slice(0, 4).map(j => {
     const dl = Date.parse(j.deadline);
     return `<a class="hj-item" href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">`
       + (j.logo ? `<span class="hj-logo"><img src="${esc(j.logo)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.remove()"></span>` : '')
@@ -1914,7 +1949,7 @@ function renderHomeJobs() {
 function renderHomeEvents() {
   const d = state.cache.events;
   if (!d) return;
-  const up = d.items.filter(i => i.date >= d.today).slice(0, 6);
+  const up = d.items.filter(i => i.date >= d.today).slice(0, 4);
   $('he-list').innerHTML = up.length ? up.map(i => {
     const ms = Date.parse(i.date + 'T12:00:00+05:45'), title = LANG === 'ne' && i.titleNe ? i.titleNe : i.title;
     const kind = i.category === 'holiday' ? (i.restricted ? 'ev_holidayLtd' : 'ev_holiday') : 'ev_' + i.category;

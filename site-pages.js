@@ -134,7 +134,7 @@ Object.assign(PAGES, {
     body: `
   <nav class="subnav" aria-label="On this page"><a href="#nepse">NEPSE</a><a href="#metals" data-t="navMetals">Gold &amp; silver</a><a href="#fx" data-t="navFx">Exchange rates</a><a href="#fuel" data-t="navFuel">Fuel prices</a></nav>
   <section class="sec first" id="nepse" aria-labelledby="nepse-h">
-    ${head2('nepse-h', 'nepseK', 'Nepal Stock Exchange', 'nepseH', 'NEPSE index', `<div class="sec-actions"><span class="chip closed" id="nepse-status" hidden></span><span class="stamp" id="stamp-nepse"></span></div>`)}
+    ${head2('nepse-h', 'nepseK', 'Nepal Stock Exchange', 'nepseH', 'NEPSE index', `<div class="sec-actions"><span class="chip closed" id="nepse-status" hidden></span><span class="stamp" id="stamp-nepse" data-kind="market"></span></div>`)}
     <div class="money-2">
       <div class="card"><div class="card-body" id="nepse-main"></div>${footSrc('srcNepse', 'Official NEPSE feed · not investment advice', 'https://www.nepalstock.com/', 'nepalstock.com')}</div>
       <div class="card"><div class="card-body" id="nepse-stats"></div></div>
@@ -335,7 +335,7 @@ Object.assign(PAGES, {
     title: 'Jobs in Nepal — IT, Banking, Hospitality, Education & More · Nepal Live',
     description: 'Current job vacancies in Nepal by category, city and type — IT, banking and finance, hospitality, education, engineering, healthcare, marketing, internships and part-time — with deadlines and a direct link to apply on the original listing.',
     kicker: 'Nepal Jobs', h1: 'Jobs in <em>Nepal</em>', sub: 'Current vacancies from merojob.com. Apply on the original listing — Nepal Live is not the employer.',
-    side: `<span class="stamp" id="stamp-jobs"></span>${refreshBtn('jobs-refresh')}`,
+    side: `<span class="stamp" id="stamp-jobs" data-kind="daily"></span>${refreshBtn('jobs-refresh')}`,
     body: `
   <div class="jobs-tools">
     <label class="field-search">${ICO.search}<input id="job-q" type="search" autocomplete="off" placeholder="Search jobs, companies, skills…" data-tp="jobPh" aria-label="Search jobs"></label>
@@ -354,7 +354,7 @@ Object.assign(PAGES, {
     title: 'Nepal Events — Festivals, Holidays & Sports Fixtures · Nepal Live',
     description: 'Upcoming festivals, public holidays, national and international days in Nepal, and Nepal national-team fixtures — with dates in both BS and AD.',
     kicker: 'Nepal Events', h1: 'What’s <em>on</em>', sub: 'Festivals, public holidays, national days and Nepal’s national-team fixtures — from sources we can verify.',
-    side: `<span class="stamp" id="stamp-events"></span>${refreshBtn('events-refresh')}`,
+    side: `<span class="stamp" id="stamp-events" data-kind="daily"></span>${refreshBtn('events-refresh')}`,
     body: `
   <div class="ev-tools">
     <div class="seg" role="group" aria-label="When" id="ev-when"><button type="button" data-when="today" data-t="wToday">Today</button><button type="button" data-when="week" data-t="wWeek">This week</button><button type="button" data-when="month" data-t="wMonth">This month</button><button type="button" data-when="all" data-t="wAll">Next 60 days</button></div>

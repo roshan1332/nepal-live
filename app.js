@@ -68,6 +68,8 @@
       aboutTitle: 'About Nepal Live',
       alerts: 'Alerts', roads: 'Roads', trending: 'Trending', home: 'Home', sportsNav: 'Sports', moreNav: 'More', nepalSports: 'Nepal sports',
       jobs: 'Jobs', events: 'Events', calendar: 'Calendar', government: 'Government services', explore: 'Explore',
+      stLive: 'Live', stRecent: 'Recent', stOff: 'Unavailable', staleFrom: 'Couldn’t refresh · showing data from {ago}', offText: 'Data temporarily unavailable',
+      discover: 'Discover', services: 'Services', exploreNepal: 'Explore Nepal',
       todayNums: 'Today in Nepal', goldToday: 'Gold price today', nepseToday: 'NEPSE today', dollarToday: 'Dollar rate today',
       petrolToday: 'Petrol price today', dateToday: 'Nepali date today', ktmWeather: 'Kathmandu weather', pkrWeather: 'Pokhara weather',
       account: 'Account', signIn: 'Log in', save: 'Save', unsave: 'Remove from saved', savedToast: 'Saved to your account',
@@ -97,6 +99,8 @@
       aboutTitle: 'नेपाल लाइभको बारेमा',
       alerts: 'सतर्कता', roads: 'सडक', trending: 'चर्चामा', home: 'गृहपृष्ठ', sportsNav: 'खेलकुद', moreNav: 'थप', nepalSports: 'नेपाली खेलकुद',
       jobs: 'जागिर', events: 'कार्यक्रम', calendar: 'पात्रो', government: 'सरकारी सेवा', explore: 'अन्वेषण',
+      stLive: 'लाइभ', stRecent: 'हालैको', stOff: 'उपलब्ध छैन', staleFrom: 'ताजा हुन सकेन · {ago} को तथ्यांक देखाइँदै', offText: 'तथ्यांक अस्थायी रूपमा उपलब्ध छैन',
+      discover: 'हेर्नुहोस्', services: 'सेवा', exploreNepal: 'नेपाल अन्वेषण',
       todayNums: 'आज नेपालमा', goldToday: 'आजको सुनको भाउ', nepseToday: 'आजको नेप्से', dollarToday: 'आजको डलर दर',
       petrolToday: 'आजको पेट्रोल मूल्य', dateToday: 'आजको नेपाली मिति', ktmWeather: 'काठमाडौंको मौसम', pkrWeather: 'पोखराको मौसम',
       account: 'खाता', signIn: 'लग इन', save: 'सेभ गर्नुहोस्', unsave: 'सेभबाट हटाउनुहोस्', savedToast: 'तपाईंको खातामा सेभ भयो',
@@ -236,9 +240,12 @@
     return [
       ['news', '/news', s('news')],
       ['money', '/money', s('markets')],
+      ['sports', '/sports', s('sportsNav')],
       ['weather', '/weather', s('weather')],
       ['alerts', '/alerts', s('alerts')],
-      ['sports', '/sports', s('sportsNav')]
+      ['jobs', '/jobs', s('jobs'), 'x'],
+      ['events', '/events', s('events'), 'x'],
+      ['explore', '/explore', s('explore'), 'x']
     ];
   };
   var MORE = function () {
@@ -268,7 +275,8 @@
       + '<nav class="nl-nav" aria-label="Primary">'
       + NAV().map(function (n) {
           var on = n[0] === active;
-          return '<a href="' + n[1] + '" data-nav="' + n[0] + '"' + (on ? ' class="active" aria-current="page"' : '') + '>' + esc(n[2]) + '</a>';
+          var cls = ((on ? 'active ' : '') + (n[3] ? 'nav-x' : '')).trim();
+          return '<a href="' + n[1] + '" data-nav="' + n[0] + '"' + (cls ? ' class="' + cls + '"' : '') + (on ? ' aria-current="page"' : '') + '>' + esc(n[2]) + '</a>';
         }).join('')
       + '<div class="more"><button type="button" aria-expanded="false" aria-haspopup="true">' + esc(s('more')) + ICON.chev + '</button>'
       + '<div class="more-menu" role="menu">'
@@ -294,9 +302,6 @@
       ['football', '/football', s('football')],
       ['cricket', '/cricket', s('cricket')],
       ['nepal-sports', '/nepal-sports', s('nepalSports')],
-      ['explore', '/explore', s('explore')],
-      ['jobs', '/jobs', s('jobs')],
-      ['events', '/events', s('events')],
       ['calendar', '/calendar', s('calendar')],
       ['government', '/government', s('government')],
       ['roads', '/roads', s('roads')],
@@ -509,6 +514,9 @@
     },
     aqi: function (v, label, color) {
       return { k: 'AQI', v: String(Math.round(v)), d: label, sw: color, dir: 'flat', href: '/weather#air', title: 'US AQI · Open-Meteo' };
+    },
+    quake: function (mag, place, time) {
+      return { k: ne() ? 'भूकम्प' : 'QUAKE', v: 'M' + Number(mag).toFixed(1), d: NL.ago(time), dir: 'flat', href: '/earthquakes', title: String(place || '') + ' · USGS' };
     }
   };
 
@@ -546,6 +554,10 @@
         var v = d.current.us_aqi; if (v == null) return;
         var b = AQI.filter(function (x) { return v <= x[0]; })[0];
         NL.ticker.set('aqi', NL.tk.aqi(v, ne() ? b[3] : b[2], b[1]));
+      }).catch(noop);
+      get('/api/quakes?days=7&minmag=4&limit=1').then(function (d) {
+        var f = (d.features || [])[0];
+        if (f && f.properties) NL.ticker.set('quake', NL.tk.quake(f.properties.mag, f.properties.place, f.properties.time));
       }).catch(noop);
     }
     run();
@@ -588,15 +600,33 @@
       el.setAttribute('data-ts', String(Date.now()));
       el.setAttribute('data-extra', extra || '');
       el.title = s('updated') + ' ' + NL.nptHM() + ' NPT';
-    } else el.removeAttribute('data-ts');
+    }
+    /* on failure keep data-ts: the card still shows the last good data, and says how old it is */
     el.classList.toggle('err', !ok);
     paintStamp(el);
   };
+  /* kinds (data-kind on the stamp): live (default) — feeds that change within minutes;
+     daily — published once a day or less (gold, NRB rates, fuel, jobs); market — NEPSE,
+     live only during trading hours (Sun–Thu 11:00–15:00 NPT) */
+  var LIVE_FOR = 20 * 60e3;
+  NL.marketOpen = function () {
+    var p = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kathmandu', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    var mins = +p.hour * 60 + +p.minute;
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'].indexOf(p.weekday) >= 0 && mins >= 660 && mins < 900;
+  };
   function paintStamp(el) {
-    var ts = +el.getAttribute('data-ts');
-    if (!ts) { if (el.classList.contains('err')) el.textContent = s('failed'); return; }
-    var extra = el.getAttribute('data-extra');
-    el.textContent = s('updated') + ' ' + NL.ago(ts) + (extra ? ' · ' + extra : '');
+    var ts = +el.getAttribute('data-ts'), err = el.classList.contains('err');
+    var kind = el.getAttribute('data-kind') || 'live', extra = el.getAttribute('data-extra');
+    var state = !ts ? (err ? 'off' : '') : err ? 'stale'
+      : (kind === 'daily' || (kind === 'market' && !NL.marketOpen()) || Date.now() - ts > LIVE_FOR) ? 'recent' : 'live';
+    if (!state) return;
+    var label = state === 'live' ? s('stLive') : state === 'off' ? s('stOff') : s('stRecent');
+    var text = state === 'off' ? s('offText')
+      : state === 'stale' ? s('staleFrom').replace('{ago}', NL.ago(ts))
+      : s('updated') + ' ' + NL.ago(ts) + (extra ? ' · ' + extra : '');
+    el.innerHTML = '<span class="st st-' + state + '">' + esc(label) + '</span>' + esc(text);
   }
   function refreshStamps() {
     document.querySelectorAll('.stamp[data-ts], .stamp.err').forEach(paintStamp);
@@ -1077,12 +1107,12 @@
       + '<div class="foot-brand">' + wordmark()
       + '<p class="foot-tag">' + esc(s('tagline')) + '</p>'
       + '<p class="foot-upd"><span class="tk-dot" aria-hidden="true"></span>' + esc(s('lastUpd')) + ' <b id="foot-upd">' + esc(s('waiting')) + '</b></p></div>'
-      + '<div class="foot-col"><h4>' + esc(s('explore')) + '</h4><ul>'
-      + link('/news', s('news')) + link('/money', s('markets')) + link('/weather', s('weather')) + link('/earthquakes', s('quakes'))
-      + link('/alerts', s('alerts'))
-      + link('/roads', s('roads')) + link('/trending', s('trending'))
-      + link('/sports', s('sportsNav')) + link('/nepal-sports', s('nepalSports')) + link('/explore', s('explore')) + link('/jobs', s('jobs'))
-      + link('/events', s('events')) + link('/calendar', s('calendar')) + link('/government', s('government')) + '</ul></div>'
+      + '<div class="foot-col"><h4>' + esc(s('discover')) + '</h4><ul>'
+      + link('/news', s('news')) + link('/money', s('markets')) + link('/sports', s('sportsNav')) + link('/weather', s('weather'))
+      + link('/alerts', s('alerts')) + link('/earthquakes', s('quakes')) + link('/roads', s('roads')) + link('/trending', s('trending')) + '</ul></div>'
+      + '<div class="foot-col"><h4>' + esc(s('services')) + '</h4><ul>'
+      + link('/jobs', s('jobs')) + link('/events', s('events')) + link('/calendar', s('calendar')) + link('/government', s('government'))
+      + link('/explore', s('exploreNepal')) + link('/nepal-sports', s('nepalSports')) + link('/search', s('search')) + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('todayNums')) + '</h4><ul>'
       + link('/gold-price', s('goldToday')) + link('/nepse', s('nepseToday')) + link('/exchange-rate', s('dollarToday'))
       + link('/fuel-price', s('petrolToday')) + link('/nepali-date', s('dateToday'))
@@ -1224,6 +1254,20 @@
   };
   document.addEventListener('nl:lang', function () { paintAccount(); paintSaves(); });
   NL.me.load();
+
+  /* Front-end errors go to the server log (Render → Logs): message, page and
+     line only — nothing personal. At most five per page view. */
+  (function () {
+    var sent = 0;
+    function report(msg, src, line) {
+      if (sent >= 5 || !msg) return;
+      sent++;
+      var body = JSON.stringify({ msg: String(msg).slice(0, 300), src: String(src || '').slice(0, 200), line: line || 0, page: location.pathname });
+      try { if (navigator.sendBeacon) navigator.sendBeacon('/api/log', body); else fetch('/api/log', { method: 'POST', body: body, keepalive: true }); } catch (e) { /* never let reporting break the page */ }
+    }
+    window.addEventListener('error', function (e) { if (e.message) report(e.message, e.filename, e.lineno); });
+    window.addEventListener('unhandledrejection', function (e) { var r = e.reason; report(r && (r.message || r), 'promise'); });
+  })();
 
   /* ------------------------------------------------------------- delegation */
   document.addEventListener('click', function (e) {

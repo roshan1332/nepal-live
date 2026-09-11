@@ -72,6 +72,9 @@
   function renderWx() {
     var d = S.wx; if (!d) return;
     var c = d.current, w = NL.wx(c.weather_code);
+    /* name the forecast that actually answered (MET Norway stands in when Open-Meteo refuses) */
+    var srcEl = document.querySelector('[data-t="srcWx"]');
+    if (srcEl) srcEl.textContent = d.source && d.source.name ? (NL.lang() === 'ne' ? 'पूर्वानुमान: ' : 'Forecast: ') + d.source.name : t('srcWx');
     var stat = function (k, v) { return '<div class="wx-stat"><div class="k">' + esc(t(k)) + '</div><div class="v">' + v + '</div></div>'; };
     $('wx-now').innerHTML = '<div class="wxp-head"><h2 class="wxp-city">' + esc(cityLabel(S.city)) + '</h2>'
       + (S.city.province ? '<span class="muted">' + esc(S.city.district + ', ' + S.city.province) + '</span>' : '') + '</div>'
@@ -79,7 +82,7 @@
       + '<div><div class="wx-desc">' + esc(w.desc) + '</div><div class="wx-meta">' + esc(t('feels', { v: Math.round(c.apparent_temperature) })) + ' · '
       + esc(t('hilo', { h: Math.round(d.daily.temperature_2m_max[0]), l: Math.round(d.daily.temperature_2m_min[0]) })) + '</div></div></div>'
       + '<div class="wx-stats six">' + stat('humidity', c.relative_humidity_2m + '%') + stat('wind', Math.round(c.wind_speed_10m) + ' km/h')
-      + stat('rain', (d.daily.precipitation_probability_max[0] != null ? d.daily.precipitation_probability_max[0] : '–') + '%') + stat('precip', c.precipitation + ' mm')
+      + stat('rain', d.daily.precipitation_probability_max[0] != null ? d.daily.precipitation_probability_max[0] + '%' : '–') + stat('precip', c.precipitation != null ? c.precipitation + ' mm' : '–')
       + stat('sunrise', d.daily.sunrise ? hhmm(d.daily.sunrise[0]) : '–') + stat('sunset', d.daily.sunset ? hhmm(d.daily.sunset[0]) : '–') + '</div>';
 
     var h = d.hourly, start = Math.max(0, h.time.findIndex(function (x) { return x >= c.time; }));

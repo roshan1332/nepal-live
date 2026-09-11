@@ -109,7 +109,7 @@ const NE_STOP = new Set(('र को का की के मा ले ला�
 const NE_SUFFIX = ['हरूको', 'हरूले', 'हरूलाई', 'हरूमा', 'हरू', 'लाई', 'बाट', 'देखि', 'सम्म', 'सँग', 'ले', 'को'];
 
 module.exports = function init(ctx) {
-  const { fetchURL, cached, P } = ctx;
+  const { fetchURL, cached, P, MET, weatherFallback, pauseOpenMeteo } = ctx;
 
   const json = async (url) => {
     const r = await fetchURL(url);
@@ -325,7 +325,11 @@ module.exports = function init(ctx) {
      petrol, diesel, kerosene (Rs/litre), LPG (Rs/cylinder), ATF … */
   function fuel() {
     return cached('fuel', 6 * 3600e3, async () => {
-      const r = await fetchURL('https://noc.org.np/retailprice');
+      /* NOC's site rejects some server traffic; look like the browser request it expects */
+      const r = await fetchURL('https://noc.org.np/retailprice', 0, {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'en-US,en;q=0.9,ne;q=0.8',
+      });
       if (r.status >= 400) throw new Error('NOC HTTP ' + r.status);
       const table = (r.body.match(/<table[\s\S]*?<\/table>/i) || [])[0];
       if (!table) throw new Error('NOC price table not found');
@@ -761,6 +765,18 @@ module.exports = function init(ctx) {
     })();
   }
 
-  return { alerts, roads, fuel, aqiStations, trending, highlights, weatherCities, airCities, jobs, job, jobsAll,
+  /* Open-Meteo's free quota is per IP and Render's outbound IP is shared: when it
+     refuses, answer from MET Norway rather than leave every city blank */
+  const weatherCitiesSafe = () => {
+    if (MET && weatherFallback && weatherFallback()) return MET.cities(MAIN, 'paused');
+    return weatherCities().catch((e) => {
+      if (!MET) throw e;
+      if (pauseOpenMeteo) pauseOpenMeteo(e);
+      console.warn('[weather-cities] Open-Meteo failed (' + e.message + ') — using MET Norway');
+      return MET.cities(MAIN, e.message);
+    });
+  };
+
+  return { alerts, roads, fuel, aqiStations, trending, highlights, weatherCities: weatherCitiesSafe, airCities, jobs, job, jobsAll,
     calendarBs, calendarAd, calendarToday, calendarUpcoming, events, CITIES, CORRIDORS, km, KTM };
 };

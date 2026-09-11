@@ -38,18 +38,19 @@ const PORT = process.env.PORT || 3000;
 const cache = new Map();
 
 /* ---------------- upstream fetch helper ---------------- */
-function fetchURL(url, redirects = 0) {
+function fetchURL(url, redirects = 0, extra = {}) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; NepalLiveDashboard/2.0)',
         'Accept': '*/*',
         'Accept-Encoding': 'gzip, deflate',
+        ...extra,
       },
     }, (res) => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirects < 4) {
         res.resume();
-        return resolve(fetchURL(new URL(res.headers.location, url).toString(), redirects + 1));
+        return resolve(fetchURL(new URL(res.headers.location, url).toString(), redirects + 1, extra));
       }
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
@@ -297,6 +298,13 @@ const num = (v, dflt) => {
 };
 
 const SDB = require('./sportsdb')(fetchURL);
+/* second weather source: Open-Meteo's free quota is per IP, and Render's
+   outbound IP is shared, so when it refuses, forecasts come from MET Norway.
+   WEATHER_FALLBACK_TEST=1 forces the fallback (for testing). */
+const MET = require('./metno')({ fetchURL });
+let omPausedUntil = 0;
+const weatherFallback = () => process.env.WEATHER_FALLBACK_TEST === '1' || Date.now() < omPausedUntil;
+const pauseOpenMeteo = (e) => { if (/limit|quota|429/i.test(String(e && e.message))) omPausedUntil = Date.now() + 30 * 60e3; };
 
 /* ---------------- shared producers ----------------
    One function per upstream, so routes and the aggregate endpoints
@@ -438,7 +446,7 @@ function normForex(j) {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-const S = require('./sources')({ fetchURL, cached, P });
+const S = require('./sources')({ fetchURL, cached, P, MET, weatherFallback, pauseOpenMeteo });
 const site = require('./site-pages');
 
 /* ---------------- response helpers ---------------- */
@@ -522,6 +530,29 @@ const VERIFY_META = [
   process.env.GOOGLE_SITE_VERIFICATION && '<meta name="google-site-verification" content="' + process.env.GOOGLE_SITE_VERIFICATION.replace(/[^\w-]/g, '') + '">',
   process.env.BING_SITE_VERIFICATION && '<meta name="msvalidate.01" content="' + process.env.BING_SITE_VERIFICATION.replace(/[^\w-]/g, '') + '">',
 ].filter(Boolean).join('\n');
+/* Front-end error reports from app.js, for Render → Logs: small, rate-limited,
+   never echoed back. Message, page and line only — nothing personal. */
+const logHits = new Map();
+function clientLog(req, res) {
+  const done = (code) => { res.writeHead(code, { 'Cache-Control': 'no-store' }); res.end(); };
+  if (req.method !== 'POST') return done(405);
+  const ip = String((process.env.RENDER && req.headers['x-forwarded-for']) || req.socket.remoteAddress || '').split(',')[0].trim();
+  const now = Date.now(), hits = (logHits.get(ip) || []).filter((t) => now - t < 600e3);
+  if (hits.length >= 30) return done(429);
+  hits.push(now);
+  logHits.set(ip, hits);
+  if (logHits.size > 5000) logHits.clear();
+  let body = '';
+  req.on('data', (c) => { body += c; if (body.length > 2048) req.destroy(); });
+  req.on('end', () => {
+    try {
+      const j = JSON.parse(body);
+      const clean = (v, n) => String(v == null ? '' : v).replace(/[\x00-\x1f]/g, ' ').slice(0, n);
+      console.error('[client] ' + clean(j.page, 80) + ' — ' + clean(j.msg, 300) + ' (' + clean(j.src, 120) + ':' + (+j.line || 0) + ')');
+    } catch (e) { /* not JSON: ignore */ }
+    done(204);
+  });
+}
 const withVerify = (buf) => (VERIFY_META ? Buffer.from(buf.toString('utf8').replace('</head>', VERIFY_META + '\n</head>')) : buf);
 const isAccountRoute = (p) => p.startsWith('/api/auth/') || p === '/api/me' || p.startsWith('/api/me/');
 
@@ -580,7 +611,14 @@ const API = {
         + '&hourly=temperature_2m,weather_code,precipitation_probability'
         + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset'
         + '&timezone=Asia%2FKathmandu&forecast_days=7';
-      return openMeteo((await fetchURL(url)).body, 'current');
+      if (weatherFallback()) return MET.forecast(lat, lon);
+      try {
+        return openMeteo((await fetchURL(url)).body, 'current');
+      } catch (e) {
+        pauseOpenMeteo(e);
+        console.warn('[weather] Open-Meteo failed (' + e.message + ') — using MET Norway');
+        return MET.forecast(lat, lon);
+      }
     });
   },
 
@@ -765,6 +803,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/healthz') return send(req, res, 200, { ok: true });
 
+    if (p === '/api/log') return clientLog(req, res);
     if (isAccountRoute(p)) return ACC.handle(req, res, p, u);
 
     const route = API[p];
@@ -776,7 +815,9 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/')) return send(req, res, 404, { error: 'not found' });
     return reply(req, res, 404, site.render(p, SITE_ORIGIN, { notFound: true }), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
   } catch (e) {
-    return send(req, res, (e && e.status) || 502, { error: String((e && e.message) || e) });
+    const status = (e && e.status) || 502;
+    if (status >= 500) console.error('[api] ' + req.method + ' ' + req.url + ' → ' + status + ' ' + String((e && e.message) || e));
+    return send(req, res, status, { error: String((e && e.message) || e) });
   }
 });
 

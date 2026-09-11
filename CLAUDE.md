@@ -34,6 +34,16 @@ Server
   `store-file.js` (JSON file). Both expose the same async interface — keep them in step.
 - `search.js` — `/api/search?q=&type=` across places, markets, news, sports, jobs, events, government, pages
   (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently.
+- `metno.js` — MET Norway (api.met.no) second weather source. Open-Meteo's free quota is per IP and Render's
+  outbound IP is shared, so when Open-Meteo refuses, `/api/weather` and the multi-city weather answer from MET
+  Norway in the same Open-Meteo shape (source labelled "MET Norway"); Open-Meteo is then paused for 30 min.
+  Rain probability is null (not published for Nepal — shown "–"); "feels like" (BoM apparent temperature) and
+  sunrise/sunset (solar equations) are computed. `WEATHER_FALLBACK_TEST=1` forces the fallback for testing.
+- Data status badges: `NL.stamp(el, ok)` renders LIVE / RECENT / UNAVAILABLE. Stamp `data-kind`: `live`
+  (default; LIVE while < 20 min old), `daily` (gold, NRB rates, jobs, events — never LIVE), `market` (NEPSE —
+  LIVE only Sun–Thu 11:00–15:00 NPT). A failed refresh keeps the data and says "showing data from X ago".
+- Error monitoring: server logs every 5xx (`[api] …`); app.js reports front-end errors (max 5 per page view)
+  to `POST /api/log` (rate-limited, 2 KB cap) which logs `[client] page — message (file:line)` — Render → Logs.
 - `seo-pages.js` — fully server-rendered landing pages for the most-searched live numbers: `/gold-price`, `/nepse`,
   `/exchange-rate`, `/fuel-price`, `/nepali-date`, `/weather/<city>` (the 14 cities with live data). Live value in the
   `<title>`/description, data in plain HTML tables, visible breadcrumbs, related links; `page-static.js` adds the

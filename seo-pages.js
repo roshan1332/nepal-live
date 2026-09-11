@@ -288,7 +288,7 @@ module.exports = function init({ P, S, site }) {
       + (td.rain != null ? kpi('Chance of rain today', `${td.rain}%`) : '')
       + (aqi != null ? kpi('Air quality (US AQI)', String(Math.round(aqi)), `<span class="ssr-kl">${esc(band)}</span>`) : '')
       + '</div>'
-      + meta([w.fetchedAt ? `Updated <b>${esc(hm(w.fetchedAt))}</b>` : '', 'Model estimates from ' + ext('https://open-meteo.com/', 'Open-Meteo') + ' for the city centre',
+      + meta([w.fetchedAt ? `Updated <b>${esc(hm(w.fetchedAt))}</b>` : '', 'Model estimates from ' + ext((w.source && w.source.url) || 'https://open-meteo.com/', (w.source && w.source.name) || 'Open-Meteo') + ' for the city centre',
         `<a href="/weather?city=${id}">Hourly &amp; 7-day forecast →</a>`, `<a href="/explore?city=${id}">On the map →</a>`])
       + (others ? sec('Weather in other cities', `<div class="ssr-cities">${others}</div>`) : '');
     /* long conditions ("Thunderstorm with hail") would push the title past what Google shows */
