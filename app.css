@@ -4,7 +4,9 @@
    CSS (metals, NEPSE detail, AQI gauge, weather…) stays inline in index.html
    and reads only the tokens defined here.
 
-   Principles: a calm neutral canvas, one restrained accent (Nepal-flag crimson),
+   Principles: a calm newsprint canvas (deep navy-charcoal in dark mode), the flag's
+   crimson for what matters (alerts, LIVE, the brand) and its blue for links, charts
+   and primary buttons,
    green and red reserved for market direction, a dedicated live red. Numbers are
    big, metadata is small and quiet. Motion is short and only where it carries
    meaning (live pulses, value changes, hover affordances).
@@ -17,27 +19,32 @@
 :root {
   color-scheme: light;
 
-  --bg: #f7f6f3;
+  --bg: #f6f3ec;             /* warm newsprint */
   --bg-elev: #ffffff;
   --logo-bg: #ffffff; /* third-party logos are drawn for white, so they keep it in both themes */
   --on-brand: #ffffff; /* text on the brand crimson, in both themes */
-  --bg-elev-2: #f2f1ed;
-  --bg-hover: #ebeae5;
-  --border: #e4e2dc;
-  --border-strong: #d6d3cb;
-  --sep: #eeede8;
+  --bg-elev-2: #f3efe6;
+  --bg-hover: #ebe6da;
+  --border: #e4ddcf;
+  --border-strong: #d4ccbb;
+  --sep: #ede7db;
   --shadow-sm: 0 1px 2px rgba(20, 20, 16, .04);
   --shadow-md: 0 1px 2px rgba(20, 20, 16, .04), 0 14px 34px -18px rgba(20, 20, 16, .26);
   --shadow-lg: 0 30px 80px -24px rgba(10, 10, 8, .38);
   --scrim: rgba(12, 13, 16, .42);
 
-  --text: #121418;
-  --text-2: #525864;
-  --text-3: #878c96;
+  --text: #13161d;           /* ink */
+  --text-2: #4e5664;
+  --text-3: #858b97;
 
-  --brand: #c8102e;          /* Nepal flag crimson */
+  --brand: #c8102e;          /* Nepal flag crimson — alerts, LIVE, the one accent */
   --brand-ink: #ffffff;
-  --brand-2: #1d3c8f;        /* Nepal flag blue */
+  --brand-2: #003893;        /* Nepal flag blue — links, charts, primary buttons */
+  --link: #1f4db0;           /* flag blue, lightened just enough for small text */
+  --flag-red: #dc143c;       /* exact flag colours, for the small decorative touches */
+  --flag-blue: #003893;
+  --primary: #003893;        /* primary buttons: flag blue, white text */
+  --on-primary: #ffffff;
   --brand-wash: rgba(200, 16, 46, .07);
 
   --up: #0e7c3f;
@@ -46,7 +53,7 @@
   --on-live: #ffffff;
   --gold: #9a6a00;
   --silver: #6b7686;
-  --info: #1d5bd8;
+  --info: #1f4db0;
 
   --accent: var(--brand);
   --accent-wash: var(--brand-wash);
@@ -76,24 +83,29 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e1014;
-  --bg-elev: #15181d;
-  --bg-elev-2: #1b1f25;
-  --bg-hover: #23282f;
-  --border: rgba(255, 255, 255, .08);
-  --border-strong: rgba(255, 255, 255, .14);
-  --sep: rgba(255, 255, 255, .06);
+  --bg: #0b1018;             /* deep navy-charcoal */
+  --bg-elev: #111925;
+  --bg-elev-2: #16202e;
+  --bg-hover: #1d2939;
+  --border: rgba(160, 182, 214, .11);
+  --border-strong: rgba(160, 182, 214, .2);
+  --sep: rgba(160, 182, 214, .08);
   --shadow-sm: none;
   --shadow-md: 0 16px 36px -18px rgba(0, 0, 0, .8);
   --shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, .8);
   --scrim: rgba(0, 0, 0, .62);
 
-  --text: #eef0f3;
-  --text-2: #a4aab4;
-  --text-3: #6f7682;
+  --text: #e8ecf2;
+  --text-2: #a2acbb;
+  --text-3: #6d7888;
 
   --brand: #ff5468;
-  --brand-2: #8aa8ff;
+  --brand-2: #8fb0ff;
+  --link: #8fb0ff;
+  --flag-red: #ff5468;
+  --flag-blue: #8fb0ff;
+  --primary: #3f6fe0;
+  --on-primary: #ffffff;
   --brand-wash: rgba(255, 84, 104, .12);
 
   --up: #3ad07e;
@@ -101,20 +113,20 @@
   --live: #ff3b4e;
   --gold: #f0c75e;
   --silver: #b7c0cd;
-  --info: #7aaeff;
+  --info: #83a9ff;
 }
 
 /* no stored preference and scripting off: follow the OS */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg: #0e1014; --bg-elev: #15181d; --bg-elev-2: #1b1f25; --bg-hover: #23282f;
-    --border: rgba(255,255,255,.08); --border-strong: rgba(255,255,255,.14); --sep: rgba(255,255,255,.06);
+    --bg: #0b1018; --bg-elev: #111925; --bg-elev-2: #16202e; --bg-hover: #1d2939;
+    --border: rgba(160,182,214,.11); --border-strong: rgba(160,182,214,.2); --sep: rgba(160,182,214,.08);
     --shadow-sm: none; --shadow-md: 0 16px 36px -18px rgba(0,0,0,.8); --shadow-lg: 0 30px 80px -20px rgba(0,0,0,.8);
     --scrim: rgba(0,0,0,.62);
-    --text: #eef0f3; --text-2: #a4aab4; --text-3: #6f7682;
-    --brand: #ff5468; --brand-2: #8aa8ff; --brand-wash: rgba(255,84,104,.12);
-    --up: #3ad07e; --down: #ff6b6b; --live: #ff3b4e; --gold: #f0c75e; --silver: #b7c0cd; --info: #7aaeff;
+    --text: #e8ecf2; --text-2: #a2acbb; --text-3: #6d7888;
+    --brand: #ff5468; --brand-2: #8fb0ff; --link: #8fb0ff; --flag-red: #ff5468; --flag-blue: #8fb0ff; --primary: #3f6fe0; --on-primary: #ffffff; --brand-wash: rgba(255,84,104,.12);
+    --up: #3ad07e; --down: #ff6b6b; --live: #ff3b4e; --gold: #f0c75e; --silver: #b7c0cd; --info: #83a9ff;
   }
 }
 
@@ -196,7 +208,7 @@ svg { flex: 0 0 auto }
   font-size: 13px; font-weight: 600; color: var(--text-2); display: inline-flex; align-items: center; gap: 4px;
   transition: color .2s; white-space: nowrap;
 }
-.link-more:hover { color: var(--brand) }
+.link-more:hover { color: var(--link) }
 .link-more span { transition: transform .2s var(--ease) }
 .link-more:hover span { transform: translateX(3px) }
 
@@ -342,8 +354,8 @@ body.nav-open { overflow: hidden }
 .btn:active { transform: scale(.98) }
 .btn svg { width: 15px; height: 15px }
 .btn.spinning svg { animation: spin .9s linear infinite }
-.btn-primary { background: var(--text); border-color: var(--text); color: var(--bg-elev) }
-.btn-primary:hover { background: color-mix(in srgb, var(--text) 86%, var(--bg)); border-color: transparent }
+.btn-primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary) }
+.btn-primary:hover { background: color-mix(in srgb, var(--primary) 86%, var(--text)); border-color: transparent }
 
 /* =============================== ticker =============================== */
 .nl-ticker { border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); background: var(--bg-elev); min-height: 42px }
@@ -450,7 +462,7 @@ body.nav-open { overflow: hidden }
 .feature-card:hover .f-title { color: color-mix(in srgb, var(--text) 78%, var(--brand)) }
 .f-sum { margin-top: 10px; font-size: 16px; line-height: 1.6; color: var(--text-2); max-width: 64ch }
 .f-body .meta { margin-top: 14px }
-.read-orig { color: var(--brand); font-weight: 600; display: inline-flex; gap: 4px; white-space: nowrap }
+.read-orig { color: var(--link); font-weight: 600; display: inline-flex; gap: 4px; white-space: nowrap }
 .f-body .read-orig { margin-left: auto }
 .read-orig span { transition: transform .2s var(--ease) }
 a:hover .read-orig span { transform: translate(2px, -2px) }
@@ -589,7 +601,7 @@ a.tile:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border
 /* centred between the label and the source line, so an unavailable tile matches its neighbours' height without a blank bottom */
 .tile-state { margin: auto 0; padding: 10px 0; font-size: 13px; color: var(--text-2); display: flex; flex-direction: column; gap: 8px; align-items: flex-start }
 .tile-why { margin-top: -4px; font-size: 12px; line-height: 1.4; color: var(--text-3) }
-.tile-state button { border: none; background: none; color: var(--brand); font-weight: 600; font-size: 13px; padding: 0; min-height: 28px }
+.tile-state button { border: none; background: none; color: var(--link); font-weight: 600; font-size: 13px; padding: 0; min-height: 28px }
 .aqi-scale { position: relative; display: flex; gap: 2px; height: 6px; margin-top: auto; border-radius: 4px; overflow: visible }
 .aqi-scale span { flex: 1; border-radius: 2px; opacity: .85 }
 .aqi-scale i {
@@ -631,7 +643,7 @@ a.tile:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border
   padding: 10px 16px; border-top: 1px solid var(--sep); min-height: 40px; font-size: 12px; color: var(--text-3);
 }
 .card-foot a { color: var(--text-2); font-weight: 600 }
-.card-foot a:hover { color: var(--brand) }
+.card-foot a:hover { color: var(--link) }
 .stamp { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .stamp.err { color: var(--down) }
 .rbtn {
@@ -647,7 +659,7 @@ select, .fld {
   background: var(--bg-elev) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b8f98' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
   -webkit-appearance: none; appearance: none; color: var(--text); font-size: 13px; outline: none;
 }
-select:focus-visible { border-color: var(--brand) }
+select:focus-visible { border-color: var(--link) }
 select option { background: var(--bg-elev); color: var(--text) }
 
 .chip {
@@ -904,7 +916,7 @@ dialog.sheet .sheet-body { padding: 18px 20px 22px; overflow-y: auto; font-size:
 dialog.sheet .sheet-body p + p { margin-top: 10px }
 dialog.sheet .sheet-body h4 { color: var(--text); font-size: 14px; margin: 18px 0 4px }
 dialog.sheet .sheet-body h4:first-child { margin-top: 0 }
-dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
+dialog.sheet .sheet-body a { color: var(--link); font-weight: 600 }
 
 /* ================================ footer ================================ */
 .nl-foot { margin-top: 96px; border-top: 1px solid var(--border); background: var(--bg-elev) }
@@ -1010,7 +1022,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .ac-loc { display: inline-flex; align-items: center; gap: 4px; color: var(--text-2); font-weight: 600 }
 .ac-loc svg { width: 13px; height: 13px }
 .ac-src { color: var(--text-3); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 2px }
-.ac-src:hover { color: var(--brand) }
+.ac-src:hover { color: var(--link) }
 .alert-card.compact { padding: 12px 14px 11px 16px; gap: 6px }
 .alert-card.compact .ac-title { font-size: 14.5px }
 .stale-note { margin: -4px 0 0; font-size: 12px; color: var(--lv-warning) }
@@ -1028,7 +1040,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .source-list { margin-top: 22px }
 .src-ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 8px; font-size: 13.5px }
 .src-ul a { color: var(--text-2); font-weight: 600 }
-.src-ul a:hover { color: var(--brand) }
+.src-ul a:hover { color: var(--link) }
 .src-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: 1px }
 .src-dot.ok { background: var(--up) } .src-dot.bad { background: var(--down) }
 .src-bad { color: var(--down); font-size: 12px }
@@ -1070,7 +1082,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
   display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px; min-width: 220px;
   border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev); color: var(--text-3);
 }
-.field-search:focus-within { border-color: var(--brand) }
+.field-search:focus-within { border-color: var(--link) }
 .field-search svg { width: 16px; height: 16px }
 .field-search input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-size: 14px; color: var(--text) }
 .news-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; align-items: start }
@@ -1104,7 +1116,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .cv-term { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand) }
 .cv-term:lang(ne) { letter-spacing: 0; font-size: 12px }
 .cv-t { font-size: 14px; font-weight: 600; line-height: 1.35 }
-.covered a:hover .cv-t { color: var(--brand) }
+.covered a:hover .cv-t { color: var(--link) }
 .cv-m { font-size: 11.5px; color: var(--text-3) }
 
 /* trending */
@@ -1130,7 +1142,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .tc-stories { list-style: none; display: flex; flex-direction: column; border-top: 1px solid var(--sep) }
 .tc-stories a { display: flex; flex-direction: column; gap: 3px; padding: 9px 0; border-bottom: 1px solid var(--sep); font-size: 14px; font-weight: 600; line-height: 1.4 }
 .tc-stories li:last-child a { border-bottom: none; padding-bottom: 0 }
-.tc-stories a:hover > span:first-child { color: var(--brand) }
+.tc-stories a:hover > span:first-child { color: var(--link) }
 
 /* homepage: Nepal Today, alerts, roads, trending modules */
 /* numbers get the full width (big values need it); highlights run in two columns under them */
@@ -1507,7 +1519,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .gov-card h3 { font-size: 15px; font-weight: 700; line-height: 1.35; padding-right: 10px }
 .gov-card p { font-size: 13.5px; color: var(--text-2) }
 .gov-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: auto; padding-top: 6px; font-size: 13.5px; font-weight: 700 }
-.gov-src { color: var(--brand) }
+.gov-src { color: var(--link) }
 .gov-apply { color: var(--text-2) }
 .gov-src:hover, .gov-apply:hover { text-decoration: underline }
 .gov-dom { font-size: 11.5px; color: var(--text-3) }
@@ -1867,6 +1879,22 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .sp-st[aria-selected="true"] .n { color: inherit; opacity: .7 }
 .sp-st.is-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--live) }
 
+/* ============================ Nepali touches ============================ */
+/* a thin row of dhaka-style diamonds in flag crimson along the top of the briefing */
+.brief { position: relative; overflow: hidden }
+.brief::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--flag-red); opacity: .75;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 5'%3E%3Cpath d='M0 2.5 3 0 6 2.5 3 5zM6 2.5 9 0 12 2.5 9 5z'/%3E%3C/svg%3E") repeat-x 0 0 / 12px 5px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 5'%3E%3Cpath d='M0 2.5 3 0 6 2.5 3 5zM6 2.5 9 0 12 2.5 9 5z'/%3E%3C/svg%3E") repeat-x 0 0 / 12px 5px;
+}
+/* a faint Himalaya skyline sitting on the footer's top edge */
+.nl-foot { position: relative }
+.nl-foot::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 26px; background: var(--border-strong); opacity: .55; pointer-events: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 26'%3E%3Cpath d='M0 26 18 15 28 19 46 4 60 16 72 11 88 22 104 8 118 17 132 2 150 18 164 12 178 21 196 6 212 17 226 12 240 26z'/%3E%3C/svg%3E") repeat-x left bottom / 240px 26px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 26'%3E%3Cpath d='M0 26 18 15 28 19 46 4 60 16 72 11 88 22 104 8 118 17 132 2 150 18 164 12 178 21 196 6 212 17 226 12 240 26z'/%3E%3C/svg%3E") repeat-x left bottom / 240px 26px;
+}
+
 /* ============================ Nepal Today briefing ============================ */
 .brief {
   display: grid; grid-template-columns: minmax(170px, .75fr) minmax(0, 2.1fr) minmax(250px, 1fr); gap: 22px; margin: 2px 0 30px;
@@ -1912,7 +1940,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .story-acts.sm .share-btn, .story-acts.sm .save-btn { width: 32px; height: 32px; border-color: transparent; background: none }
 .story-acts.sm .save-btn.on { background: var(--brand-wash) }
 .card-story .story-acts { margin-top: auto; padding-top: 12px }
-.ro-link { margin-right: auto; font-size: 12.5px; font-weight: 700; color: var(--brand); white-space: nowrap }
+.ro-link { margin-right: auto; font-size: 12.5px; font-weight: 700; color: var(--link); white-space: nowrap }
 .ro-link:hover { text-decoration: underline }
 .lang-chip {
   display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; border: 1px solid var(--border);
@@ -1951,7 +1979,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .pv-dl { display: flex; flex-direction: column; gap: 10px; font-size: 14px }
 .pv-dl dt { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3) }
 .pv-dl dt:lang(ne), [data-lang="ne"] .pv-dl dt { letter-spacing: 0 }
-.pv-dl dd a { font-weight: 700; color: var(--brand); overflow-wrap: anywhere }
+.pv-dl dd a { font-weight: 700; color: var(--link); overflow-wrap: anywhere }
 .pv-dl dd small { display: block; margin-top: 2px; font-size: 12px; color: var(--text-3) }
 .pv-links { display: flex; flex-wrap: wrap; gap: 6px 16px }
 .nf-prov, #news-prov { height: 36px; max-width: 190px }
@@ -1970,7 +1998,7 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
   width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--border); border-radius: 9px;
   background: var(--bg-elev); color: var(--text); font: inherit; font-size: 15px; font-weight: 600;
 }
-.tool-row input:focus, .tool-row select:focus { outline: none; border-color: var(--brand) }
+.tool-row input:focus, .tool-row select:focus { outline: none; border-color: var(--link) }
 .tool .fx-swap { width: 42px; height: 42px; font-size: 18px }
 .tool-res { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--bg-elev-2) }
 .tool-res b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; font-variant-numeric: tabular-nums }

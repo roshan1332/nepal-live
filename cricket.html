@@ -6,7 +6,7 @@
 <title>Live Cricket Scores Today — Fixtures &amp; Results | Nepal Live</title>
 <meta name="description" content="Live cricket scores, upcoming fixtures and results with competition, teams and start times in Nepal Time (NPT). Part of Nepal Live.">
 <link rel="canonical" href="https://nepal-live.onrender.com/cricket">
-<meta name="theme-color" content="#f7f6f3">
+<meta name="theme-color" content="#f6f3ec">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nepal Live">
 <meta property="og:locale" content="en_NP">
@@ -38,7 +38,7 @@
       var t = localStorage.getItem('nlive-theme');
       if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       d.setAttribute('data-theme', t);
-      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0e1014'; }
+      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0b1018'; }
       if (localStorage.getItem('nlive-lang') === 'ne') { d.setAttribute('data-lang', 'ne'); d.setAttribute('lang', 'ne'); }
     } catch (e) {}
   })();

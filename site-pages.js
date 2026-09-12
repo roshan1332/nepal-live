@@ -653,7 +653,7 @@ function renderDef(def, pathname, origin, opts = {}) {
 <meta name="description" content="${esc(description)}">
 ${VERIFY}
 ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${esc(url)}">`}
-<meta name="theme-color" content="#f7f6f3">
+<meta name="theme-color" content="#f6f3ec">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nepal Live">
 <meta property="og:locale" content="en_NP">
@@ -684,7 +684,7 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
       var t = localStorage.getItem('nlive-theme');
       if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       d.setAttribute('data-theme', t);
-      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0e1014'; }
+      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0b1018'; }
       if (localStorage.getItem('nlive-lang') === 'ne') { d.setAttribute('data-lang', 'ne'); d.setAttribute('lang', 'ne'); }
     } catch (e) {}
   })();

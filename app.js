@@ -214,7 +214,7 @@
       var m = mode === 'dark' || mode === 'light' ? mode : this.system();
       root.setAttribute('data-theme', m);
       var meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', m === 'dark' ? '#0e1014' : '#f7f6f3');
+      if (meta) meta.setAttribute('content', m === 'dark' ? '#0b1018' : '#f6f3ec');
       var label = m === 'dark' ? s('toLight') : s('toDark');
       document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
         b.setAttribute('aria-label', label);

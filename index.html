@@ -7,7 +7,7 @@
 <meta name="description" content="Nepal news, NEPSE, today&#39;s gold price, dollar rate, petrol price, weather, Nepali date and live scores — all in one place, updated all day.">
 <meta name="keywords" content="Nepal news, Nepal gold price today, NEPSE index, exchange rate NPR, Kathmandu weather, Kathmandu air quality, Nepal earthquake, Nepali news">
 <link rel="canonical" href="https://nepal-live.onrender.com/">
-<meta name="theme-color" content="#f7f6f3">
+<meta name="theme-color" content="#f6f3ec">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nepal Live">
 <meta property="og:locale" content="en_NP">
@@ -40,7 +40,7 @@
       var t = localStorage.getItem('nlive-theme');
       if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       d.setAttribute('data-theme', t);
-      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0e1014'; }
+      if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0b1018'; }
       if (localStorage.getItem('nlive-lang') === 'ne') { d.setAttribute('data-lang', 'ne'); d.setAttribute('lang', 'ne'); }
     } catch (e) {}
   })();

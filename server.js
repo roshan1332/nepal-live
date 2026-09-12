@@ -537,7 +537,7 @@ const IMAGES = {
 const MANIFEST = {
   name: 'Nepal Live', short_name: 'Nepal Live', id: '/', start_url: '/?source=app', scope: '/', display: 'standalone',
   description: 'News, markets, weather, alerts, sports and useful tools for Nepal — in one place.',
-  lang: 'en', dir: 'ltr', background_color: '#f7f6f3', theme_color: '#f7f6f3', categories: ['news', 'weather', 'finance'],
+  lang: 'en', dir: 'ltr', background_color: '#f6f3ec', theme_color: '#f6f3ec', categories: ['news', 'weather', 'finance'],
   icons: [
     { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
