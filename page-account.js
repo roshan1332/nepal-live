@@ -26,6 +26,17 @@
       login: 'Log in', signup: 'Create account', name: 'Name (optional)', email: 'Email', password: 'Password', pwHint: 'At least 8 characters.',
       why1: 'Save news, jobs, events and places to come back to.', why2: 'See alerts for the districts you choose — only from official sources.',
       why3: 'Keep your language, theme and home city with your account.',
+      liTitle: 'Welcome back', liLead: 'Log in to see your saved items and your personal alerts.',
+      suTitle: 'Create your free account', suLead: 'It takes a few seconds — just an email and a password.',
+      newHere: 'New to Nepal Live?', signupShort: 'Create an account', haveAcct: 'Already have an account?',
+      forgot: 'Forgot your password? Reset by email isn’t available yet — write to us through Contact at the bottom of the page.',
+      privacy: 'We keep only your email, your name if you give one, and your password in scrambled (hashed) form — never as plain text. No ads, and we never email you.',
+      show: 'Show password', hide: 'Hide password', caps: 'Caps Lock is on', loggingIn: 'Logging in…', creating: 'Creating account…',
+      apTitle: 'Your Nepal, your way', apLabel: 'What an account gives you',
+      b1t: 'Save for later', b1: 'Bookmark news, jobs, events and places — they wait for you on any device.',
+      b2t: 'Alerts for your districts', b2: 'Pick the districts and alert types you care about — only from official sources.',
+      b3t: 'Your settings everywhere', b3: 'Your language, theme and home city follow your account.',
+      apFoot: 'Free to use · No ads · We never email you',
       ephemeral: 'Heads-up: this server currently keeps accounts on temporary storage, so they may be reset when the site is updated.',
       hello: 'Welcome', since: 'Member since {d}', logout: 'Log out', sections: 'Account sections',
       myAlerts: 'My alerts', saved: 'Saved', prefs: 'Preferences', security: 'Security',
@@ -57,6 +68,17 @@
       login: 'लग इन', signup: 'खाता बनाउनुहोस्', name: 'नाम (ऐच्छिक)', email: 'इमेल', password: 'पासवर्ड', pwHint: 'कम्तीमा ८ अक्षर।',
       why1: 'समाचार, जागिर, कार्यक्रम र ठाउँ पछि हेर्न सेभ गर्नुहोस्।', why2: 'आफूले छानेका जिल्लाका सतर्कता हेर्नुहोस् — आधिकारिक स्रोतबाट मात्र।',
       why3: 'भाषा, थिम र आफ्नो सहर खातामै राख्नुहोस्।',
+      liTitle: 'फेरि स्वागत छ', liLead: 'सेभ गरिएका कुरा र आफ्ना सतर्कता हेर्न लग इन गर्नुहोस्।',
+      suTitle: 'निःशुल्क खाता बनाउनुहोस्', suLead: 'केही सेकेन्ड मात्र लाग्छ — इमेल र पासवर्ड भए पुग्छ।',
+      newHere: 'नेपाल लाइभमा नयाँ हो?', signupShort: 'खाता बनाउनुहोस्', haveAcct: 'पहिले नै खाता छ?',
+      forgot: 'पासवर्ड बिर्सनुभयो? इमेलबाट रिसेट अहिले उपलब्ध छैन — पृष्ठको तलको सम्पर्कबाट लेख्नुहोस्।',
+      privacy: 'हामी तपाईंको इमेल, दिनुभएमा नाम, र पासवर्ड गोप्य (ह्यास) रूपमा मात्र राख्छौं — कहिल्यै सादा अक्षरमा होइन। विज्ञापन छैन, हामी इमेल पठाउँदैनौं।',
+      show: 'पासवर्ड देखाउनुहोस्', hide: 'पासवर्ड लुकाउनुहोस्', caps: 'क्याप्स लक खुला छ', loggingIn: 'लग इन हुँदै…', creating: 'खाता बन्दै…',
+      apTitle: 'तपाईंको नेपाल, तपाईंको तरिका', apLabel: 'खाताले के दिन्छ',
+      b1t: 'पछि हेर्न सेभ', b1: 'समाचार, जागिर, कार्यक्रम र ठाउँ बुकमार्क गर्नुहोस् — जुनसुकै उपकरणमा भेटिन्छ।',
+      b2t: 'आफ्ना जिल्लाका सतर्कता', b2: 'चाहेका जिल्ला र सतर्कताका प्रकार छान्नुहोस् — आधिकारिक स्रोतबाट मात्र।',
+      b3t: 'सेटिङ जहाँ पनि', b3: 'भाषा, थिम र आफ्नो सहर खातासँगै रहन्छ।',
+      apFoot: 'निःशुल्क · विज्ञापन छैन · हामी इमेल पठाउँदैनौं',
       ephemeral: 'ध्यान दिनुहोस्: यो सर्भरले अहिले खाता अस्थायी भण्डारणमा राख्छ, त्यसैले साइट अपडेट हुँदा खाता मेटिन सक्छन्।',
       hello: 'स्वागत छ', since: '{d} देखि सदस्य', logout: 'लग आउट', sections: 'खाताका भाग',
       myAlerts: 'मेरा सतर्कता', saved: 'सेभ गरिएका', prefs: 'प्राथमिकता', security: 'सुरक्षा',
@@ -111,35 +133,101 @@
   var flashHTML = function () { var f = S.flash; S.flash = ''; return f ? '<p class="acct-flash" role="status">' + esc(f) + '</p>' : ''; };
 
   /* --------------------------------------------------------------- logged out */
+  var svg = function (d) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+  var IC = {
+    mail: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/>'),
+    lock: svg('<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>'),
+    user: svg('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6"/>'),
+    eye: svg('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'),
+    eyeOff: svg('<path d="M3 3l18 18M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 4M6.6 6.6C4 8.3 2.5 12 2.5 12s3.5 6.5 9.5 6.5a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+    sliders: svg('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>')
+  };
+  function afield(name, type, label, ac, req, max, icon, extra) {
+    return '<label class="acct-field auth-field"><span>' + esc(label) + '</span><span class="af-in">' + icon
+      + '<input name="' + name + '" type="' + type + '" autocomplete="' + ac + '"' + (req ? ' required' : '') + ' maxlength="' + max + '"'
+      + (type === 'password' ? ' minlength="8"' : '') + (type === 'email' ? ' inputmode="email" autocapitalize="none" spellcheck="false"' : '') + '>'
+      + (type === 'password' ? '<button type="button" class="pw-toggle" data-pw-toggle aria-pressed="false" aria-label="' + esc(t('show')) + '" title="' + esc(t('show')) + '">' + IC.eye + '</button>' : '')
+      + '</span>' + (extra || '') + '</label>';
+  }
   function authView() {
     var su = S.tab === 'signup';
-    root.innerHTML = '<div class="acct-auth">' + flashHTML()
-      + '<div class="seg acct-tabs" role="group"><button type="button" data-tab="login" aria-pressed="' + !su + '">' + esc(t('login')) + '</button>'
+    var pwExtra = (su ? '<small class="pw-rule" id="pw-rule">' + esc(t('pwHint')) + '</small>' : '') + '<small class="caps" id="caps" hidden>' + esc(t('caps')) + '</small>';
+    root.innerHTML = '<div class="auth">'
+      + '<div class="auth-main">' + flashHTML()
+      + '<form class="auth-card" id="auth-form" novalidate>'
+      + '<div class="auth-tabs" role="group"><button type="button" data-tab="login" aria-pressed="' + !su + '">' + esc(t('login')) + '</button>'
       + '<button type="button" data-tab="signup" aria-pressed="' + su + '">' + esc(t('signup')) + '</button></div>'
-      + '<form class="acct-card acct-form" id="auth-form" novalidate>'
-      + (su ? field('name', 'text', t('name'), 'name', false, 60) : '')
-      + field('email', 'email', t('email'), 'email', true, 254)
-      + field('password', 'password', t('password'), su ? 'new-password' : 'current-password', true, 200, su ? t('pwHint') : '')
+      + '<div class="auth-head"><h2 class="auth-title">' + esc(t(su ? 'suTitle' : 'liTitle')) + '</h2><p class="auth-lead">' + esc(t(su ? 'suLead' : 'liLead')) + '</p></div>'
+      + (su ? afield('name', 'text', t('name'), 'name', false, 60, IC.user) : '')
+      + afield('email', 'email', t('email'), 'email', true, 254, IC.mail)
+      + afield('password', 'password', t('password'), su ? 'new-password' : 'current-password', true, 200, IC.lock, pwExtra)
       + '<p class="acct-err" role="alert" hidden></p>'
-      + '<button class="btn btn-primary acct-submit" type="submit">' + esc(su ? t('signup') : t('login')) + '</button></form>'
-      + '<ul class="acct-why"><li>' + esc(t('why1')) + '</li><li>' + esc(t('why2')) + '</li><li>' + esc(t('why3')) + '</li></ul>'
-      + storageNote() + '</div>';
+      + '<button class="btn btn-primary auth-submit" type="submit"><span>' + esc(su ? t('signup') : t('login')) + '</span></button>'
+      + '<p class="auth-switch">' + esc(t(su ? 'haveAcct' : 'newHere')) + ' <button type="button" data-tab="' + (su ? 'login' : 'signup') + '">' + esc(t(su ? 'login' : 'signupShort')) + '</button></p>'
+      + (su ? '' : '<p class="auth-forgot">' + esc(t('forgot')) + '</p>')
+      + '</form>'
+      + '<p class="auth-priv">' + IC.lock + '<span>' + esc(t('privacy')) + '</span></p>'
+      + storageNote() + '</div>'
+      + '<aside class="auth-panel" aria-label="' + esc(t('apLabel')) + '"><span class="ap-k">NEPAL LIVE</span>'
+      + '<h2 class="ap-t">' + esc(t('apTitle')) + '</h2><ul class="ap-list">'
+      + '<li>' + NL.icon.bookmark + '<div><b>' + esc(t('b1t')) + '</b><span>' + esc(t('b1')) + '</span></div></li>'
+      + '<li>' + NL.icon.bell + '<div><b>' + esc(t('b2t')) + '</b><span>' + esc(t('b2')) + '</span></div></li>'
+      + '<li>' + IC.sliders + '<div><b>' + esc(t('b3t')) + '</b><span>' + esc(t('b3')) + '</span></div></li>'
+      + '</ul><p class="ap-foot">' + esc(t('apFoot')) + '</p></aside></div>';
   }
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   function submitAuth(f) {
+    var su = S.tab === 'signup';
     var d = { email: val(f, 'email').trim(), password: val(f, 'password') };
     if (!d.email || !d.password) return msg(f, 'acct-err', t('e_missing'));
-    if (S.tab === 'signup') { d.name = val(f, 'name').trim(); d.prefs = { lang: NL.lang() }; }
+    if (!EMAIL_RE.test(d.email)) return msg(f, 'acct-err', t('e_bad_email'));
+    if (su && d.password.length < 8) return msg(f, 'acct-err', t('e_short_password'));
+    if (su) { d.name = val(f, 'name').trim(); d.prefs = { lang: NL.lang() }; }
+    var btn = f.querySelector('.auth-submit'), label = btn.querySelector('span'), idle = label.textContent;
     busy(f, true);
+    btn.classList.add('is-busy');
+    label.textContent = t(su ? 'creating' : 'loggingIn');
     msg(f, 'acct-err', '');
-    api('POST', S.tab === 'signup' ? '/api/auth/signup' : '/api/auth/login', d).then(function (r) {
+    api('POST', su ? '/api/auth/signup' : '/api/auth/login', d).then(function (r) {
       S.user = r.user;
       NL.me.load();
-      if (S.tab === 'login') applyPrefs(r.user.prefs);
+      if (!su) applyPrefs(r.user.prefs);
       if (nextUrl) { location.href = nextUrl; return; }
       history.replaceState(null, '', '/account');
       profileView();
-    }).catch(function (err) { busy(f, false); msg(f, 'acct-err', errText(err)); });
+      window.scrollTo({ top: 0 });
+    }).catch(function (err) {
+      busy(f, false);
+      btn.classList.remove('is-busy');
+      label.textContent = idle;
+      msg(f, 'acct-err', errText(err));
+    });
   }
+  /* show / hide password, Caps Lock warning, the 8-character check */
+  root.addEventListener('click', function (e) {
+    var tg = e.target.closest('[data-pw-toggle]');
+    if (!tg) return;
+    var inp = tg.parentNode.querySelector('input');
+    var show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    tg.setAttribute('aria-pressed', String(show));
+    tg.setAttribute('aria-label', t(show ? 'hide' : 'show'));
+    tg.title = t(show ? 'hide' : 'show');
+    tg.innerHTML = show ? IC.eyeOff : IC.eye;
+    inp.focus();
+  });
+  root.addEventListener('input', function (e) {
+    if (e.target.name !== 'password' || !e.target.form || e.target.form.id !== 'auth-form') return;
+    var r = $('pw-rule');
+    if (r) r.classList.toggle('ok', e.target.value.length >= 8);
+  });
+  ['keydown', 'keyup'].forEach(function (ev) {
+    root.addEventListener(ev, function (e) {
+      if (e.target.name !== 'password' || !e.getModifierState) return;
+      var c = $('caps');
+      if (c) c.hidden = !e.getModifierState('CapsLock');
+    });
+  });
 
   /* ---------------------------------------------------------------- logged in */
   function section(id, title, body) {
