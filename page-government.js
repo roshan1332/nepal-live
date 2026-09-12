@@ -13,14 +13,14 @@
       kicker: 'Nepal Government', h1: 'Government & <em>public services</em>', sub: 'Where to go for passports, licences, tax, ID and more — every link opens the official government source.',
       govNote: 'Nepal Live is an information and navigation layer, not a government office. Rules, fees and forms change — always confirm on the official source before applying.',
       govPh: 'Find a service — passport, PAN, licence…', emH: 'Emergency numbers', emPolice: 'Police', emFire: 'Fire brigade', emAmb: 'Ambulance', emTraffic: 'Traffic police', emTourist: 'Tourist police',
-      holH: 'Upcoming public holidays', calLink: 'Full calendar', warnH: 'Public warnings', warnP: 'Official disaster, flood and road-closure alerts are on our Alerts page.', alertsLink: 'Nepal Alerts',
+      holH: 'Upcoming public holidays', calLink: 'Full calendar', warnH: 'Public warnings', warnP: 'Official disaster, flood and road-closure alerts are on our Alerts page.', alertsLink: 'Nepal Alerts', warnActive: '{n} active official alerts', warnNone: 'No active official alerts — latest reports:',
       govNone: 'No service matches that search.', noHol: 'No public holidays in the next 60 days.', holErr: 'Holiday dates aren’t available right now.', holSrc: 'Dates: Hamro Patro calendar · official list: moha.gov.np', holidayLtd: 'some groups only'
     },
     ne: {
       kicker: 'नेपाल सरकार', h1: 'सरकारी र <em>सार्वजनिक सेवा</em>', sub: 'राहदानी, लाइसेन्स, कर, परिचयपत्र आदिका लागि कहाँ जाने — हरेक लिंकले आधिकारिक सरकारी स्रोत खोल्छ।',
       govNote: 'नेपाल लाइभ जानकारी र मार्गदर्शनको माध्यम मात्र हो, सरकारी कार्यालय होइन। नियम, शुल्क र फारम परिवर्तन हुन्छन् — आवेदनअघि आधिकारिक स्रोतमा पुष्टि गर्नुहोस्।',
       govPh: 'सेवा खोज्नुहोस् — राहदानी, प्यान, लाइसेन्स…', emH: 'आपतकालीन नम्बर', emPolice: 'प्रहरी', emFire: 'दमकल', emAmb: 'एम्बुलेन्स', emTraffic: 'ट्राफिक प्रहरी', emTourist: 'पर्यटक प्रहरी',
-      holH: 'आगामी सार्वजनिक बिदा', calLink: 'पूरा पात्रो', warnH: 'सार्वजनिक चेतावनी', warnP: 'आधिकारिक विपद्, बाढी र सडक अवरोधका सतर्कता हाम्रो सतर्कता पृष्ठमा छन्।', alertsLink: 'नेपाल सतर्कता',
+      holH: 'आगामी सार्वजनिक बिदा', calLink: 'पूरा पात्रो', warnH: 'सार्वजनिक चेतावनी', warnP: 'आधिकारिक विपद्, बाढी र सडक अवरोधका सतर्कता हाम्रो सतर्कता पृष्ठमा छन्।', alertsLink: 'नेपाल सतर्कता', warnActive: '{n} सक्रिय आधिकारिक सतर्कता', warnNone: 'अहिले सक्रिय आधिकारिक सतर्कता छैन — पछिल्ला सूचना:',
       govNone: 'त्यो खोजीसँग मिल्ने सेवा भेटिएन।', noHol: 'आगामी ६० दिनमा सार्वजनिक बिदा छैन।', holErr: 'बिदाका मिति अहिले उपलब्ध छैनन्।', holSrc: 'मिति: हाम्रोपात्रो · आधिकारिक सूची: moha.gov.np', holidayLtd: 'केही समूहलाई मात्र'
     }
   });
@@ -31,7 +31,7 @@
   function applyLang() {
     var ne = NL.lang() === 'ne';
     document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = ne ? el.getAttribute('data-ne') : el.getAttribute('data-en'); });
-    renderHol();
+    renderHol(); renderWarn();
   }
   function renderHol() {
     if (!hol) return;
@@ -71,6 +71,28 @@
   $('gov-holidays').innerHTML = NL.skeleton('rows');
   NL.api('/api/calendar/upcoming?days=60').then(function (d) { hol = d; renderHol(); NL.feed('calendar', true); })
     .catch(function () { $('gov-holidays').innerHTML = '<p class="small muted">' + esc(t('holErr')) + '</p>'; NL.feed('calendar', false); });
+
+  /* Public warnings: the same official alert feed as /alerts — the most serious
+     active alerts, or the latest reports when none is active. If the feed is
+     down, the box keeps its sentence and link. */
+  var warn = null;
+  function renderWarn() {
+    if (!warn || !warn.items || !warn.items.length) return;
+    var ne = NL.lang() === 'ne';
+    var act = warn.items.filter(function (a) { return a.active; });
+    var list = (act.length ? act : warn.items).slice().sort(function (a, b) {
+      return NL.levels.indexOf(a.level) - NL.levels.indexOf(b.level) || Date.parse(b.time) - Date.parse(a.time);
+    }).slice(0, 3);
+    $('gov-warn').innerHTML = '<p class="gw-count">' + esc(act.length ? t('warnActive', { n: act.length }) : t('warnNone')) + '</p>'
+      + '<ul class="gw-list">' + list.map(function (a) {
+        var title = ne && a.titleNe ? a.titleNe : a.title;
+        return '<li><span class="gw-lv lv-' + esc(a.level) + '">' + esc(t('lv_' + a.level)) + '</span>'
+          + '<a href="/alerts"' + NL.langAttr(title) + '>' + esc(title) + '</a>'
+          + '<span class="gw-t">' + NL.fresh('issued', a.time) + '</span></li>';
+      }).join('') + '</ul>';
+  }
+  NL.api('/api/alerts').then(function (d) { warn = d; renderWarn(); NL.feed('alerts', true); })
+    .catch(function () { NL.feed('alerts', false); });
   applyLang();
   NL.ticker.autoload();
   NL.renderFooter([{ name: 'Nepal Government Updates Portal', url: 'https://nepal.gov.np/' }, { name: 'Hamro Patro — calendar', url: 'https://www.hamropatro.com/calendar' }]);

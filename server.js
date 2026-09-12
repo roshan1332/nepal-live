@@ -823,4 +823,30 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Nepal Live dashboard running at http://0.0.0.0:${PORT}`);
+  keepAwake();
 });
+
+/* Render's free plan stops the service after 15 minutes without outside
+   traffic, and the next visitor waits ~30-50 s while it starts again. On
+   Render (which sets RENDER_EXTERNAL_URL) the server calls its own public
+   address every 10 minutes so it never looks idle. Render's internal health
+   checks don't count as traffic, so this has to go through the public URL.
+   KEEP_AWAKE=0 turns it off (e.g. on a paid plan, which never sleeps). */
+function keepAwake() {
+  const base = process.env.RENDER_EXTERNAL_URL;
+  if (!base || process.env.KEEP_AWAKE === '0') return;
+  const every = Math.max(1, Number(process.env.KEEP_AWAKE_MIN) || 10) * 60e3;
+  const url = base.replace(/\/+$/, '') + '/healthz';
+  let failing = false;
+  console.log(`[keep-awake] calling ${url} every ${every / 60e3} min`);
+  setInterval(() => {
+    fetchURL(url).then((r) => {
+      if (r.status !== 200) throw new Error('HTTP ' + r.status);
+      if (failing) console.log('[keep-awake] ok again');
+      failing = false;
+    }).catch((e) => {
+      if (!failing) console.error('[keep-awake] failed: ' + String((e && e.message) || e));
+      failing = true;
+    });
+  }, every);
+}

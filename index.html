@@ -99,7 +99,12 @@
   #nepse-body > .nepse-grid{flex:1}
   .chart{flex:1; min-height:130px}
   .chart svg{width:100%; height:100%; display:block; overflow:visible}
-  .movers{min-width:0}
+  /* the chart column sets the row height; the movers list takes the rest of it and scrolls */
+  .movers{min-width:0; display:flex; flex-direction:column}
+  .mv-rows{flex:1 1 auto; height:0; min-height:230px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding-bottom:14px;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent); mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
+  .mv-rows:focus-visible{outline:2px solid var(--brand); outline-offset:2px}
+  @media (max-width:960px){ .mv-rows{flex:none; height:auto; max-height:300px} }
   .movers .seg{margin-bottom:6px; width:100%}
   .movers .seg button{flex:1}
   .mv-row{display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:10px; align-items:center;
@@ -139,6 +144,14 @@
   .fx-num .val{font-weight:700; font-variant-numeric:tabular-nums; font-size:14px}
   .fx-chg{font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--text-3)}
   .fx-chg.up{color:var(--up)} .fx-chg.down{color:var(--down)}
+  /* The grid row's height comes from the card beside this one, so the currency
+     list takes exactly the space left (height:0 + flex) and scrolls the rest:
+     the card never ends in blank space, and never makes its row taller. */
+  .fx-rows{flex:1 1 auto; height:0; min-height:190px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin;
+    margin-right:-8px; padding:0 8px 18px 0;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 24px),transparent); mask-image:linear-gradient(to bottom,#000 calc(100% - 24px),transparent)}
+  .fx-rows:focus-visible{outline:2px solid var(--brand); outline-offset:2px}
+  @media (max-width:820px){ .fx-rows{flex:none; height:auto; max-height:440px} }
 
   /* weather */
   .wx-now{display:flex; align-items:center; gap:16px}
@@ -152,7 +165,11 @@
   .wx-stat .k:lang(ne), .wx-hourly .k:lang(ne), .aqi-trend .th:lang(ne){letter-spacing:0}
   .wx-stat .v{font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:1px; white-space:nowrap}
   .wx-hourly .k, .aqi-trend .th{display:flex; justify-content:space-between; gap:8px; margin-bottom:6px}
-  .wx-hourly svg{width:100%; height:64px; display:block; overflow:visible}
+  /* When the air-quality card beside it is taller, the hourly chart grows into
+     the extra height (up to a limit) instead of leaving blank space at the bottom. */
+  #weather-body{justify-content:space-between}
+  .wx-hourly{flex:1 1 auto; display:flex; flex-direction:column; min-height:0}
+  .wx-hourly svg{width:100%; flex:1 1 64px; height:64px; min-height:64px; max-height:190px; display:block; overflow:visible}
   .wx-hours{display:flex; justify-content:space-between; font-size:11px; color:var(--text-3); font-variant-numeric:tabular-nums; margin-top:4px}
   .wx-days{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px}
   .wx-day{padding:8px 1px; border-radius:8px; text-align:center; font-size:11.5px; transition:background .2s; min-width:0}
@@ -194,7 +211,11 @@
   .aqi-advice{font-size:12.5px; line-height:1.5; color:var(--text-2); border-left:3px solid; padding:8px 11px; background:var(--bg-elev-2); border-radius:0 8px 8px 0}
 
   /* earthquakes */
-  #card-quakes{align-self:start}
+  /* the card stretches with its row; under a short list, a marked note says the list is complete,
+     so the space reads as "nothing else happened" rather than blank */
+  .q-rows{flex:1 1 auto; display:flex; flex-direction:column}
+  .q-rest{flex:1 1 auto; min-height:56px; display:grid; place-items:center; margin-top:8px; padding:8px;
+    border-radius:var(--radius-sm); background:var(--bg-elev-2)}
   .quake-sum{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
   .qsum{padding:9px 11px; border-radius:var(--radius-sm); background:var(--bg-elev-2)}
   .qsum .n{font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.02em}
@@ -575,6 +596,7 @@ const I18N = {
     ],
     quakesNone: 'No magnitude 3.5+ earthquakes within 800 km of Nepal in the last 7 days.',
     quakesNoneSub: 'USGS catalogue · checked every 2 minutes',
+    quakesAll: 'That’s every M3.5+ earthquake within 800 km in the last 7 days.',
     srcGold: 'Official daily rate · Hamro Patro / FEGOD · 1 tola = 11.6638 g',
     srcNepse: 'Official NEPSE feed · not investment advice',
     srcRatesNrb: 'Nepal Rastra Bank official rate · published {d}',
@@ -632,7 +654,7 @@ const I18N = {
     hxKicker: 'Explore Nepal', hxTitle: 'Explore by province', hxAll: 'Open the map', hxDistricts: '{n} districts',
     wxKicker: 'Weather & environment', wxSecTitle: 'Weather, air & earthquakes',
     mkAll: 'Charts, all currencies & fuel', wxAll: 'All cities & forecasts', eqAll: 'Earthquake monitor', spAll: 'All sports', npAll: 'Nepal sports',
-    fuelK: 'Petrol', dieselK: 'Diesel', unchanged: 'Unchanged in latest revision', vsPrev: 'vs previous', errFuel: 'Fuel prices aren’t available right now.',
+    fuelK: 'Petrol', dieselK: 'Diesel', fuelWhy: 'Nepal Oil Corporation isn’t answering our requests.', unchanged: 'Unchanged in latest revision', vsPrev: 'vs previous', errFuel: 'Fuel prices aren’t available right now.',
     quakeK: 'Latest earthquake', quakeNoneShort: 'None M3.5+ in 7 days', deep: 'deep',
     rateFor: 'rate for {d}', effective: 'effective {d}',
     hl_nepse_up: 'NEPSE is up {pts} points ({pct}%) at {val}', hl_nepse_down: 'NEPSE is down {pts} points ({pct}%) at {val}', hl_nepse_flat: 'NEPSE is flat at {val}',
@@ -645,7 +667,9 @@ const I18N = {
     hl_aqi: 'Most polluted air right now: {station}, AQI {aqi}',
     hl_fuel_flat: 'Fuel prices unchanged — petrol Rs {p}/L, diesel Rs {d}/L', hl_fuel_up: 'Petrol up Rs {chg} to Rs {p}/L', hl_fuel_down: 'Petrol down Rs {chg} to Rs {p}/L',
     hl_story: 'Most covered: “{term}” — {n} headlines from {s} publishers',
-    fxNames: { USD: 'US dollar', INR: 'Indian rupee', EUR: 'Euro', GBP: 'British pound', AUD: 'Australian dollar', JPY: 'Japanese yen', CNY: 'Chinese yuan', AED: 'UAE dirham', SAR: 'Saudi riyal', KRW: 'South Korean won' }
+    fxNames: { USD: 'US dollar', INR: 'Indian rupee', EUR: 'Euro', GBP: 'British pound', AUD: 'Australian dollar', JPY: 'Japanese yen', CNY: 'Chinese yuan', AED: 'UAE dirham', SAR: 'Saudi riyal', KRW: 'South Korean won',
+      QAR: 'Qatari riyal', MYR: 'Malaysian ringgit', KWD: 'Kuwaiti dinar', BHD: 'Bahraini dinar', OMR: 'Omani rial', CAD: 'Canadian dollar',
+      SGD: 'Singapore dollar', CHF: 'Swiss franc', HKD: 'Hong Kong dollar', THB: 'Thai baht', SEK: 'Swedish krona', DKK: 'Danish krone' }
   },
   ne: {
     heroTitle: 'नेपालमा भइरहेका सबै कुरा, <em>प्रत्यक्ष।</em>',
@@ -694,6 +718,7 @@ const I18N = {
     ],
     quakesNone: 'पछिल्लो ७ दिनमा नेपालबाट ८०० कि.मी. भित्र ३.५+ म्याग्निच्युडका भूकम्प छैनन्।',
     quakesNoneSub: 'USGS सूची · हरेक २ मिनेटमा जाँचिन्छ',
+    quakesAll: 'पछिल्लो ७ दिनमा ८०० किमीभित्र गएका ३.५+ का सबै भूकम्प यति नै हुन्।',
     srcGold: 'आधिकारिक दैनिक दर · हाम्रोपात्रो / फेगोड · १ तोला = ११.६६३८ ग्राम',
     srcNepse: 'आधिकारिक नेप्से फिड · लगानी सल्लाह होइन',
     srcRatesNrb: 'नेपाल राष्ट्र बैंकको आधिकारिक दर · प्रकाशित {d}',
@@ -751,7 +776,7 @@ const I18N = {
     hxKicker: 'नेपाल अन्वेषण', hxTitle: 'प्रदेशअनुसार हेर्नुहोस्', hxAll: 'नक्सा खोल्नुहोस्', hxDistricts: '{n} जिल्ला',
     wxKicker: 'मौसम र वातावरण', wxSecTitle: 'मौसम, हावा र भूकम्प',
     mkAll: 'चार्ट, सबै मुद्रा र इन्धन', wxAll: 'सबै सहर र पूर्वानुमान', eqAll: 'भूकम्प निगरानी', spAll: 'सबै खेल', npAll: 'नेपाली खेलकुद',
-    fuelK: 'पेट्रोल', dieselK: 'डिजेल', unchanged: 'पछिल्लो संशोधनमा परिवर्तन छैन', vsPrev: 'अघिल्लोभन्दा', errFuel: 'इन्धनको मूल्य अहिले उपलब्ध छैन।',
+    fuelK: 'पेट्रोल', dieselK: 'डिजेल', fuelWhy: 'नेपाल आयल निगमले अहिले जवाफ दिइरहेको छैन।', unchanged: 'पछिल्लो संशोधनमा परिवर्तन छैन', vsPrev: 'अघिल्लोभन्दा', errFuel: 'इन्धनको मूल्य अहिले उपलब्ध छैन।',
     quakeK: 'पछिल्लो भूकम्प', quakeNoneShort: '७ दिनमा ३.५+ छैन', deep: 'गहिराइ',
     rateFor: '{d} को दर', effective: '{d} देखि लागू',
     hl_nepse_up: 'नेप्से {pts} अंक ({pct}%) बढेर {val} मा', hl_nepse_down: 'नेप्से {pts} अंक ({pct}%) घटेर {val} मा', hl_nepse_flat: 'नेप्से {val} मा स्थिर',
@@ -764,7 +789,9 @@ const I18N = {
     hl_aqi: 'अहिले सबैभन्दा प्रदूषित हावा: {station}, AQI {aqi}',
     hl_fuel_flat: 'इन्धन मूल्य यथावत् — पेट्रोल रु {p}/लि, डिजेल रु {d}/लि', hl_fuel_up: 'पेट्रोल रु {chg} बढेर रु {p}/लि', hl_fuel_down: 'पेट्रोल रु {chg} घटेर रु {p}/लि',
     hl_story: 'सबैभन्दा बढी कभर: “{term}” — {s} प्रकाशकका {n} शीर्षक',
-    fxNames: { USD: 'अमेरिकी डलर', INR: 'भारतीय रुपैयाँ', EUR: 'युरो', GBP: 'बेलायती पाउन्ड', AUD: 'अस्ट्रेलियाली डलर', JPY: 'जापानी येन', CNY: 'चिनियाँ युआन', AED: 'युएई दिराम', SAR: 'साउदी रियाल', KRW: 'दक्षिण कोरियाली वन' }
+    fxNames: { USD: 'अमेरिकी डलर', INR: 'भारतीय रुपैयाँ', EUR: 'युरो', GBP: 'बेलायती पाउन्ड', AUD: 'अस्ट्रेलियाली डलर', JPY: 'जापानी येन', CNY: 'चिनियाँ युआन', AED: 'युएई दिराम', SAR: 'साउदी रियाल', KRW: 'दक्षिण कोरियाली वन',
+      QAR: 'कतारी रियाल', MYR: 'मलेसियाली रिंगिट', KWD: 'कुवेती दिनार', BHD: 'बहराइनी दिनार', OMR: 'ओमानी रियाल', CAD: 'क्यानेडियन डलर',
+      SGD: 'सिंगापुर डलर', CHF: 'स्विस फ्र्याङ्क', HKD: 'हङकङ डलर', THB: 'थाई बाट', SEK: 'स्विडिस क्रोना', DKK: 'डेनिस क्रोन' }
   }
 };
 let LANG = NL.lang();
@@ -942,8 +969,13 @@ function tileError(id, mod) {
   if (!el) return;
   const k = { 'tile-nepse': 'NEPSE', 'tile-gold': t('goldK'), 'tile-silver': t('silverK'), 'tile-usd': t('usdK'),
               'tile-weather': cityCoords().name, 'tile-aqi': t('aqiK'), 'tile-fuel': t('fuelK'), 'tile-quake': t('quakeK') }[id];
+  /* name who didn't answer, in the same place a working tile names its source */
+  const src = { 'tile-nepse': 'NEPSE', 'tile-gold': 'Hamro Patro', 'tile-silver': 'Hamro Patro', 'tile-usd': 'Nepal Rastra Bank',
+                'tile-weather': 'Open-Meteo · MET Norway', 'tile-aqi': 'Open-Meteo', 'tile-fuel': 'Nepal Oil Corporation', 'tile-quake': 'USGS' }[id];
+  const why = id === 'tile-fuel' ? t('fuelWhy') : '';
   el.innerHTML = `<div class="tile-top"><span class="tile-k">${esc(k)}</span></div>
-    <div class="tile-state">${esc(t('tileErr'))}<button type="button" data-retry="${mod}">${esc(t('retry'))}</button></div>`;
+    <div class="tile-state">${esc(t('tileErr'))}${why ? `<span class="tile-why">${esc(why)}</span>` : ''}<button type="button" data-retry="${mod}">${esc(t('retry'))}</button></div>
+    <div class="tile-foot"><span>${esc(src || '')}</span></div>`;
 }
 function tileSkeletons() {
   Object.values(MOD_TILES).flat().forEach((id) => { if (!state.tileVals[id]) $(id).innerHTML = NL.skeleton('tile'); });
@@ -1036,7 +1068,7 @@ function moversHTML() {
   const top = (state.cache.nepse || {}).top;
   if (!top) return '';
   const tabs = [['gainers', t('gainers')], ['losers', t('losers')], ['turnover', t('turnoverTab')]];
-  const rows = (top[state.moverTab] || []).slice(0, 5).map(r => {
+  const rows = (top[state.moverTab] || []).slice(0, 10).map(r => {
     const right = state.moverTab === 'turnover'
       ? `<span class="mv-ltp">Rs ${fmtNum(r.closingPrice, 1)}</span><span class="mv-chg">${fmtNum(r.turnover / 1e7, 2)} Cr</span>`
       : `<span class="mv-ltp">Rs ${fmtNum(r.ltp, 1)}</span><span class="mv-chg ${dirOf(r.percentageChange)}">${signed(r.percentageChange, 2)}%</span>`;
@@ -1044,7 +1076,7 @@ function moversHTML() {
   }).join('');
   return `<div class="movers"><div class="label" style="margin-bottom:8px">${t('movers')}</div>
     <div class="seg" role="group" aria-label="${t('movers')}">${tabs.map(([k, l]) =>
-      `<button type="button" data-mv="${k}" aria-pressed="${state.moverTab === k}">${l}</button>`).join('')}</div>${rows}</div>`;
+      `<button type="button" data-mv="${k}" aria-pressed="${state.moverTab === k}">${l}</button>`).join('')}</div><div class="mv-rows" tabindex="0" role="region" aria-label="${t('movers')}">${rows}</div></div>`;
 }
 function renderNepse() {
   const { d } = state.cache.nepse || {};
@@ -1116,7 +1148,10 @@ async function refreshNepse() {
 }
 
 /* --- Exchange rates --- */
-const FX_CODES = ['USD', 'INR', 'EUR', 'GBP', 'AUD', 'JPY', 'CNY', 'AED', 'SAR', 'KRW'];
+/* every currency NRB publishes; Gulf, Malaysia and Korea come early because
+   that's where most Nepalis working abroad are paid */
+const FX_CODES = ['USD', 'INR', 'EUR', 'GBP', 'AUD', 'JPY', 'CNY', 'AED', 'SAR', 'QAR', 'MYR', 'KWD', 'KRW',
+  'BHD', 'OMR', 'CAD', 'SGD', 'CHF', 'HKD', 'THB', 'SEK', 'DKK'];
 const fxRate = (code) => {
   const r = ((state.cache.fx || {}).rows || []).find(x => x.code === code);
   return r ? r.value : null;
@@ -1177,7 +1212,7 @@ function renderRates() {
        </div>
        <div class="fx-result" id="fx-result" aria-live="polite"></div>
      </div>
-     <div>${rows}</div>`;
+     <div class="fx-rows" tabindex="0" role="region" aria-label="${esc($('rates-title').textContent)}">${rows}</div>`;
   $('src-rates').textContent = fx.official ? tf('srcRatesNrb', { d: fx.updated }) : t('srcRatesMkt');
   bindFxConverter();
   updateFxResult();
@@ -1507,7 +1542,7 @@ function renderQuakes() {
        <div class="qsum"><div class="n" style="color:${magColor(maxM)}">${maxM.toFixed(1)}</div><div class="k">${t('maxMag')}</div></div>
        <div class="qsum"><div class="n">7</div><div class="k">${t('days')}</div></div>
      </div>
-     <div>${rows}</div>
+     <div class="q-rows">${rows}${feats.length <= 6 ? `<div class="q-rest">${NL.emptyState(t('quakesAll'), { icon: 'quake', sub: t('quakesNoneSub'), compact: true })}</div>` : ''}</div>
      <div class="q-legend">
        <span><i style="background:${magColor(3.5)}"></i>3.5–3.9</span><span><i style="background:${magColor(4)}"></i>4.0–4.9</span>
        <span><i style="background:${magColor(5)}"></i>5.0–5.9</span><span><i style="background:${magColor(6)}"></i>6.0+</span>
@@ -1575,11 +1610,15 @@ function rowStory(i, idx) {
   </a>`;
 }
 function cardStory(i, idx) {
+  /* no photo: a panel the photo's shape holds the story's own summary (or the
+     outlet's name when it has none), so every card in a row has the same parts */
+  const cover = i.summary
+    ? `<div class="cs-cover"><p class="cs-sum"${langAttr(i.summary)}>${esc(i.summary)}</p></div>`
+    : `<div class="cs-cover src-only" aria-hidden="true"><span class="cc-src">${esc(srcName(i.source))}</span></div>`;
   return `<a class="card-story${i.image ? '' : ' text-only'}" style="--i:${idx % 9}" ${linkAttrs(i)}>
-    ${i.image ? `<div class="cs-img">${imgTag(i.image)}</div>` : ''}
+    ${i.image ? `<div class="cs-img">${imgTag(i.image)}</div>` : cover}
     <div class="cs-body"><span class="cat">${esc(topicLabel(i.topic))}</span>
       <h3 class="cs-title"${langAttr(i.title)}>${esc(i.title)}</h3>
-      ${!i.image && i.summary ? `<p class="cs-sum"${langAttr(i.summary)}>${esc(i.summary)}</p>` : ''}
       ${storyMeta(i)}</div>
   </a>`;
 }

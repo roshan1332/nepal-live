@@ -398,10 +398,10 @@ Object.assign(PAGES, {
   <div class="gov-tools"><label class="field-search">${ICO.search}<input id="gov-q" type="search" autocomplete="off" placeholder="Find a service — passport, PAN, licence…" data-tp="govPh" aria-label="Find a service"></label></div>
   <div class="gov-side">
     <section class="gov-emerg" aria-labelledby="em-h"><h2 class="label" id="em-h" data-t="emH">Emergency numbers</h2>
-      <ul class="em-list"><li><b>100</b><span data-t="emPolice">Police</span></li><li><b>101</b><span data-t="emFire">Fire brigade</span></li><li><b>102</b><span data-t="emAmb">Ambulance</span></li><li><b>103</b><span data-t="emTraffic">Traffic police</span></li><li><b>1144</b><span data-t="emTourist">Tourist police</span></li></ul>
+      <ul class="em-list"><li><a href="tel:100"><b>100</b><span data-t="emPolice">Police</span></a></li><li><a href="tel:101"><b>101</b><span data-t="emFire">Fire brigade</span></a></li><li><a href="tel:102"><b>102</b><span data-t="emAmb">Ambulance</span></a></li><li><a href="tel:103"><b>103</b><span data-t="emTraffic">Traffic police</span></a></li><li><a href="tel:1144"><b>1144</b><span data-t="emTourist">Tourist police</span></a></li></ul>
     </section>
     <section class="gov-hol" aria-labelledby="hol-h"><h2 class="label" id="hol-h" data-t="holH">Upcoming public holidays</h2><div id="gov-holidays"></div><a class="link-more" href="/calendar"><span data-t="calLink">Full calendar</span> <span>→</span></a></section>
-    <section class="gov-hol" aria-labelledby="gw-h"><h2 class="label" id="gw-h" data-t="warnH">Public warnings</h2><p class="small muted" data-t="warnP">Official disaster, flood and road-closure alerts are on our Alerts page.</p><a class="link-more" href="/alerts"><span data-t="alertsLink">Nepal Alerts</span> <span>→</span></a></section>
+    <section class="gov-hol" aria-labelledby="gw-h"><h2 class="label" id="gw-h" data-t="warnH">Public warnings</h2><div class="gw-body" id="gov-warn"><p class="small muted" data-t="warnP">Official disaster, flood and road-closure alerts are on our Alerts page.</p></div><a class="link-more" href="/alerts"><span data-t="alertsLink">Nepal Alerts</span> <span>→</span></a></section>
   </div>
   <div id="gov-dir">${govHTML}</div>
   <p class="gov-empty" id="gov-empty" hidden data-t="govNone">No service matches that search.</p>`,

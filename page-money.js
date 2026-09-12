@@ -24,7 +24,7 @@
       sym: 'Symbol', ltp: 'LTP', chg: 'Change', crore: 'Cr', arba: 'Arba',
       gold: 'Gold · Hallmark', silver: 'Silver', perTola: 'per tola', per10g: 'per 10 g', perKg: 'per kg', vsPrev: 'vs previous day', rateFor: 'Rate for {d}',
       spot: 'International spot: {g}/oz gold · {s}/oz silver (gold-api.com)',
-      amount: 'Amount', swap: 'Swap direction', currency: 'Currency', buy: 'Buying', sell: 'Selling', mid: 'Mid', per1: 'per 1 unit',
+      amount: 'Amount', quick: 'Common amounts', swap: 'Swap direction', currency: 'Currency', buy: 'Buying', sell: 'Selling', mid: 'Mid', per1: 'per 1 unit',
       fxSrc: 'Official NRB rates published {d} · change vs previous published day', chartOf: '{c}/NPR (NRB mid rate)',
       petrol: 'Petrol', diesel: 'Diesel', kerosene: 'Kerosene', lpg: 'LPG', perL: 'per litre', perCyl: 'per cylinder',
       effective: 'Effective {ad} ({bs} BS)', unchanged: 'unchanged', vsRev: 'vs previous revision', dateAd: 'Date (AD)', dateBs: 'Date (BS)',
@@ -46,7 +46,7 @@
       sym: 'संकेत', ltp: 'अन्तिम मूल्य', chg: 'परिवर्तन', crore: 'करोड', arba: 'अर्ब',
       gold: 'सुन · हलमार्क', silver: 'चाँदी', perTola: 'प्रति तोला', per10g: 'प्रति १० ग्राम', perKg: 'प्रति के.जी.', vsPrev: 'अघिल्लो दिनभन्दा', rateFor: '{d} को दर',
       spot: 'अन्तर्राष्ट्रिय दर: सुन {g}/आउन्स · चाँदी {s}/आउन्स (gold-api.com)',
-      amount: 'रकम', swap: 'दिशा बदल्नुहोस्', currency: 'मुद्रा', buy: 'खरिद', sell: 'बिक्री', mid: 'मध्य', per1: 'प्रति १ एकाइ',
+      amount: 'रकम', quick: 'सामान्य रकम', swap: 'दिशा बदल्नुहोस्', currency: 'मुद्रा', buy: 'खरिद', sell: 'बिक्री', mid: 'मध्य', per1: 'प्रति १ एकाइ',
       fxSrc: 'राष्ट्र बैंकको आधिकारिक दर, {d} मा प्रकाशित · अघिल्लो प्रकाशित दिनसँग तुलना', chartOf: '{c}/NPR (राष्ट्र बैंकको मध्य दर)',
       petrol: 'पेट्रोल', diesel: 'डिजेल', kerosene: 'मट्टितेल', lpg: 'एलपी ग्यास', perL: 'प्रति लिटर', perCyl: 'प्रति सिलिन्डर',
       effective: '{ad} ({bs} बि.सं.) देखि लागू', unchanged: 'परिवर्तन छैन', vsRev: 'अघिल्लो संशोधनभन्दा', dateAd: 'मिति (ई.सं.)', dateBs: 'मिति (बि.सं.)',
@@ -116,7 +116,7 @@
       + '<div><div class="spark-cap"><span class="label">' + esc(t('w52')) + '</span></div>'
       + '<div class="range-bar"><div class="fill" style="width:' + pos + '%"></div><div class="marker" style="left:' + pos + '%"></div></div>'
       + '<div class="spark-cap"><span>' + fmt(lo) + '</span><span>' + fmt(hi) + '</span></div></div>'
-      + (subs.length ? '<div><h3 class="label mb">' + esc(t('subIdx')) + '</h3><table class="dtable compact"><tbody>' + subs.map(function (s) {
+      + (subs.length ? '<div class="sub-wrap"><h3 class="label mb">' + esc(t('subIdx')) + '</h3><table class="dtable compact"><tbody>' + subs.map(function (s) {
         return '<tr><td>' + esc(s.index) + '</td><td class="num">' + fmt(s.currentValue) + '</td><td class="num ' + dirOf(s.change) + '-t">' + sgn(s.perChange, 2) + '%</td></tr>';
       }).join('') + '</tbody></table></div>' : '');
 
@@ -205,7 +205,8 @@
         + '<input class="fx-amt" id="fx-amt" type="text" inputmode="decimal" autocomplete="off" aria-label="' + esc(t('amount')) + '" value="' + esc(S.conv.amt) + '">'
         + '<select class="fx-sel" id="fx-cur" aria-label="' + esc(t('currency')) + '"></select>'
         + '<button class="fx-swap" id="fx-swap" type="button" aria-label="' + esc(t('swap')) + '" title="' + esc(t('swap')) + '">' + NL.icon.fx + '</button></div>'
-        + '<div class="fx-result" id="fx-out" aria-live="polite"></div></div>';
+        + '<div class="fx-result" id="fx-out" aria-live="polite"></div></div>'
+        + '<div class="fx-quick" id="fx-quick" tabindex="0" role="region"></div>';
       $('fx-amt').addEventListener('input', function (e) { S.conv.amt = e.target.value; convOut(); });
       $('fx-cur').addEventListener('change', function (e) { S.conv.code = e.target.value; convOut(); });
       $('fx-swap').addEventListener('click', function () { S.conv.dir = S.conv.dir === 'to' ? 'from' : 'to'; $('fx-swap').classList.toggle('flip', S.conv.dir === 'from'); convOut(); });
@@ -225,10 +226,23 @@
     $('fx-src').textContent = t('fxSrc', { d: L.last.date });
     renderFxChart();
   }
+  /* the same official mid rate for round amounts, in the direction the converter is set */
+  function quickOut(r) {
+    var q = $('fx-quick');
+    if (!q) return;
+    if (!r) { q.innerHTML = ''; return; }
+    var c = S.conv.code, to = S.conv.dir === 'to';
+    q.setAttribute('aria-label', t('quick'));
+    q.innerHTML = '<h4 class="label">' + esc(t('quick')) + '</h4><ul>' + [1, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000].map(function (a) {
+      var v = to ? a * r.mid : a / r.mid;
+      return '<li><span>' + (to ? fmt(a, 0) + ' ' + c : 'Rs ' + fmt(a, 0)) + '</span><b>' + (to ? 'Rs ' + fmt(v, 2) : fmt(v, v < 10 ? 4 : 2) + ' ' + c) + '</b></li>';
+    }).join('') + '</ul>';
+  }
   function convOut() {
     var L = latestFx(); var out = $('fx-out');
     if (!L || !out) return;
     var r = L.last.rates[S.conv.code];
+    quickOut(r);
     var a = parseFloat(String(S.conv.amt).replace(/[^0-9.]/g, ''));
     if (!r || !isFinite(a)) { out.innerHTML = '<small>—</small>'; return; }
     var inF = fmt(a, a % 1 ? 2 : 0);

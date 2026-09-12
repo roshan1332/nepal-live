@@ -16,7 +16,8 @@ Env (an optional git-ignored `.env` file is read at startup; real env vars win �
 `SITE_ORIGIN` (robots/sitemap/canonical origin, default `https://nepal-live.onrender.com`),
 `SUPABASE_URL` + `SUPABASE_SECRET_KEY` (accounts in Supabase — production; `SUPABASE_SERVICE_ROLE_KEY` also accepted),
 `DATA_DIR` (file account store when Supabase isn't set — local dev; `./data` by default, wiped on Render deploys),
-`TRUST_PROXY=1` (trust `X-Forwarded-*`; on automatically when `RENDER` is set). `data/` and `.env` are git-ignored —
+`TRUST_PROXY=1` (trust `X-Forwarded-*`; on automatically when `RENDER` is set),
+`KEEP_AWAKE=0` (turn off the keep-awake self-call — see Deploy; `KEEP_AWAKE_MIN` sets its interval, default 10). `data/` and `.env` are git-ignored —
 never commit them, and never put the Supabase secret key in client code.
 
 ## Files
@@ -108,12 +109,21 @@ explicitly not listed. Disabled chart ranges explain why (no intraday NEPSE; 60 
 - Skeleton → content with source + freshness → keep last good data on failure, else error state with retry.
 - Devanagari text gets `lang="ne"`. Official names stay accurate in both languages.
 - `[hidden]` loses to class `display` rules — add `.x[hidden]{display:none}` when needed.
+- No blank space in stretched grid rows: when a card's row height is set by a taller neighbour, let one block take the
+  leftover — a list with `flex:1; height:0; min-height:…; overflow-y:auto` (homepage `.fx-rows`, money `.fx-quick`,
+  weather `.st-list`), a chart that grows (`#nepse-main .chart-box`, `.wx-hourly`), or rows spread with
+  `justify-content:space-between` — and reset it to natural height where the grid goes to one column (≤820px).
+  Text-only story cards use a `.cs-cover` panel the photo's shape. Events are an agenda (one row per event).
 - Touch targets 44px on coarse pointers; `prefers-reduced-motion` respected; no horizontal page scroll.
 
 ## Deploy
 Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). Accounts: run
 `supabase-schema.sql` once in the Supabase SQL editor, then set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in Render →
 Environment. The server logs "[accounts] Supabase connected" on startup (or why it couldn't connect).
+Keep-awake: Render's free plan sleeps after 15 min without outside traffic (first visit then takes ~30-50 s). On
+Render (`RENDER_EXTERNAL_URL` is set automatically) the server calls its own public `/healthz` every 10 min so it
+never idles; it logs only when that fails. One always-on free service uses ~744 of the 750 free instance hours a
+month, so a second free Render service in the same workspace would run out. Set `KEEP_AWAKE=0` on a paid plan.
 
 ## Known pitfalls
 - NEPSE needs the wasm token flow via this server. TheSportsDB 429s without the queue in `sportsdb.js`.
