@@ -7,14 +7,15 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var t = NL.i18n.t, esc = NL.esc;
-  var TOPICS = ['all', 'nepal', 'politics', 'business', 'technology', 'sports', 'entertainment', 'world'];
+  var TOPICS = ['all', 'nepal', 'politics', 'business', 'technology', 'sports', 'society', 'entertainment', 'world'];
+  var PROV_IDS = NL.PROVINCES.map(function (p) { return p.id; });
   var PAGE = 24;
 
   NL.i18n.add({
     en: {
       kicker: 'News', h1: 'Nepal <em>news</em>',
       sub: 'Headlines from Nepali newsrooms, updated through the day. Every story opens on the original publisher’s site.',
-      filterPh: 'Filter headlines…', allSources: 'All publishers', mostCovered: 'Most covered right now', publishers: 'Publishers',
+      filterPh: 'Filter headlines…', allSources: 'All publishers', allProv: 'All provinces', mostCovered: 'Most covered right now', publishers: 'Publishers',
       latestTitle: 'Latest headlines', showMore: 'Show more stories', noMatch: 'No headlines match these filters.',
       clear: 'Clear filters', err: 'News isn’t available right now.', headlinesN: '{n} headlines',
       aggNote: 'Nepal Live aggregates headlines from Nepali publishers. Every story opens on the original publisher’s site — we don’t rehost or edit their journalism.',
@@ -23,7 +24,7 @@
     ne: {
       kicker: 'समाचार', h1: 'नेपालका <em>समाचार</em>',
       sub: 'नेपाली समाचार कक्षका शीर्षक, दिनभरि ताजा। हरेक समाचार मूल प्रकाशककै साइटमा खुल्छ।',
-      filterPh: 'शीर्षक खोज्नुहोस्…', allSources: 'सबै प्रकाशक', mostCovered: 'अहिले सबैभन्दा बढी कभर भएका', publishers: 'प्रकाशक',
+      filterPh: 'शीर्षक खोज्नुहोस्…', allSources: 'सबै प्रकाशक', allProv: 'सबै प्रदेश', mostCovered: 'अहिले सबैभन्दा बढी कभर भएका', publishers: 'प्रकाशक',
       latestTitle: 'ताजा शीर्षक', showMore: 'थप समाचार', noMatch: 'यी फिल्टरमा कुनै समाचार भेटिएन।',
       clear: 'फिल्टर हटाउनुहोस्', err: 'समाचार अहिले उपलब्ध छैन।', headlinesN: '{n} शीर्षक',
       aggNote: 'नेपाल लाइभले नेपाली प्रकाशकका शीर्षक संकलन गर्छ। हरेक समाचार मूल प्रकाशककै साइटमा खुल्छ — हामी उनीहरूको पत्रकारिता पुनः प्रकाशन वा सम्पादन गर्दैनौं।',
@@ -36,7 +37,8 @@
     items: null, trend: null,
     topic: TOPICS.indexOf(qs.get('topic')) > 0 ? qs.get('topic') : 'all',
     lang: ['en', 'ne'].indexOf(qs.get('lang')) >= 0 ? qs.get('lang') : 'all',
-    src: qs.get('src') || '', q: qs.get('q') || '', shown: PAGE
+    src: qs.get('src') || '', q: qs.get('q') || '', shown: PAGE,
+    prov: PROV_IDS.indexOf(qs.get('prov')) >= 0 ? qs.get('prov') : ''
   };
   $('news-q').value = S.q;
 
@@ -45,6 +47,7 @@
     if (S.topic !== 'all') p.set('topic', S.topic);
     if (S.lang !== 'all') p.set('lang', S.lang);
     if (S.src) p.set('src', S.src);
+    if (S.prov) p.set('prov', S.prov);
     if (S.q) p.set('q', S.q);
     history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
   }
@@ -52,7 +55,7 @@
   function base() {
     var q = S.q.trim().toLowerCase();
     return (S.items || []).filter(function (i) {
-      return (S.lang === 'all' || i.lang === S.lang) && (!S.src || i.source === S.src)
+      return (S.lang === 'all' || i.lang === S.lang) && (!S.src || i.source === S.src) && (!S.prov || i.province === S.prov)
         && (!q || (i.title + ' ' + (i.summary || '')).toLowerCase().indexOf(q) >= 0);
     });
   }
@@ -74,6 +77,13 @@
       : NL.emptyState(t('noMatch'), { icon: 'doc', action: { label: t('clear'), attr: 'data-clear' } });
     $('news-more').innerHTML = shown.length > S.shown
       ? '<button class="btn" type="button" data-more>' + esc(t('showMore')) + ' <span class="muted">' + (shown.length - S.shown) + '</span></button>' : '';
+
+    /* province filter: stories naming places in that province */
+    var provCount = {};
+    (S.items || []).forEach(function (i) { if (i.province) provCount[i.province] = (provCount[i.province] || 0) + 1; });
+    $('news-prov').innerHTML = '<option value="">' + esc(t('allProv')) + '</option>' + NL.PROVINCES.map(function (p) {
+      return '<option value="' + p.id + '"' + (p.id === S.prov ? ' selected' : '') + '>' + esc(NL.provName(p.id)) + ' (' + (provCount[p.id] || 0) + ')</option>';
+    }).join('');
 
     var pubs = {};
     (S.items || []).forEach(function (i) { pubs[i.source] = (pubs[i.source] || 0) + 1; });
@@ -121,9 +131,10 @@
     if ((el = e.target.closest('[data-filter]'))) { S.lang = el.getAttribute('data-filter'); S.shown = PAGE; render(); return; }
     if ((el = e.target.closest('[data-src]'))) { var v = el.getAttribute('data-src'); S.src = S.src === v ? '' : v; S.shown = PAGE; render(); return; }
     if (e.target.closest('[data-more]')) { S.shown += PAGE; render(); return; }
-    if (e.target.closest('[data-clear]')) { S.topic = 'all'; S.lang = 'all'; S.src = ''; S.q = ''; $('news-q').value = ''; render(); }
+    if (e.target.closest('[data-clear]')) { S.topic = 'all'; S.lang = 'all'; S.src = ''; S.prov = ''; S.q = ''; $('news-q').value = ''; render(); }
   });
   $('news-src').addEventListener('change', function (e) { S.src = e.target.value; S.shown = PAGE; render(); });
+  $('news-prov').addEventListener('change', function (e) { S.prov = e.target.value; S.shown = PAGE; render(); });
   var qt;
   $('news-q').addEventListener('input', function (e) { clearTimeout(qt); qt = setTimeout(function () { S.q = e.target.value; S.shown = PAGE; render(); }, 150); });
   $('news-refresh').addEventListener('click', load);

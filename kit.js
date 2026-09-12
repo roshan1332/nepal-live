@@ -58,7 +58,7 @@
       cat_flood: 'Flood', cat_rain: 'Heavy rainfall', cat_road: 'Road', cat_air: 'Air pollution', cat_earthquake: 'Earthquake',
       cat_storm: 'Storm', cat_fire: 'Fire', cat_drought: 'Drought', cat_landslide: 'Landslide', cat_other: 'Other',
       tp_all: 'All', tp_nepal: 'Nepal', tp_politics: 'Politics', tp_business: 'Business', tp_technology: 'Technology',
-      tp_sports: 'Sports', tp_entertainment: 'Entertainment', tp_world: 'World'
+      tp_sports: 'Sports', tp_entertainment: 'Entertainment', tp_world: 'World', tp_society: 'Society'
     },
     ne: {
       refresh: 'ताजा गर्नुहोस्', all: 'सबै', readOrig: 'मूल समाचार पढ्नुहोस्', readOrigArticle: 'मूल समाचार पढ्नुहोस्',
@@ -68,7 +68,7 @@
       cat_flood: 'बाढी', cat_rain: 'भारी वर्षा', cat_road: 'सडक', cat_air: 'वायु प्रदूषण', cat_earthquake: 'भूकम्प',
       cat_storm: 'आँधी', cat_fire: 'आगलागी', cat_drought: 'खडेरी', cat_landslide: 'पहिरो', cat_other: 'अन्य',
       tp_all: 'सबै', tp_nepal: 'समाचार', tp_politics: 'राजनीति', tp_business: 'व्यापार', tp_technology: 'प्रविधि',
-      tp_sports: 'खेलकुद', tp_entertainment: 'मनोरञ्जन', tp_world: 'विश्व'
+      tp_sports: 'खेलकुद', tp_entertainment: 'मनोरञ्जन', tp_world: 'विश्व', tp_society: 'समाज'
     }
   });
 
@@ -133,6 +133,18 @@
   NL.srcName = srcName;
   NL.langAttr = langAttr;
   NL.topicLabel = topic;
+  /* Nepal's 7 provinces (ids match /api/provinces and the news "province" tag) */
+  NL.PROVINCES = [['NP01', 'Koshi', 'कोशी'], ['NP02', 'Madhesh', 'मधेश'], ['NP03', 'Bagmati', 'बागमती'], ['NP04', 'Gandaki', 'गण्डकी'],
+    ['NP05', 'Lumbini', 'लुम्बिनी'], ['NP06', 'Karnali', 'कर्णाली'], ['NP07', 'Sudurpashchim', 'सुदूरपश्चिम']]
+    .map(function (p) { return { id: p[0], en: p[1], ne: p[2] }; });
+  NL.provName = function (id) {
+    var p = NL.PROVINCES.filter(function (x) { return x.id === id; })[0];
+    return p ? (NL.lang() === 'ne' ? p.ne : p.en) : '';
+  };
+  /* "EN" / "नेपाली" label for a story, from the language of its headline */
+  NL.langChip = function (i) {
+    return i.lang === 'ne' ? '<span class="lang-chip" lang="ne">नेपाली</span>' : '<span class="lang-chip">EN</span>';
+  };
 
   /* A thumbnail that fails to load takes its frame with it. */
   NL.imgFail = function (img) {
@@ -180,14 +192,15 @@
     compact: function (i, idx) {
       /* the save button sits beside the link, not inside it (no buttons inside <a>) */
       return '<div class="cp-wrap"><a class="cp-story' + (i.image ? '' : ' no-img') + '" style="--i:' + ((idx || 0) % 12) + '" ' + link(i) + '>'
-        + '<div class="cp-body"><div class="cp-top"><span class="cat">' + esc(topic(i.topic)) + '</span></div>'
+        + '<div class="cp-body"><div class="cp-top"><span class="cat">' + esc(topic(i.topic)) + '</span>' + NL.langChip(i) + '</div>'
         + '<h3 class="cp-title"' + langAttr(i.title) + '>' + esc(i.title) + '</h3>'
         + (i.summary ? '<p class="cp-sum"' + langAttr(i.summary) + '>' + esc(i.summary) + '</p>' : '')
         + '<div class="meta"><span class="src">' + esc(srcName(i.source)) + '</span><span class="sep">·</span>'
         + '<span data-ago="' + ts(i) + '">' + esc(NL.ago(ts(i))) + '</span>'
         + '<span class="read-orig">' + esc(t('readOrigArticle')) + ' <span>→</span></span></div></div>'
         + (i.image ? '<div class="cp-img">' + img(i.image) + '</div>' : '') + '</a>'
-        + NL.saveBtn({ type: 'news', id: i.link, title: i.title, url: i.link, sub: srcName(i.source), img: i.image || '' }) + '</div>';
+        + '<div class="cp-acts">' + (NL.shareBtn ? NL.shareBtn({ url: i.link, title: i.title }) : '')
+        + NL.saveBtn({ type: 'news', id: i.link, title: i.title, url: i.link, sub: srcName(i.source), img: i.image || '' }) + '</div></div>';
     }
   };
 

@@ -27,6 +27,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Noto+Sans+Devanagari:wght@400..800&display=swap">
@@ -298,6 +299,19 @@
       <div><span class="kicker" id="today-kicker">Nepal Today</span><h2 class="sec-title" id="today-title">Nepal Today</h2></div>
       <div class="sec-actions"><span class="sec-meta" id="today-sub">Everything important happening in Nepal today.</span></div>
     </div>
+    <!-- The briefing: today's date in both calendars, what matters (each line built from a live source), national alerts -->
+    <div class="brief" id="brief">
+      <div class="brief-date">
+        <span class="bd-k" id="bd-k">Today</span>
+        <span class="bd-day" id="bd-day"></span>
+        <span class="bd-bs" id="bd-bs" lang="ne"></span>
+      </div>
+      <div class="brief-main">
+        <div class="top-head"><h3 class="label" id="hl-label">What matters today</h3><span class="stamp" id="stamp-highlights"></span></div>
+        <ul class="hl-list" id="hl-list"></ul>
+      </div>
+      <div class="brief-alerts" id="brief-alerts"></div>
+    </div>
     <div class="ed-grid">
       <div id="featured"></div>
       <aside class="top-col">
@@ -319,10 +333,6 @@
           <a class="tile" id="tile-quake" href="#card-quakes"></a>
         </div>
       </div>
-      <aside>
-        <div class="top-head"><h3 class="label" id="hl-label">Today’s highlights</h3><span class="stamp" id="stamp-highlights"></span></div>
-        <ul class="hl-list" id="hl-list"></ul>
-      </aside>
     </div>
   </section>
 
@@ -336,6 +346,16 @@
     <div class="mod-grid" id="ha-list"></div>
   </section>
 
+  <!-- Your province: local news, weather, road closures, events, provincial government -->
+  <section class="sec" id="home-prov" aria-labelledby="hp-title">
+    <div class="sec-head">
+      <div><span class="kicker" id="hp-kicker">Your province</span><h2 class="sec-title" id="hp-title">Nepal by province</h2></div>
+      <div class="sec-actions"><span class="sec-meta" id="hp-meta"></span></div>
+    </div>
+    <div class="prov-pick" id="hp-pick" role="group" aria-label="Choose your province"></div>
+    <div id="hp-body"></div>
+  </section>
+
 
   <!-- Latest news -->
   <section class="sec" id="latest" aria-labelledby="latest-title">
@@ -347,6 +367,7 @@
           <button type="button" id="nf-en" data-filter="en">English</button>
           <button type="button" id="nf-ne" data-filter="ne">नेपाली</button>
         </div>
+        <select id="nf-prov" class="nf-prov" aria-label="Province"></select>
         <button class="rbtn" data-mod="news" type="button" aria-label="Refresh news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       </div>
     </div>
@@ -561,8 +582,17 @@ const I18N = {
     depthKicker: 'Money', depthTitle: 'Money & markets',
     readOrig: 'Read original', showMore: 'Show more stories', seeAll: 'See all',
     aggNote: 'Nepal Live aggregates headlines from OnlineKhabar, Khabarhub, Nagarik News and Setopati. Every story opens on the original publisher’s site — we don’t rehost or edit their journalism.',
-    topics: { all: 'All', nepal: 'Nepal', politics: 'Politics', business: 'Business', technology: 'Technology', sports: 'Sports', entertainment: 'Entertainment', world: 'World' },
+    topics: { all: 'All', nepal: 'Nepal', politics: 'Politics', business: 'Business', technology: 'Technology', sports: 'Sports', society: 'Society', entertainment: 'Entertainment', world: 'World' },
     newsAll: 'All', newsEn: 'English', newsNe: 'नेपाली',
+    allProv: 'All provinces', briefToday: 'Today', briefAlerts: 'National alerts',
+    hl_weather: '{city}: {temp}, {desc} (high {hi}°, low {lo}°)', hl_rain: 'rain chance {p}',
+    hpKicker: 'Your province', hpTitle: 'Nepal by province', hpPrompt: 'Choose your province',
+    hpPromptSub: 'See local news, weather, road closures, events and your provincial government in one place. Saved on this device.',
+    hpMeta: 'Showing {p}', hpNews: 'Local news', hpWeather: 'Weather', hpRoads: 'Road closures', hpEvents: 'Events', hpGov: 'Provincial government',
+    hpNoNews: 'No story in the latest headlines names a place in {p}.', hpNoRoads: 'No Department of Roads closure is reported in {p}.',
+    hpNoLocalEv: 'Nothing listed for {p} — upcoming nationwide:', hpEvNone: 'No upcoming events listed.',
+    hpCapital: 'Capital', hpOfficial: 'Official website', hpCmo: 'Office of the Chief Minister and Council of Ministers', hpFed: 'Federal services directory',
+    hpErr: 'Province details aren’t available right now.', hpFc: 'Forecast for {c}', seeAllShort: 'See all', hpMap: 'Province on the map',
     noNews: 'No headlines match this filter right now.', clearFilter: 'Show all news',
     noSports: 'No matches in the feed right now.', spLive: 'Live', spSoon: 'Upcoming', spDone: 'Finished',
     noLive: 'No live matches right now.', noSoon: 'No upcoming matches found.', noDone: 'No recent results.', errSports: 'Scores aren’t available right now.',
@@ -632,7 +662,7 @@ const I18N = {
     tileErr: "Unavailable", retry: "Try again",
     gNews: 'News', gMarkets: 'Markets', gSports: 'Matches', gAlerts: 'Active alerts',
     todayK: 'Today', todayTitle: 'Nepal Today', todaySub: 'Everything important happening in Nepal today.',
-    numbersLabel: 'Today’s numbers', hlLabel: 'Today’s highlights', errHighlights: 'Highlights aren’t available right now.',
+    numbersLabel: 'Today’s numbers', hlLabel: 'What matters today', errHighlights: 'Highlights aren’t available right now.',
     haKicker: 'Nepal Alerts', haTitle: 'Important alerts', haAll: 'All alerts',
     noAlerts: 'No major alerts right now.', noAlertsSub: 'We check BIPAD Portal, DHM river gauges, USGS and GDACS every few minutes.',
     errAlerts: 'Alerts aren’t available right now.',
@@ -683,8 +713,17 @@ const I18N = {
     depthKicker: 'अर्थ', depthTitle: 'पैसा र बजार',
     readOrig: 'मूल समाचार पढ्नुहोस्', showMore: 'थप समाचार', seeAll: 'सबै हेर्नुहोस्',
     aggNote: 'नेपाल लाइभले अनलाइनखबर, खबरहब, नागरिक न्यूज र सेतोपाटीका शीर्षक संकलन गर्छ। हरेक समाचार मूल प्रकाशककै साइटमा खुल्छ — हामी उनीहरूको पत्रकारिता पुनः प्रकाशन वा सम्पादन गर्दैनौं।',
-    topics: { all: 'सबै', nepal: 'समाचार', politics: 'राजनीति', business: 'व्यापार', technology: 'प्रविधि', sports: 'खेलकुद', entertainment: 'मनोरञ्जन', world: 'विश्व' },
+    topics: { all: 'सबै', nepal: 'समाचार', politics: 'राजनीति', business: 'व्यापार', technology: 'प्रविधि', sports: 'खेलकुद', society: 'समाज', entertainment: 'मनोरञ्जन', world: 'विश्व' },
     newsAll: 'सबै', newsEn: 'English', newsNe: 'नेपाली',
+    allProv: 'सबै प्रदेश', briefToday: 'आज', briefAlerts: 'राष्ट्रिय सतर्कता',
+    hl_weather: '{city}: {temp}, {desc} (अधिकतम {hi}°, न्यूनतम {lo}°)', hl_rain: 'वर्षाको सम्भावना {p}',
+    hpKicker: 'तपाईंको प्रदेश', hpTitle: 'प्रदेश अनुसार नेपाल', hpPrompt: 'आफ्नो प्रदेश छान्नुहोस्',
+    hpPromptSub: 'स्थानीय समाचार, मौसम, सडक अवरोध, कार्यक्रम र प्रदेश सरकार एकै ठाउँमा हेर्नुहोस्। यो उपकरणमै सुरक्षित हुन्छ।',
+    hpMeta: '{p} देखाइँदै', hpNews: 'स्थानीय समाचार', hpWeather: 'मौसम', hpRoads: 'सडक अवरोध', hpEvents: 'कार्यक्रम', hpGov: 'प्रदेश सरकार',
+    hpNoNews: 'ताजा शीर्षकमा {p} का ठाउँ उल्लेख भएको समाचार छैन।', hpNoRoads: '{p} मा सडक विभागले कुनै अवरोध जनाएको छैन।',
+    hpNoLocalEv: '{p} का लागि केही सूचीकृत छैन — आगामी राष्ट्रव्यापी:', hpEvNone: 'आगामी कार्यक्रम सूचीकृत छैन।',
+    hpCapital: 'राजधानी', hpOfficial: 'आधिकारिक वेबसाइट', hpCmo: 'मुख्यमन्त्री तथा मन्त्रिपरिषद्को कार्यालय', hpFed: 'संघीय सेवा निर्देशिका',
+    hpErr: 'प्रदेशको विवरण अहिले उपलब्ध छैन।', hpFc: '{c} को पूर्वानुमान', seeAllShort: 'सबै हेर्नुहोस्', hpMap: 'नक्सामा प्रदेश',
     noNews: 'यो फिल्टरमा अहिले कुनै समाचार छैन।', clearFilter: 'सबै समाचार हेर्नुहोस्',
     noSports: 'फिडमा अहिले कुनै खेल छैन।', spLive: 'लाइभ', spSoon: 'आगामी', spDone: 'सकिएका',
     noLive: 'अहिले कुनै खेल चलिरहेको छैन।', noSoon: 'आगामी खेल भेटिएन।', noDone: 'हालैका नतिजा छैनन्।', errSports: 'स्कोर अहिले उपलब्ध छैन।',
@@ -754,7 +793,7 @@ const I18N = {
     tileErr: "उपलब्ध छैन", retry: "फेरि प्रयास गर्नुहोस्",
     gNews: 'समाचार', gMarkets: 'बजार', gSports: 'खेल', gAlerts: 'सक्रिय सतर्कता',
     todayK: 'आज', todayTitle: 'आजको नेपाल', todaySub: 'आज नेपालमा भइरहेका सबै महत्त्वपूर्ण कुरा।',
-    numbersLabel: 'आजका अंक', hlLabel: 'आजका मुख्य कुरा', errHighlights: 'मुख्य कुरा अहिले उपलब्ध छैनन्।',
+    numbersLabel: 'आजका अंक', hlLabel: 'आज के महत्त्वपूर्ण छ', errHighlights: 'मुख्य कुरा अहिले उपलब्ध छैनन्।',
     haKicker: 'नेपाल सतर्कता', haTitle: 'महत्त्वपूर्ण सतर्कता', haAll: 'सबै सतर्कता',
     noAlerts: 'अहिले कुनै ठूलो सतर्कता छैन।', noAlertsSub: 'हामी बिपद पोर्टल, नदी मापन केन्द्र, USGS र GDACS हरेक केही मिनेटमा जाँच्छौं।',
     errAlerts: 'सतर्कता अहिले उपलब्ध छैन।',
@@ -832,7 +871,7 @@ const DIRECT = {
 const INTERVALS = { gold: 60e3, nepse: 60e3, rates: 600e3, weather: 300e3, air: 300e3, quakes: 120e3, news: 300e3,
                     fuel: 3600e3, highlights: 120e3, alerts: 180e3, roads: 300e3, trending: 300e3,
                     jobs: 1800e3, events: 1800e3, calToday: 900e3 };
-const state = { ok: {}, lastOk: {}, usdNpr: null, cache: {}, newsFilter: 'all', topic: 'all', shown: 9,
+const state = { ok: {}, lastOk: {}, usdNpr: null, cache: {}, newsFilter: 'all', topic: 'all', prov: '', shown: 9,
                 moverTab: 'gainers', tileVals: {}, fx: { amount: '100', code: 'USD', dir: 'to' } };
 
 /* ============ helpers ============ */
@@ -1137,7 +1176,7 @@ async function refreshNepse() {
       getJSON('/api/nepse/history?size=90', null).catch(() => null),
       getJSON('/api/nepse/top', null).catch(() => null),
     ]);
-    state.cache.nepse = { d, hist, top };
+    state.cache.nepse = { d, hist: hist && !hist.unavailable ? hist : null, top: top && !top.unavailable ? top : null };
     renderNepse();
     stamp('nepse', true, marketOpenNow() ? t('marketOpen') : t('marketClosed'));
     finish('nepse', true);
@@ -1353,6 +1392,7 @@ function renderWeather() {
     extra: `<div class="tile-d" style="margin-top:2px">${tf('hiLo', { h: hi, l: lo })} · ${t('rainChance')} ${rain != null ? rain + '%' : '–'}</div>`,
     foot: (d.source && d.source.name) || 'Open-Meteo', ts: Date.now() });
   NL.ticker.set('weather', NL.tk.weather(c.temperature_2m, city));
+  renderHighlights();
 }
 async function refreshWeather() {
   const { lat, lon } = cityCoords();
@@ -1576,7 +1616,7 @@ async function fetchNews(q) {
     return items;
   } catch (e) { return []; }
 }
-const TOPICS = ['all', 'nepal', 'politics', 'business', 'technology', 'sports', 'entertainment', 'world'];
+const TOPICS = ['all', 'nepal', 'politics', 'business', 'technology', 'sports', 'society', 'entertainment', 'world'];
 const srcName = (s) => String(s || 'News').replace(/\s*\((EN|NE)\)\s*$/i, '');
 const topicLabel = (k) => (t('topics')[k] || t('topics').nepal);
 /* A thumbnail that fails to load takes its frame with it, so no card shows a broken image. */
@@ -1593,21 +1633,29 @@ const storyTs = (i) => Date.parse(i.pubDate) || Date.now();
 const storyMeta = (i, orig) => `<div class="meta"><span class="src">${esc(srcName(i.source))}</span><span class="sep">·</span>${agoSpan(storyTs(i))}${orig ? `<span class="read-orig">${t('readOrig')} <span>↗</span></span>` : ''}</div>`;
 const linkAttrs = (i) => `href="${esc(i.link)}" target="_blank" rel="noopener noreferrer" data-story`;
 
+/* News cards are <article>s: the headline link stretches over the whole card
+   (so it stays one big tap target), and the language label, "Read original",
+   share and save sit above it as their own controls — no buttons inside links. */
+const storyLink = (i, cls, inner) => `<a class="${cls} stretch" href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+const storyActs = (i, full) => `<div class="story-acts${full ? '' : ' sm'}">${NL.langChip(i)}`
+  + (full ? `<a class="ro-link" href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">${t('readOrig')} <span aria-hidden="true">↗</span></a>` : '')
+  + NL.shareBtn({ url: i.link, title: i.title })
+  + NL.saveBtn({ type: 'news', id: i.link, title: i.title, url: i.link, sub: srcName(i.source), img: i.image || '' }) + '</div>';
 function featuredHTML(f) {
   if (!f) return NL.emptyState(t('noNews'), { icon: 'doc' });
-  return `<a class="feature-card${f.image ? '' : ' text-only'}" ${linkAttrs(f)}>
+  return `<article class="feature-card${f.image ? '' : ' text-only'}" data-story>
     ${f.image ? `<div class="f-media">${imgTag(f.image, true)}<span class="f-badge"><i></i>${t('featured')}</span></div>` : ''}
     <div class="f-body"><span class="cat">${esc(topicLabel(f.topic))}</span>
-      <h3 class="f-title"${langAttr(f.title)}>${esc(f.title)}</h3>
+      <h3 class="f-title"${langAttr(f.title)}>${storyLink(f, 'f-link', esc(f.title))}</h3>
       ${f.summary ? `<p class="f-sum"${langAttr(f.summary)}>${esc(f.summary)}</p>` : ''}
-      ${storyMeta(f, true)}</div>
-  </a>`;
+      ${storyMeta(f)}${storyActs(f, true)}</div>
+  </article>`;
 }
 function rowStory(i, idx) {
-  return `<a class="row-story${i.image ? '' : ' no-img'}" style="--i:${idx}" ${linkAttrs(i)}>
-    <div><span class="cat">${esc(topicLabel(i.topic))}</span><h3 class="rs-title"${langAttr(i.title)}>${esc(i.title)}</h3>${storyMeta(i)}</div>
+  return `<article class="row-story${i.image ? '' : ' no-img'}" style="--i:${idx}" data-story>
+    <div><span class="cat">${esc(topicLabel(i.topic))}</span><h3 class="rs-title"${langAttr(i.title)}>${storyLink(i, 'rs-link', esc(i.title))}</h3>${storyMeta(i)}${storyActs(i, false)}</div>
     ${i.image ? `<div class="rs-img">${imgTag(i.image)}</div>` : ''}
-  </a>`;
+  </article>`;
 }
 function cardStory(i, idx) {
   /* no photo: a panel the photo's shape holds the story's own summary (or the
@@ -1615,17 +1663,17 @@ function cardStory(i, idx) {
   const cover = i.summary
     ? `<div class="cs-cover"><p class="cs-sum"${langAttr(i.summary)}>${esc(i.summary)}</p></div>`
     : `<div class="cs-cover src-only" aria-hidden="true"><span class="cc-src">${esc(srcName(i.source))}</span></div>`;
-  return `<a class="card-story${i.image ? '' : ' text-only'}" style="--i:${idx % 9}" ${linkAttrs(i)}>
+  return `<article class="card-story${i.image ? '' : ' text-only'}" style="--i:${idx % 9}" data-story>
     ${i.image ? `<div class="cs-img">${imgTag(i.image)}</div>` : cover}
     <div class="cs-body"><span class="cat">${esc(topicLabel(i.topic))}</span>
-      <h3 class="cs-title"${langAttr(i.title)}>${esc(i.title)}</h3>
-      ${storyMeta(i)}</div>
-  </a>`;
+      <h3 class="cs-title"${langAttr(i.title)}>${storyLink(i, 'cs-link', esc(i.title))}</h3>
+      ${storyMeta(i)}${storyActs(i, true)}</div>
+  </article>`;
 }
 function newsParts() {
   const items = state.cache.news || [];
-  const f = state.newsFilter;
-  const list = f === 'all' ? items : items.filter(i => i.lang === f);
+  const f = state.newsFilter, pv = state.prov;
+  const list = items.filter(i => (f === 'all' || i.lang === f) && (!pv || i.province === pv));
   /* lead with a story that has a photo when one is near the top */
   let fi = list.slice(0, 8).findIndex(i => i.image);
   if (fi < 0) fi = 0;
@@ -1663,6 +1711,14 @@ function renderNews() {
     </div>`).join('');
 
   ['all', 'en', 'ne'].forEach(x => { const b = $('nf-' + x); if (b) b.setAttribute('aria-pressed', String(state.newsFilter === x)); });
+
+  /* province filter: how many stories name places in each province */
+  const byLang = items.filter(i => state.newsFilter === 'all' || i.lang === state.newsFilter);
+  const pc = {};
+  byLang.forEach(i => { if (i.province) pc[i.province] = (pc[i.province] || 0) + 1; });
+  $('nf-prov').innerHTML = `<option value="">${esc(t('allProv'))}</option>` + NL.PROVINCES.map(p =>
+    `<option value="${p.id}"${state.prov === p.id ? ' selected' : ''}>${esc(LANG === 'ne' ? p.ne : p.en)} (${pc[p.id] || 0})</option>`).join('');
+  renderProv();
 }
 async function refreshNews() {
   /* primary: aggregated feeds from Nepali news websites */
@@ -1855,7 +1911,9 @@ function renderFuelTile() {
 }
 async function refreshFuel() {
   try {
-    state.cache.fuel = await getJSON('/api/fuel', null);
+    const f = await getJSON('/api/fuel', null);
+    if (!f || f.unavailable) throw new Error((f && f.error) || 'fuel unavailable');
+    state.cache.fuel = f;
     state.okAt = { ...(state.okAt || {}), fuel: Date.now() };
     renderFuelTile();
     finish('fuel', true);
@@ -1864,7 +1922,18 @@ async function refreshFuel() {
 
 /* --- Nepal Today: highlights. Each is a value a source published; only the
    sentence is written here. --- */
-const HL_ICON = { nepse: 'chart', gold: 'coin', usd: 'fx', alerts: 'bell', quake: 'quake', roads: 'road', aqi: 'wind', fuel: 'fuel', story: 'flame' };
+const HL_ICON = { nepse: 'chart', gold: 'coin', usd: 'fx', alerts: 'bell', quake: 'quake', roads: 'road', aqi: 'wind', fuel: 'fuel', story: 'flame', weather: 'sun2' };
+/* the weather line of "What matters today", from the weather card's own forecast */
+function weatherHl() {
+  const c0 = state.cache.weather;
+  if (!c0 || !c0.d || !c0.d.current) return null;
+  const d = c0.d, c = d.current;
+  const [desc] = (WMO[LANG] || WMO.en)[c.weather_code] || ['—'];
+  return { type: 'weather', city: cityCoords().name, temp: Math.round(c.temperature_2m), desc,
+    hi: Math.round(d.daily.temperature_2m_max[0]), lo: Math.round(d.daily.temperature_2m_min[0]),
+    rain: d.daily.precipitation_probability_max ? d.daily.precipitation_probability_max[0] : null,
+    href: '#card-weather', source: (d.source && d.source.name) || 'Open-Meteo' };
+}
 function hlItem(h) {
   const b = (v, cls) => `<b${cls && cls !== 'flat' ? ` class="${cls}"` : ''}>${v}</b>`;
   let html = '', cls = '', meta = esc(h.source), when = '';
@@ -1913,15 +1982,42 @@ function hlItem(h) {
       break;
     }
     case 'story': html = tf('hl_story', { term: esc(h.term), n: b(h.headlines), s: b(h.sources) }); break;
+    case 'weather':
+      html = tf('hl_weather', { city: esc(h.city), temp: b(h.temp + '°C'), desc: esc(h.desc), hi: h.hi, lo: h.lo })
+        + (h.rain != null ? ' · ' + tf('hl_rain', { p: b(h.rain + '%') }) : '');
+      break;
     default: return '';
   }
   return `<li class="hl-item"><a href="${esc(h.href)}"><span class="hl-ic ${cls}">${NL.icon[HL_ICON[h.type]] || ''}</span>
     <span class="hl-t">${html}<span class="hl-m">${meta}${when ? ' · ' + when : ''}</span></span></a></li>`;
 }
 function renderHighlights() {
-  const d = state.cache.highlights;
-  if (!d) return;
-  $('hl-list').innerHTML = d.items.map(hlItem).join('');
+  const d = state.cache.highlights, w = weatherHl();
+  if (!d && !w) return;
+  const items = d ? d.items.slice() : [];
+  if (w) items.splice(Math.min(3, items.length), 0, w);
+  $('hl-list').innerHTML = items.map(hlItem).join('');
+}
+/* national alerts in the briefing: counts by level and the most serious active ones */
+function renderBrief() {
+  const el = $('brief-alerts');
+  if (!el) return;
+  const d = state.cache.alerts;
+  const head = `<div class="top-head"><h3 class="label">${esc(t('briefAlerts'))}</h3><a class="link-more" href="/alerts">${esc(t('haAll'))} <span>→</span></a></div>`;
+  if (!d) {
+    el.innerHTML = head + (state.ok.alerts === false ? NL.errorState(t('errAlerts'), { mod: 'alerts', compact: true }) : NL.skeleton('rows'));
+    return;
+  }
+  const act = d.items.filter(a => a.active)
+    .sort((a, b) => NL.levels.indexOf(a.level) - NL.levels.indexOf(b.level) || Date.parse(b.time) - Date.parse(a.time)).slice(0, 2);
+  el.innerHTML = head
+    + `<div class="ba-counts">${NL.levels.map(l => `<span class="as-lv lv-${l}${d.counts[l] ? '' : ' zero'}">${NL.levelBadge(l)}<b>${d.counts[l]}</b></span>`).join('')}</div>`
+    + (act.length ? `<ul class="ba-list">${act.map(a => {
+        const title = LANG === 'ne' && a.titleNe ? a.titleNe : a.title;
+        return `<li><a href="/alerts">${NL.levelBadge(a.level)}<span class="ba-tt"${langAttr(title)}>${esc(title)}</span></a>`
+          + `<span class="ba-t">${esc(a.source && a.source.name ? a.source.name : '')}${a.time ? ' · ' + NL.fresh('issued', a.time) : ''}</span></li>`;
+      }).join('')}</ul>`
+      : `<p class="ba-none">${esc(t('noAlerts'))}</p>`);
 }
 
 /* --- Home: alerts, roads, trending modules --- */
@@ -1932,6 +2028,7 @@ function renderHomeAlerts() {
   const act = d.items.filter(a => a.active).slice(0, 4);
   $('ha-list').innerHTML = act.length ? act.map(a => NL.alertCard(a, { compact: true })).join('')
     : NL.emptyState(t('noAlerts'), { icon: 'shield', sub: t('noAlertsSub') });
+  renderBrief();
 }
 function renderHomeRoads() {
   const d = state.cache.roads;
@@ -1941,6 +2038,7 @@ function renderHomeRoads() {
     : NL.emptyState(t('noClosures'), { icon: 'shield', compact: true });
   $('hr-foot').innerHTML = `<span>${esc(rep.length ? tf('corReported', { n: rep.length, names: rep.slice(0, 3).map(c => LANG === 'ne' ? c.ne : c.en).join(', ') }) : t('corNone'))}</span>`
     + `<span>${esc(t('noTraffic'))}</span>`;
+  renderProv();
 }
 function renderHomeTrending() {
   const d = state.cache.trending;
@@ -1997,7 +2095,114 @@ function renderHomeEvents() {
       + `<span class="he-b"><span class="he-t"${langAttr(title)}>${esc(title)}</span>`
       + `<span class="he-m">${i.category === 'holiday' ? `<b>${esc(t(kind))}</b>` : esc(t(kind))} · ${esc(i.location || t('nationwide'))}</span></span></a>`;
   }).join('') : NL.emptyState(t('evNone'), { icon: 'calendar', compact: true });
+  renderProv();
 }
+
+/* --- Your province: local news, weather, road closures, events, provincial government --- */
+let PROV_DATA = null, provFailed = false;
+const PROV_KEY = 'nlive-prov';
+state.myProv = (() => { try { return localStorage.getItem(PROV_KEY) || ''; } catch (e) { return ''; } })();
+async function loadProvinces() {
+  try { PROV_DATA = (await getJSON('/api/provinces', null)).provinces; provFailed = false; }
+  catch (e) { provFailed = true; }
+  renderProv();
+}
+/* the province capital's forecast, fetched when a province is shown (15-minute memo) */
+function provWeather(p) {
+  const k = 'wx:' + p.id, c = state.cache[k];
+  if (c && Date.now() - c.at < 900e3) return c;
+  if (state.provWxBusy !== p.id) {
+    state.provWxBusy = p.id;
+    getJSON(`/api/weather?lat=${p.city.lat}&lon=${p.city.lon}`, DIRECT.weather(p.city.lat, p.city.lon))
+      .then(d => { state.cache[k] = { d, at: Date.now() }; })
+      .catch(() => { state.cache[k] = { d: null, at: Date.now() - 840e3 }; })
+      .finally(() => { state.provWxBusy = null; renderProv(); });
+  }
+  return c || null;
+}
+function renderProv() {
+  const pick = $('hp-pick'), body = $('hp-body');
+  if (!pick || !body) return;
+  pick.innerHTML = NL.PROVINCES.map(p => `<button type="button" class="pill" data-myprov="${p.id}" aria-pressed="${state.myProv === p.id}">${esc(LANG === 'ne' ? p.ne : p.en)}</button>`).join('');
+  if (!state.myProv) {
+    $('hp-meta').textContent = '';
+    body.innerHTML = NL.emptyState(t('hpPrompt'), { icon: 'map', sub: t('hpPromptSub') });
+    return;
+  }
+  if (!PROV_DATA) { body.innerHTML = provFailed ? NL.errorState(t('hpErr'), { mod: 'prov', compact: true }) : NL.skeleton('cards'); return; }
+  const p = PROV_DATA.find(x => x.id === state.myProv);
+  if (!p) return;
+  const pname = LANG === 'ne' ? p.ne : p.en;
+  $('hp-meta').textContent = tf('hpMeta', { p: pname });
+  const inProv = (text) => { const s = String(text || '').toLowerCase(); return !!s && p.districts.some(d => s.includes(d.en.toLowerCase())); };
+  const card = (cls, title, bodyHTML, foot) => `<div class="card pv ${cls}"><div class="card-head"><h3>${esc(title)}</h3>${foot || ''}</div><div class="card-body">${bodyHTML}</div></div>`;
+
+  /* local news: stories that name places in the province */
+  const news = state.cache.news ? state.cache.news.filter(i => i.province === p.id).slice(0, 5) : null;
+  const newsHTML = !news ? NL.skeleton('stories') : news.length ? `<div class="top-list">${news.map(rowStory).join('')}</div>`
+    : NL.emptyState(tf('hpNoNews', { p: pname }), { icon: 'doc', compact: true });
+
+  /* weather in the capital (or the city named) */
+  let wxHTML = '';
+  if (p.city) {
+    const wx = provWeather(p);
+    const city = LANG === 'ne' ? p.city.ne : p.city.en;
+    if (!wx) wxHTML = NL.skeleton('value');
+    else if (!wx.d) wxHTML = NL.errorState(t('errWeather'), { compact: true });
+    else {
+      const c = wx.d.current, dy = wx.d.daily;
+      const [desc, em] = (WMO[LANG] || WMO.en)[c.weather_code] || ['—', '🌡️'];
+      const rain = dy.precipitation_probability_max ? dy.precipitation_probability_max[0] : null;
+      wxHTML = `<div class="pv-wx"><span class="wx-ico" aria-hidden="true">${em}</span><b>${Math.round(c.temperature_2m)}°C</b><span>${esc(desc)}</span></div>`
+        + `<p class="pv-sub">${esc(tf('hiLo', { h: Math.round(dy.temperature_2m_max[0]), l: Math.round(dy.temperature_2m_min[0]) }))} · ${esc(t('rainChance'))} ${rain != null ? rain + '%' : '–'}</p>`
+        + `<p class="pv-src">${esc(tf('hpFc', { c: city }))} · ${esc((wx.d.source && wx.d.source.name) || 'Open-Meteo')}</p>`;
+    }
+  }
+
+  /* road closures the Department of Roads reports in the province's districts */
+  const rd = state.cache.roads;
+  const closures = rd ? rd.closures.filter(c => inProv(c.district) || inProv(c.location)) : null;
+  const roadsHTML = !closures ? NL.skeleton('rows') : closures.length ? closures.slice(0, 3).map(c => NL.alertCard(c, { compact: true })).join('')
+    : NL.emptyState(tf('hpNoRoads', { p: pname }), { icon: 'shield', compact: true });
+
+  /* events listed in the province; otherwise the next nationwide ones, said so */
+  const ev = state.cache.events;
+  let evHTML = NL.skeleton('rows');
+  if (ev) {
+    const up = ev.items.filter(i => i.date >= ev.today);
+    const local = up.filter(i => i.location && !/nationwide/i.test(i.location) && (inProv(i.location) || (p.city && i.location.toLowerCase().includes(p.city.en.toLowerCase()))));
+    const list = local.length ? local.slice(0, 3) : up.filter(i => !i.location || /nationwide/i.test(i.location)).slice(0, 3);
+    const row = (i) => {
+      const ms = Date.parse(i.date + 'T12:00:00+05:45'), title = LANG === 'ne' && i.titleNe ? i.titleNe : i.title;
+      return `<li><span class="pv-d">${esc(NL.dfmt.day(ms))}</span><span${langAttr(title)}>${esc(title)}</span></li>`;
+    };
+    evHTML = list.length ? (local.length ? '' : `<p class="pv-sub">${esc(tf('hpNoLocalEv', { p: pname }))}</p>`) + `<ul class="pv-list">${list.map(row).join('')}</ul>`
+      : NL.emptyState(t('hpEvNone'), { icon: 'calendar', compact: true });
+  }
+
+  /* the provincial government's official site (each URL checked to load) */
+  const cap = p.capital ? (LANG === 'ne' ? p.capital.ne : p.capital.en) : '';
+  const govHTML = `<dl class="pv-dl">${cap ? `<div><dt>${esc(t('hpCapital'))}</dt><dd>${esc(cap)}</dd></div>` : ''}`
+    + `<div><dt>${esc(t('hpOfficial'))}</dt><dd><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">${esc(p.url.replace(/^https?:\/\//, '').replace(/\/$/, ''))} ↗</a><small>${esc(t('hpCmo'))}</small></dd></div></dl>`
+    + `<p class="pv-links"><a class="link-more" href="/government">${esc(t('hpFed'))} <span>→</span></a><a class="link-more" href="/explore">${esc(t('hpMap'))} <span>→</span></a></p>`;
+
+  body.innerHTML = `<div class="prov-grid">`
+    + card('pv-news', t('hpNews'), newsHTML, `<a class="link-more" href="/news?prov=${p.id}">${esc(t('seeAllShort'))} <span>→</span></a>`)
+    + (p.city ? card('pv-wxc', t('hpWeather'), wxHTML) : '')
+    + card('pv-roads', t('hpRoads'), roadsHTML, `<a class="link-more" href="/roads">${esc(t('seeAllShort'))} <span>→</span></a>`)
+    + card('pv-events', t('hpEvents'), evHTML, `<a class="link-more" href="/events">${esc(t('seeAllShort'))} <span>→</span></a>`)
+    + card('pv-gov', t('hpGov') + ' · ' + pname, govHTML)
+    + `</div>`;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-myprov]');
+  if (!b) return;
+  const id = b.dataset.myprov;
+  state.myProv = state.myProv === id ? '' : id;
+  try { if (state.myProv) localStorage.setItem(PROV_KEY, state.myProv); else localStorage.removeItem(PROV_KEY); } catch (x) {}
+  renderProv();
+});
+NL.retryHandlers.prov = loadProvinces;
 /* official sources only; names as the offices use them */
 const GOV_QUICK = [
   ['shield', 'Passport', 'राहदानी', 'https://nepalpassport.gov.np/'],
@@ -2027,6 +2232,10 @@ function renderHeroBs() {
   const [y, m, d] = c.day.bs;
   el.textContent = LANG === 'ne' ? `${c.day.bsNp || neDigits(d)} ${BS_MON.ne[m - 1]} ${neDigits(y)}` : `${d} ${BS_MON.en[m - 1]} ${y} BS`;
   el.hidden = false;
+  /* the briefing shows the Nepali date in Nepali whatever the page language */
+  /* fixed names: not every browser ships Nepali date formatting */
+  const wd = ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहीबार', 'शुक्रबार', 'शनिबार'][new Date(c.today + 'T12:00:00+05:45').getUTCDay()];
+  if ($('bd-bs')) $('bd-bs').textContent = `${neDigits(y)} ${BS_MON.ne[m - 1]} ${c.day.bsNp || neDigits(d)}, ${wd}`;
 }
 /* Explore teaser: the seven provinces (official names), each opening the map on that province */
 const PROVINCES = [
@@ -2053,6 +2262,8 @@ const refreshCalToday = feedLoader('calToday', '/api/calendar/today', renderHero
 function heroDate() {
   $('hero-date').textContent = new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', {
     timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  /* the briefing always shows the English date too */
+  if ($('bd-day')) $('bd-day').textContent = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
   const k = $('today-kicker');
   if (k) k.textContent = t('todayK') + ' · ' + new Intl.DateTimeFormat(LANG === 'ne' ? 'ne-NP' : 'en-GB', {
     timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
@@ -2069,6 +2280,7 @@ function applyStaticI18n() {
   set('nepse-title', 'nepseTitle'); set('gold-title', 'goldTitle'); set('rates-title', 'ratesTitle');
   set('weather-title', 'weatherTitle'); set('air-title', 'airTitle'); set('quakes-title', 'quakesTitle');
   set('nf-all', 'newsAll');
+  set('bd-k', 'briefToday'); set('hp-kicker', 'hpKicker'); set('hp-title', 'hpTitle');
   set('today-title', 'todayTitle'); set('today-sub', 'todaySub'); set('numbers-label', 'numbersLabel'); set('hl-label', 'hlLabel');
   set('ha-kicker', 'haKicker'); set('ha-title', 'haTitle'); set('ha-all', 'haAll');
   set('hr-kicker', 'hrKicker'); set('hr-title', 'hrTitle'); set('hr-all', 'hrAll');
@@ -2103,6 +2315,7 @@ function rerenderAll() {
   g('roads', renderHomeRoads)(); g('trending', renderHomeTrending)();
   g('jobs', renderHomeJobs)(); g('events', renderHomeEvents)(); g('gov', renderHomeGov)(); g('calToday', renderHeroBs)();
   g('explore', renderHomeExplore)();
+  g('brief', renderBrief)(); g('prov', renderProv)();
 }
 document.addEventListener('nl:lang', () => {
   LANG = NL.lang();
@@ -2135,6 +2348,9 @@ document.addEventListener('click', (e) => {
   const nf = e.target.closest('[data-filter]');
   if (nf) { state.newsFilter = nf.dataset.filter; state.topic = 'all'; state.shown = 9; renderNews(); }
 });
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'nf-prov') { state.prov = e.target.value; state.topic = 'all'; state.shown = 9; renderNews(); }
+});
 document.addEventListener('focusout', (e) => {
   if (state.fxPending && $('rates-body').contains(e.target)) setTimeout(() => {
     if (!$('rates-body').contains(document.activeElement)) { state.fxPending = false; renderRates(); }
@@ -2151,6 +2367,9 @@ $('news-body').innerHTML = NL.skeleton('grid');
 ['hl-list', 'ha-list', 'hr-list', 'hj-list', 'he-list'].forEach(id => { $(id).innerHTML = NL.skeleton('rows'); });
 NL.guard('gov', renderHomeGov)();
 NL.guard('explore', renderHomeExplore)();
+renderBrief();
+renderProv();
+loadProvinces();
 tileSkeletons();
 
 applyStaticI18n();

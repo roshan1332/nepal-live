@@ -33,8 +33,16 @@ Server
 - `accounts.js` — accounts/sessions/saved items/prefs/personal alerts (see Accounts below), over a storage backend:
   `store-supabase.js` (Supabase REST/PostgREST via `fetch`, no SDK; tables in `supabase-schema.sql`) or
   `store-file.js` (JSON file). Both expose the same async interface — keep them in step.
-- `search.js` — `/api/search?q=&type=` across places, markets, news, sports, jobs, events, government, pages
-  (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently.
+- `search.js` — `/api/search?q=&type=&lang=&cat=&days=&prov=` across places, markets, news, sports, jobs, events,
+  government, pages (city names match across scripts: Pokhara ↔ पोखरा). Each source guarded independently. Filters:
+  `lang`/`cat` narrow news; `prov` (NP01–NP07) also narrows places, jobs and events (nationwide events stay in);
+  `days` = news from the last N days, events in the next N. Filters without words list only the groups they apply to.
+- `places.js` — the 7 provinces for the server: districts (loaded from `nepal-map.js`), Nepali district names, capital,
+  forecast city, official provincial-government URL (OCMCM sites, each checked to load). `provinceOf(text)` tags a
+  headline with the province whose places it names (every news item carries `province`); ambiguous names are skipped.
+  Served at `/api/provinces`.
+- News topics (`TOPIC_RULES` in server.js): sports, entertainment, technology, business, politics, world, society
+  (checked after world), else `nepal`.
 - `metno.js` — MET Norway (api.met.no) second weather source. Open-Meteo's free quota is per IP and Render's
   outbound IP is shared, so when Open-Meteo refuses, `/api/weather` and the multi-city weather answer from MET
   Norway in the same Open-Meteo shape (source labelled "MET Norway"); Open-Meteo is then paused for 30 min.
@@ -61,29 +69,44 @@ Client
 - `app.css` — design system + every page's styles (tokens only — never hard-code a colour; tokens like
   `--logo-bg`, `--on-brand` exist for the few fixed needs).
 - `app.js` — shared shell on `window.NL`: header (nav, More menu, search, language, theme, account button + unread
-  badge), drawer, mobile bottom nav (Home, News, Markets, Sports, Explore, More), ticker, global search dialog
+  badge), drawer, mobile bottom nav (Home, News, Markets, Alerts, More), ticker, global search dialog
   (+ "See all results" → `/search`), footer + sheets, theme/lang, feed status, stamps, skeleton/error/empty states,
   `NL.sport`, `NL.me` (session state, `NL.me.fetch` for account API), `NL.saveBtn(item)` + save/unsave delegation,
-  `NL.toast`.
+  `NL.shareBtn(item)` (share sheet, else copy link), `NL.toast`, service-worker registration and the install bar
+  (shown only after `beforeinstallprompt`, 20 s in, never again once dismissed).
+- `sw.js` + `/manifest.webmanifest` (MANIFEST in server.js) + `icon-192.png`/`icon-512.png` — installable app. The
+  service worker never caches `/api/*` (a stored number must never pass as live); pages and assets are network-first,
+  with the `/offline` page (site-pages, noindex) as the fallback.
+- `page-tools.js` — `/tools`: BS↔AD (`/api/calendar`), NPR converter (`/api/forex`), gold & silver (`/api/gold-hamropatro`),
+  loan EMI, NEA electricity bill (published tariff, ERC decision 2078/07/08 — matches NEA's own worked examples:
+  5 A × 255 units = Rs 2,390; 15 A × 25 units = Rs 187.50), holidays (`/api/calendar/upcoming`), IPO calendar
+  (`/api/ipo` — ShareSansar's issue tables, unofficial and labelled so; SEBON publishes PDFs only), emergency numbers.
+- `kit.js` also has `NL.PROVINCES`, `NL.provName(id)` and `NL.langChip(story)` ("EN" / "नेपाली").
 - `kit.js` — shared page helpers: `NL.i18n` (`[data-t]`, `[data-th]`, `[data-tp]`; `add()` re-applies), `NL.api`,
   formatting, charts, range tabs, freshness labels (`NL.fresh`), story renderers, alert cards, weather codes, AQI.
 - `nepal-map.js` — generated province geometry (7 provinces, ~1.5k points), `proj`, `provinceAt(lon,lat)`,
   `provinceOfDistrict`, 77-district map. Regenerate only from the OCHA ADM1 GeoJSON with a DP simplifier.
-- `index.html` — homepage (order: hero → live bar → Nepal Today → alerts → latest news → money → weather & AQI →
-  roads → sports → jobs → events → trending → government → explore → footer). Reads `localStorage['nlive-city']`.
+- `index.html` — homepage (order: hero → live bar → Nepal Today [briefing: date in English + Nepali BS, "What matters
+  today" (highlight sentences + the weather card's forecast), national alerts; featured + 5 top stories; today's
+  numbers] → alerts → your province → latest news → money → weather & AQI → roads → sports → jobs → events →
+  trending → government → explore → footer). News cards are `<article>`s with one stretched headline link plus
+  language label, Read original, share and save. Filters: language, topic (incl. society), province. "Your province"
+  (`localStorage['nlive-prov']`): local news (province-tagged), capital forecast, DoR closures in its districts,
+  events (else nationwide, said so), provincial government site. Reads `localStorage['nlive-city']`.
 - `football.html`, `cricket.html` + `sport-page.js`.
 - `page-*.js` — one per section page: news, alerts, roads, trending, money, weather, earthquakes, sports,
   nepal-sports, jobs, events, calendar, government, search, account, explore.
 
 ## Pages
 `/ /news /alerts /roads /trending /money /weather /earthquakes /sports /nepal-sports /football /cricket /jobs
-/events /calendar /government /search /explore /account (noindex)`.
+/events /calendar /government /tools /search /explore /account (noindex) /offline (noindex)`.
 
 ## API endpoints
 Data: `/api/rates /forex /forex-history /gold /gold-hamropatro /nepse /nepse/top /nepse/status /nepse/history
 /weather /air /weather-cities /air-cities /geocode /cities /quakes /alerts /roads /fuel /aqi-stations /trending
 /highlights /news-nepal /news /sport /sport-range /sports-other /nepal-sports /jobs /job /calendar /calendar/today
-/calendar/upcoming /events /search`.
+/calendar/upcoming /events /search /provinces /ipo`. `/api/fuel` answers `{ unavailable: true, error, source }` (200)
+when NOC refuses, so pages show their unavailable state without a console error.
 Accounts: `POST /api/auth/signup|login|logout`, `GET|PATCH|DELETE /api/me`, `POST /api/me/password`,
 `GET|POST|DELETE /api/me/saved`, `GET /api/me/notifications`, `POST /api/me/notifications/seen`.
 
@@ -124,6 +147,9 @@ Keep-awake: Render's free plan sleeps after 15 min without outside traffic (firs
 Render (`RENDER_EXTERNAL_URL` is set automatically) the server calls its own public `/healthz` every 10 min so it
 never idles; it logs only when that fails. One always-on free service uses ~744 of the 750 free instance hours a
 month, so a second free Render service in the same workspace would run out. Set `KEEP_AWAKE=0` on a paid plan.
+Cache warming: on Render (or `WARM=1`) the server requests the homepage's routes (`WARM_ROUTES`, same query strings
+so the same cache keys) every 4 min (`WARM_MIN`), one at a time, so visitors get answers from memory; each upstream is
+still called at most once per TTL. The first run logs `[warm] n/n ok`; later runs log only failures. `WARM=0` turns it off.
 
 ## Known pitfalls
 - NEPSE needs the wasm token flow via this server. TheSportsDB 429s without the queue in `sportsdb.js`.

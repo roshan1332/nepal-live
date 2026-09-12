@@ -1685,7 +1685,8 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .save-btn:disabled { opacity: .6 }
 .cp-wrap { position: relative }
 .cp-wrap .cp-story { padding-right: 46px }
-.cp-wrap > .save-btn { position: absolute; top: 18px; right: 0 }
+.cp-wrap > .save-btn, .cp-wrap > .cp-acts { position: absolute; top: 18px; right: 0 }
+.cp-top .lang-chip { margin-left: 8px }
 .ev-card .save-btn { align-self: flex-start; margin-left: auto }
 .gov-card .save-btn { position: absolute; top: 10px; right: 10px }
 .gov-card h3 { padding-right: 40px }
@@ -1866,11 +1867,179 @@ dialog.sheet .sheet-body a { color: var(--brand); font-weight: 600 }
 .sp-st[aria-selected="true"] .n { color: inherit; opacity: .7 }
 .sp-st.is-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--live) }
 
+/* ============================ Nepal Today briefing ============================ */
+.brief {
+  display: grid; grid-template-columns: minmax(170px, .75fr) minmax(0, 2.1fr) minmax(250px, 1fr); gap: 22px; margin: 2px 0 30px;
+  padding: 20px 22px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.brief-date { display: flex; flex-direction: column; gap: 5px; padding-right: 18px; border-right: 1px solid var(--sep); min-width: 0 }
+.bd-k { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--brand) }
+.bd-k:lang(ne), [data-lang="ne"] .bd-k { letter-spacing: 0; font-size: 12px }
+.bd-day { font-size: 19px; font-weight: 800; letter-spacing: -.015em; line-height: 1.25 }
+.bd-bs { font-size: 16px; font-weight: 600; color: var(--text-2); line-height: 1.5 }
+.brief-main { min-width: 0 }
+.brief-main .hl-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 26px }
+.brief-alerts { display: flex; flex-direction: column; gap: 10px; padding-left: 18px; border-left: 1px solid var(--sep); min-width: 0 }
+.ba-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.ba-counts .as-lv { min-width: 0; justify-content: space-between; padding: 5px 8px }
+.ba-list { list-style: none; display: flex; flex-direction: column; gap: 12px }
+.ba-list li { display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.ba-list a { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; color: var(--text); font-size: 13.5px; font-weight: 600; line-height: 1.4 }
+.ba-list a:hover .ba-tt { color: var(--brand) }
+.ba-t { font-size: 11.5px; color: var(--text-3) }
+.ba-none { font-size: 13px; color: var(--text-2) }
+@media (max-width: 1100px) {
+  .brief { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) }
+  .brief-date { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 0 0 12px; border-right: none; border-bottom: 1px solid var(--sep) }
+  .brief-main .hl-list { grid-template-columns: minmax(0, 1fr) }
+}
+@media (max-width: 720px) {
+  .brief { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px }
+  .brief-alerts { padding: 14px 0 0; border-left: none; border-top: 1px solid var(--sep) }
+  .bd-day { font-size: 17px }
+}
+
+/* ============================ news card controls ============================ */
+/* one headline link stretched over the card, with the controls above it */
+.feature-card, .row-story, .card-story { position: relative }
+.stretch { color: inherit }
+.stretch::after { content: ""; position: absolute; inset: 0; z-index: 1 }
+.stretch:focus-visible { outline: none }
+.stretch:focus-visible::after { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: var(--radius-sm) }
+.story-acts { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px }
+.story-acts.sm { margin-top: 8px; gap: 2px }
+.story-acts.sm .lang-chip { margin-right: auto }
+.story-acts.sm .share-btn, .story-acts.sm .save-btn { width: 32px; height: 32px; border-color: transparent; background: none }
+.story-acts.sm .save-btn.on { background: var(--brand-wash) }
+.card-story .story-acts { margin-top: auto; padding-top: 12px }
+.ro-link { margin-right: auto; font-size: 12.5px; font-weight: 700; color: var(--brand); white-space: nowrap }
+.ro-link:hover { text-decoration: underline }
+.lang-chip {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--bg-elev-2); color: var(--text-2); font-size: 10.5px; font-weight: 800; letter-spacing: .04em; white-space: nowrap;
+}
+.lang-chip:lang(ne) { letter-spacing: 0; font-size: 11px }
+.share-btn {
+  flex: 0 0 auto; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-2); transition: color .15s, border-color .15s, background .15s;
+}
+.share-btn svg { width: 16px; height: 16px }
+.share-btn:hover { border-color: var(--border-strong); color: var(--text) }
+.cp-acts { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 0 0 auto }
+.sr-item .share-btn { align-self: flex-start }
+/* Devanagari reads small at Latin sizes: a little more size and line height */
+.cs-title:lang(ne), .rs-title:lang(ne), .cp-title:lang(ne) { font-size: 1.06em; line-height: 1.55 }
+.hl-t:lang(ne), [data-lang="ne"] .hl-t, .ba-tt:lang(ne) { line-height: 1.6 }
+
+/* ============================ your province ============================ */
+.prov-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px }
+.prov-pick .pill[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg-elev) }
+/* two balanced columns: local news on one side, the four smaller cards stacked on the other */
+.prov-grid { columns: 2 340px; column-gap: 16px }
+.prov-grid > .card { break-inside: avoid; margin-bottom: 16px; width: 100% }
+.pv .card-head h3 { font-size: 15px; font-weight: 700; flex: 1 1 auto; min-width: 0 }
+.pv .top-list .row-story:first-child { padding-top: 0 }
+.pv-wx { display: flex; align-items: center; gap: 10px }
+.pv-wx .wx-ico { font-size: 34px; line-height: 1 }
+.pv-wx b { font-size: 30px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums }
+.pv-wx span:last-child { font-weight: 600; color: var(--text-2) }
+.pv-sub { font-size: 13px; color: var(--text-2) }
+.pv-src { font-size: 12px; color: var(--text-3) }
+.pv-list { list-style: none; display: flex; flex-direction: column; gap: 9px; font-size: 14px }
+.pv-list li { display: flex; gap: 10px; align-items: baseline }
+.pv-d { min-width: 62px; font-size: 12.5px; font-weight: 700; color: var(--text-2) }
+.pv-dl { display: flex; flex-direction: column; gap: 10px; font-size: 14px }
+.pv-dl dt { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3) }
+.pv-dl dt:lang(ne), [data-lang="ne"] .pv-dl dt { letter-spacing: 0 }
+.pv-dl dd a { font-weight: 700; color: var(--brand); overflow-wrap: anywhere }
+.pv-dl dd small { display: block; margin-top: 2px; font-size: 12px; color: var(--text-3) }
+.pv-links { display: flex; flex-wrap: wrap; gap: 6px 16px }
+.nf-prov, #news-prov { height: 36px; max-width: 190px }
+
+/* ================================== tools ================================== */
+.tools-grid { columns: 2 420px; column-gap: 18px; margin-top: 18px }
+.tools-grid > .tool { break-inside: avoid; margin-bottom: 18px; width: 100%; scroll-margin-top: calc(var(--head-h) + 60px) }
+.tool .card-head h2 { flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 800 }
+.tool-form { display: flex; flex-direction: column; align-items: flex-start; gap: 12px }
+.tool-form .tool-row { align-self: stretch }
+.tool-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px }
+.tool-row[hidden] { display: none }
+.tool-row label { display: flex; flex-direction: column; gap: 5px; flex: 0 1 120px; min-width: 90px; font-size: 12px; font-weight: 700; color: var(--text-3) }
+.tool-row label.grow { flex: 1 1 170px }
+.tool-row input, .tool-row select {
+  width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--border); border-radius: 9px;
+  background: var(--bg-elev); color: var(--text); font: inherit; font-size: 15px; font-weight: 600;
+}
+.tool-row input:focus, .tool-row select:focus { outline: none; border-color: var(--brand) }
+.tool .fx-swap { width: 42px; height: 42px; font-size: 18px }
+.tool-res { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--bg-elev-2) }
+.tool-res b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; font-variant-numeric: tabular-nums }
+.tool-res b:lang(ne), [data-lang="ne"] .tool-res b { letter-spacing: 0 }
+.tool-eq { font-size: 14px; font-weight: 600; color: var(--text-2) }
+.tool-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 12.5px; color: var(--text-3) }
+.chip.hol { background: var(--brand-wash); color: var(--brand) }
+.tool-note { font-size: 12.5px; line-height: 1.5; color: var(--text-3) }
+.tool-err { padding: 10px 12px; border-radius: 8px; font-size: 13.5px; color: var(--down); background: color-mix(in srgb, var(--down) 8%, transparent) }
+.emi-bar { height: 8px; margin-top: 12px; border-radius: 6px; overflow: hidden; background: color-mix(in srgb, var(--brand) 55%, transparent) }
+.emi-bar span { display: block; height: 100%; background: var(--info) }
+.tool-dl { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; font-size: 14px }
+.tool-dl div { display: flex; justify-content: space-between; gap: 10px }
+.tool-dl dt { display: flex; align-items: center; gap: 6px; color: var(--text-2) }
+.tool-dl dd { font-weight: 600; font-variant-numeric: tabular-nums }
+.tool-dl .sw { width: 10px; height: 10px; border-radius: 3px }
+.tool-dl .sw.p { background: var(--info) }
+.tool-dl .sw.i { background: color-mix(in srgb, var(--brand) 55%, transparent) }
+.el-table { margin-top: 10px }
+.el-table td { font-size: 13.5px }
+.el-table tr.tot td { font-weight: 800; border-top: 1px solid var(--border) }
+.tool-hol li { align-items: flex-start }
+.hol-b { display: flex; flex-direction: column; gap: 2px }
+.hol-bs { font-size: 12px }
+.ipo-list { list-style: none; display: flex; flex-direction: column }
+.ipo-item { display: flex; flex-direction: column; gap: 3px; padding: 12px 0; border-bottom: 1px solid var(--sep) }
+.ipo-item:first-child { padding-top: 0 }
+.ipo-item:last-child { border-bottom: none }
+.ipo-top { display: flex; align-items: center; gap: 8px }
+.ipo-st { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800 }
+.ipo-st.open { color: var(--up); background: color-mix(in srgb, var(--up) 13%, transparent) }
+.ipo-st.soon { color: var(--info); background: color-mix(in srgb, var(--info) 13%, transparent) }
+.ipo-k { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3) }
+.ipo-k:lang(ne), [data-lang="ne"] .ipo-k { letter-spacing: 0 }
+.ipo-co { font-size: 15px; font-weight: 700; line-height: 1.35 }
+.ipo-when { font-size: 13px; font-weight: 600; color: var(--text-2) }
+.ipo-m { font-size: 12.5px; color: var(--text-3) }
+.foot-links { display: inline-flex; flex-wrap: wrap; gap: 12px }
+.tool .em-list { flex: none; gap: 2px }
+@media (max-width: 640px) { .tool-res b { font-size: 22px } .tools-grid { columns: 1 } }
+
+/* ============================ search filters ============================ */
+.srch-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 6px }
+.srch-filters select { height: 38px; max-width: 100% }
+.srch-filters .link-more { border: none; background: none; padding: 0 4px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600 }
+#srch-tabs:not(:empty) { margin: 6px 0 10px }
+.sr-fnote { margin: -4px 0 12px }
+
+/* ============================ offline + install ============================ */
+.offline-box { max-width: 560px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev) }
+.nl-install {
+  position: fixed; z-index: 95; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(560px, calc(100% - 24px));
+  display: flex; align-items: center; gap: 12px; padding: 12px 10px 12px 14px; border: 1px solid var(--border); border-radius: 14px;
+  background: var(--bg-elev); box-shadow: var(--shadow-md);
+}
+.nl-install img { flex: 0 0 auto; border-radius: 10px }
+.ni-t { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: var(--text-2) }
+.ni-t b { font-size: 14px; color: var(--text) }
+.nl-install .btn { flex: 0 0 auto; gap: 6px }
+.nl-install .btn svg { width: 16px; height: 16px }
+.ni-x { flex: 0 0 auto; width: 34px; height: 34px; border: none; border-radius: 8px; background: none; color: var(--text-3); font-size: 22px; line-height: 1; cursor: pointer }
+.ni-x:hover { background: var(--bg-hover); color: var(--text) }
+body.has-bottom .nl-install { bottom: calc(78px + env(safe-area-inset-bottom, 0px)) }
+
 /* mobile bottom navigation (app-like; phones only) */
 .nl-bottom { display: none }
 @media (max-width: 820px) {
   .nl-bottom {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 85; display: grid; grid-template-columns: repeat(6, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 85; display: grid; grid-template-columns: repeat(5, 1fr);
     padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--bg-elev) 94%, transparent);
     backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px); border-top: 1px solid var(--border);
   }

@@ -5,7 +5,7 @@
  * services and site pages. Each source is searched on its own, so one feed
  * being down marks that group unavailable instead of failing the search.
  */
-module.exports = function init({ P, S, SDB, site }) {
+module.exports = function init({ P, S, SDB, site, PL }) {
   const norm = (s) => String(s || '').normalize('NFKC').toLowerCase();
   const toks = (q) => norm(q).split(/[\s,.;:!?"'()\/|।-]+/).filter((t) => t.length >= 2 || /[ऀ-ॿ]/.test(t)).slice(0, 8);
   /* place names match across scripts: "Pokhara" also finds पोखरा in Nepali headlines, and back */
@@ -38,25 +38,42 @@ module.exports = function init({ P, S, SDB, site }) {
     return out.filter(({ e }) => (seen.has(e.idEvent) ? false : seen.add(e.idEvent)));
   };
 
-  async function search(q, only) {
+  /* opts: lang (en|ne) and cat (news topic) narrow news; prov (NP01–NP07) narrows
+     news, places, jobs and events (nationwide events stay in); days = news from the
+     last N days, events in the next N days. With filters but no words, only the
+     groups a filter applies to are listed. */
+  async function search(q, only, opts = {}) {
     const ts = toks(q);
-    if (!ts.length) return { q, groups: [], total: 0 };
+    const { lang = '', cat = '', days = 0, prov = '' } = opts;
+    const filters = { lang, cat, days, prov };
+    const browse = !ts.length;
+    if (browse && !(lang || cat || days || prov)) return { q, groups: [], total: 0, filters };
     const cap = (n) => (only ? 50 : n);
+    const provName = prov && PL ? (PL.byId.get(prov) || {}).en || '' : '';
+    const inProv = (text) => !prov || (PL && PL.provinceOf(text) === prov);
+    const today = new Date(Date.now() + 5.75 * 3600e3).toISOString().slice(0, 10);
+    const until = days ? new Date(Date.now() + 5.75 * 3600e3 + days * 864e5).toISOString().slice(0, 10) : '';
+    const recent = (iso) => { if (!days) return true; const t = Date.parse(iso); return Number.isFinite(t) && Date.now() - t <= days * 864e5; };
+    const allowed = ['news'].concat(prov ? ['places', 'jobs', 'events'] : [], days ? ['events'] : []);
     const groups = [];
     const add = async (key, fn) => {
       if (only && only !== key) return;
+      if (browse && !allowed.includes(key)) return;
       try { const items = await fn(); if (items.length) groups.push({ key, items }); }
       catch (e) { groups.push({ key, items: [], unavailable: true }); }
     };
     await Promise.all([
-      add('places', async () => rank(S.CITIES.filter((c) => has(`${c.en} ${c.ne} ${c.district} ${c.province}`, ts)), ts, (c) => c.en).slice(0, cap(6))
+      add('places', async () => rank(S.CITIES.filter((c) => has(`${c.en} ${c.ne} ${c.district} ${c.province}`, ts) && (!provName || c.province === provName)), ts, (c) => c.en).slice(0, cap(6))
         .map((c) => ({ type: 'place', id: c.id, title: c.en, titleNe: c.ne, sub: `${c.district} district · ${c.province}`, url: `/weather?city=${c.id}` }))),
       add('markets', async () => MARKETS.filter((m) => has(`${m.title} ${m.titleNe} ${m.sub} ${m.kw}`, ts))
         .map((m) => ({ type: 'page', id: m.url, title: m.title, titleNe: m.titleNe, sub: m.sub, url: m.url }))),
       add('news', async () => {
         const d = await P.newsNepal();
-        return rank((d.items || []).filter((i) => has(`${i.title} ${i.summary || ''} ${i.source || ''}`, ts)), ts, (i) => i.title).slice(0, cap(8))
-          .map((i) => ({ type: 'news', id: i.link, title: i.title, sub: i.source || '', url: i.link, time: i.pubDate || i.time || null, img: i.image || '', external: true }));
+        return rank((d.items || []).filter((i) => has(`${i.title} ${i.summary || ''} ${i.source || ''}`, ts)
+            && (!lang || i.lang === lang) && (!cat || (i.topic || 'nepal') === cat) && (!prov || i.province === prov) && recent(i.pubDate)), ts, (i) => i.title)
+          .slice(0, cap(browse ? 20 : 8))
+          .map((i) => ({ type: 'news', id: i.link, title: i.title, sub: i.source || '', url: i.link, time: i.pubDate || i.time || null, img: i.image || '', external: true,
+            lang: i.lang || '', topic: i.topic || 'nepal', province: i.province || '' }));
       }),
       add('sports', async () => rank(sportEvents().filter(({ e, sport }) => has(`${e.strEvent} ${e.strHomeTeam} ${e.strAwayTeam} ${e.strLeague} ${e.strSport || ''} ${sport}`, ts)), ts, (x) => x.e.strEvent || '')
         .slice(0, cap(6)).map(({ e, sport }) => ({
@@ -65,12 +82,15 @@ module.exports = function init({ P, S, SDB, site }) {
         }))),
       add('jobs', async () => {
         const all = await S.jobsAll();
-        return rank(all.items.filter((j) => has(`${j.title} ${j.company || ''} ${j.location} ${j.city} ${j.categories.join(' ')} ${j.tags.join(' ')}`, ts)), ts, (j) => j.title)
+        return rank(all.items.filter((j) => has(`${j.title} ${j.company || ''} ${j.location} ${j.city} ${j.categories.join(' ')} ${j.tags.join(' ')}`, ts)
+            && inProv(`${j.location || ''} ${j.city || ''}`)), ts, (j) => j.title)
           .slice(0, cap(6)).map((j) => ({ type: 'job', id: String(j.id), title: j.title, sub: [j.company, j.location].filter(Boolean).join(' · '), url: j.url, img: j.logo, deadline: j.deadline, external: true }));
       }),
       add('events', async () => {
         const d = await S.events();
-        return d.items.filter((i) => has(`${i.title} ${i.titleNe || ''} ${i.category} ${i.location || ''}`, ts)).slice(0, cap(6))
+        return d.items.filter((i) => has(`${i.title} ${i.titleNe || ''} ${i.category} ${i.location || ''}`, ts)
+            && (!prov || !i.location || /nationwide/i.test(i.location) || inProv(i.location))
+            && (!days || (i.date >= today && i.date <= until))).slice(0, cap(6))
           .map((i) => ({ type: 'event', id: i.id, title: i.title, titleNe: i.titleNe, sub: i.date + (i.location ? ' · ' + i.location : ''), url: '/events', date: i.date }));
       }),
       add('government', async () => rank(GOV.filter((g) => has(`${g.en} ${g.ne} ${g.dEn} ${g.kw} ${g.group}`, ts)), ts, (g) => g.en).slice(0, cap(6))
@@ -80,7 +100,7 @@ module.exports = function init({ P, S, SDB, site }) {
     ]);
     const ORDER = ['places', 'markets', 'news', 'sports', 'jobs', 'events', 'government', 'pages'];
     groups.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
-    return { q, groups, total: groups.reduce((a, g) => a + g.items.length, 0) };
+    return { q, groups, total: groups.reduce((a, g) => a + g.items.length, 0), filters };
   }
   return { search };
 };

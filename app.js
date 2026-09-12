@@ -67,6 +67,8 @@
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
       aboutTitle: 'About Nepal Live',
       alerts: 'Alerts', roads: 'Roads', trending: 'Trending', home: 'Home', sportsNav: 'Sports', moreNav: 'More', nepalSports: 'Nepal sports',
+      tools: 'Tools', share: 'Share', copied: 'Link copied', installTitle: 'Install Nepal Live', installSub: 'Open it like an app from your home screen — no app store needed.',
+      installBtn: 'Install', notNow: 'Not now',
       jobs: 'Jobs', events: 'Events', calendar: 'Calendar', government: 'Government services', explore: 'Explore',
       stLive: 'Live', stRecent: 'Recent', stOff: 'Unavailable', staleFrom: 'Couldn’t refresh · showing data from {ago}', offText: 'Data temporarily unavailable',
       discover: 'Discover', services: 'Services', exploreNepal: 'Explore Nepal',
@@ -98,6 +100,8 @@
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
       aboutTitle: 'नेपाल लाइभको बारेमा',
       alerts: 'सतर्कता', roads: 'सडक', trending: 'चर्चामा', home: 'गृहपृष्ठ', sportsNav: 'खेलकुद', moreNav: 'थप', nepalSports: 'नेपाली खेलकुद',
+      tools: 'उपकरण', share: 'सेयर', copied: 'लिंक कपी भयो', installTitle: 'नेपाल लाइभ इन्स्टल गर्नुहोस्', installSub: 'होम स्क्रिनबाट एपजस्तै खोल्नुहोस् — एप स्टोर चाहिँदैन।',
+      installBtn: 'इन्स्टल', notNow: 'अहिले होइन',
       jobs: 'जागिर', events: 'कार्यक्रम', calendar: 'पात्रो', government: 'सरकारी सेवा', explore: 'अन्वेषण',
       stLive: 'लाइभ', stRecent: 'हालैको', stOff: 'उपलब्ध छैन', staleFrom: 'ताजा हुन सकेन · {ago} को तथ्यांक देखाइँदै', offText: 'तथ्यांक अस्थायी रूपमा उपलब्ध छैन',
       discover: 'हेर्नुहोस्', services: 'सेवा', exploreNepal: 'नेपाल अन्वेषण',
@@ -154,7 +158,10 @@
     bell: svg('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>'),
     grid: svg('<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>'),
     trophy: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20.5h7"/>'),
-    flame: svg('<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.1 2.1-4.9 3.6-7.1.5 1.7 1.4 2.8 2.6 3.3C11.4 7.6 12.6 5 15 3c.2 3 3.5 5.6 3.5 10.3 0 4.6-2.8 7.7-6.5 7.7z"/>')
+    flame: svg('<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.1 2.1-4.9 3.6-7.1.5 1.7 1.4 2.8 2.6 3.3C11.4 7.6 12.6 5 15 3c.2 3 3.5 5.6 3.5 10.3 0 4.6-2.8 7.7-6.5 7.7z"/>'),
+    share: svg('<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/>'),
+    tools: svg('<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 7.5h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v0"/>'),
+    download: svg('<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>')
   };
   NL.icon = ICON;
 
@@ -245,11 +252,13 @@
       ['alerts', '/alerts', s('alerts')],
       ['jobs', '/jobs', s('jobs'), 'x'],
       ['events', '/events', s('events'), 'x'],
-      ['explore', '/explore', s('explore'), 'x']
+      ['explore', '/explore', s('explore'), 'x'],
+      ['tools', '/tools', s('tools'), 'x']
     ];
   };
   var MORE = function () {
     return [
+      ['/tools', ICON.tools, s('tools')],
       ['/football', ICON.ball, s('football')],
       ['/cricket', ICON.bat, s('cricket')],
       ['/nepal-sports', ICON.trophy, s('nepalSports')],
@@ -376,8 +385,7 @@
     bn.innerHTML = bItem('/', ICON.home, s('home'), pg === 'home')
       + bItem('/news', ICON.news, s('news'), pg === 'news')
       + bItem('/money', ICON.chart, s('markets'), pg === 'money')
-      + bItem('/sports', ICON.trophy, s('sportsNav'), sportsOn)
-      + bItem('/explore', ICON.map, s('explore'), pg === 'explore')
+      + bItem('/alerts', ICON.bell, s('alerts'), pg === 'alerts')
       + '<button type="button" data-drawer-open aria-controls="nl-drawer">' + ICON.grid + '<span>' + esc(s('moreNav')) + '</span></button>';
     var skip = document.querySelector('.skip-link');
     if (skip) skip.textContent = s('skip');
@@ -1112,7 +1120,7 @@
       + link('/alerts', s('alerts')) + link('/earthquakes', s('quakes')) + link('/roads', s('roads')) + link('/trending', s('trending')) + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('services')) + '</h4><ul>'
       + link('/jobs', s('jobs')) + link('/events', s('events')) + link('/calendar', s('calendar')) + link('/government', s('government'))
-      + link('/explore', s('exploreNepal')) + link('/nepal-sports', s('nepalSports')) + link('/search', s('search')) + '</ul></div>'
+      + link('/tools', s('tools')) + link('/explore', s('exploreNepal')) + link('/nepal-sports', s('nepalSports')) + link('/search', s('search')) + '</ul></div>'
       + '<div class="foot-col"><h4>' + esc(s('todayNums')) + '</h4><ul>'
       + link('/gold-price', s('goldToday')) + link('/nepse', s('nepseToday')) + link('/exchange-rate', s('dollarToday'))
       + link('/fuel-price', s('petrolToday')) + link('/nepali-date', s('dateToday'))
@@ -1255,6 +1263,55 @@
   document.addEventListener('nl:lang', function () { paintAccount(); paintSaves(); });
   NL.me.load();
 
+  /* ------------------------------------------------------------------ share */
+  /* The phone's share sheet where there is one; otherwise copy the link. */
+  NL.shareBtn = function (it) {
+    if (!it || !it.url) return '';
+    return '<button class="share-btn" type="button" data-share="' + esc(it.url) + '" data-share-title="' + esc(it.title || '')
+      + '" aria-label="' + esc(s('share')) + '" title="' + esc(s('share')) + '">' + ICON.share + '</button>';
+  };
+  function doShare(btn) {
+    var url = btn.getAttribute('data-share'), title = btn.getAttribute('data-share-title') || document.title;
+    if (navigator.share) { navigator.share({ title: title, url: url }).catch(function () {}); return; }
+    var ask = function () { window.prompt(s('share'), url); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function () { NL.toast(s('copied')); }, ask);
+    else ask();
+  }
+
+  /* ------------------------------------------------------ installable app */
+  /* The service worker only makes the site installable and shows a friendly
+     page offline — it never stores live data (see sw.js). */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  }
+  /* Offer "Install" only when the browser says the site can be installed, after
+     the visitor has spent a little time here, and never again once dismissed. */
+  var installEvt = null;
+  var installDismissed = function () { try { return !!localStorage.getItem('nlive-install-no'); } catch (e) { return true; } };
+  function showInstall() {
+    if (!installEvt || installDismissed() || document.getElementById('nl-install')) return;
+    var bar = document.createElement('div');
+    bar.id = 'nl-install';
+    bar.className = 'nl-install';
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', s('installTitle'));
+    bar.innerHTML = '<img src="/icon-192.png" alt="" width="40" height="40"><div class="ni-t"><b>' + esc(s('installTitle')) + '</b><span>' + esc(s('installSub')) + '</span></div>'
+      + '<button class="btn btn-primary" type="button" data-install>' + ICON.download + esc(s('installBtn')) + '</button>'
+      + '<button class="ni-x" type="button" data-install-no aria-label="' + esc(s('notNow')) + '" title="' + esc(s('notNow')) + '">×</button>';
+    document.body.appendChild(bar);
+  }
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    installEvt = e;
+    setTimeout(showInstall, 20000);
+  });
+  window.addEventListener('appinstalled', function () { var b = document.getElementById('nl-install'); if (b) b.remove(); installEvt = null; });
+  function closeInstall(remember) {
+    var b = document.getElementById('nl-install');
+    if (b) b.remove();
+    if (remember) try { localStorage.setItem('nlive-install-no', '1'); } catch (e) {}
+  }
+
   /* Front-end errors go to the server log (Render → Logs): message, page and
      line only — nothing personal. At most five per page view. */
   (function () {
@@ -1274,6 +1331,13 @@
     var t = e.target;
     var sv = t.closest('[data-save]');
     if (sv) { e.preventDefault(); toggleSave(sv); return; }
+    var sh = t.closest('[data-share]');
+    if (sh) { e.preventDefault(); doShare(sh); return; }
+    if (t.closest('[data-install]')) {
+      if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(function () { installEvt = null; closeInstall(false); }); }
+      return;
+    }
+    if (t.closest('[data-install-no]')) { closeInstall(true); return; }
     var b = t.closest('[data-retry]');
     if (b) {
       var fn = NL.retryHandlers[b.getAttribute('data-retry')];

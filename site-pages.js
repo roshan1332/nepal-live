@@ -42,6 +42,7 @@ const PAGES = {
         <button type="button" data-filter="all" data-t="all">All</button><button type="button" data-filter="en">English</button><button type="button" data-filter="ne">नेपाली</button>
       </div>
       <select id="news-src" aria-label="Publisher"><option value="" data-t="allSources">All publishers</option></select>
+      <select id="news-prov" aria-label="Province"><option value="" data-t="allProv">All provinces</option></select>
     </div>
   </div>
   <div class="news-layout">
@@ -409,6 +410,128 @@ Object.assign(PAGES, {
 });
 
 Object.assign(PAGES, {
+  '/tools': {
+    key: 'tools', script: 'page-tools.js', changefreq: 'daily', priority: '0.8',
+    title: 'Nepal Tools — Nepali Date Converter, NPR Converter, Gold, EMI & Electricity Bill · Nepal Live',
+    description: 'Free tools for Nepal: Bikram Sambat ↔ AD date converter, NPR currency converter at Nepal Rastra Bank rates, gold price calculator, loan EMI calculator, NEA electricity bill calculator, public holidays, IPO calendar and emergency numbers.',
+    kicker: 'Nepal Tools', h1: 'Useful <em>tools</em>', sub: 'Everyday converters and calculators for Nepal — using official rates, tariffs and calendars, with the source on each.',
+    body: `
+  <nav class="subnav" aria-label="Tools"><a href="#date" data-t="navDate">Date converter</a><a href="#currency" data-t="navFx">Currency</a><a href="#gold" data-t="navGold">Gold</a><a href="#emi" data-t="navEmi">Loan EMI</a><a href="#electricity" data-t="navElec">Electricity bill</a><a href="#holidays" data-t="navHol">Holidays</a><a href="#ipo" data-t="navIpo">IPO calendar</a><a href="#emergency" data-t="navEm">Emergency</a></nav>
+  <div class="tools-grid">
+    <section class="card tool" id="date" aria-labelledby="date-h">
+      <div class="card-head"><h2 id="date-h" data-t="dateH">Nepali date converter</h2></div>
+      <div class="card-body">
+        <div class="seg" role="group" aria-label="Direction" id="dc-mode"><button type="button" data-dc="bs" aria-pressed="true">BS → AD</button><button type="button" data-dc="ad" aria-pressed="false">AD → BS</button></div>
+        <form class="tool-form" id="dc-form" novalidate>
+          <div class="tool-row" id="dc-bs">
+            <label><span data-t="year">Year (BS)</span><input id="dc-by" type="number" inputmode="numeric" min="2070" max="2100"></label>
+            <label class="grow"><span data-t="month">Month</span><select id="dc-bm"></select></label>
+            <label><span data-t="day">Day</span><input id="dc-bd" type="number" inputmode="numeric" min="1" max="32"></label>
+          </div>
+          <div class="tool-row" id="dc-ad" hidden>
+            <label class="grow"><span data-t="adDate">Date (AD)</span><input id="dc-add" type="date" min="2013-04-14" max="2043-12-31"></label>
+          </div>
+          <button class="btn btn-primary" type="submit" data-t="convert">Convert</button>
+        </form>
+        <div class="tool-out" id="dc-out" aria-live="polite"></div>
+      </div>
+      <div class="card-foot"><span data-t="srcCal">Calendar: Hamro Patro · 2070–2100 BS</span><a href="https://www.hamropatro.com/calendar" target="_blank" rel="noopener noreferrer">hamropatro.com ↗</a></div>
+    </section>
+
+    <section class="card tool" id="currency" aria-labelledby="cur-h">
+      <div class="card-head"><h2 id="cur-h" data-t="fxH">NPR currency converter</h2><span class="stamp" id="stamp-fx" data-kind="daily"></span></div>
+      <div class="card-body">
+        <div class="tool-row">
+          <label class="grow"><span data-t="amount">Amount</span><input id="fx-amt" type="text" inputmode="decimal" autocomplete="off" value="100"></label>
+          <label class="grow"><span data-t="currency">Currency</span><select id="fx-cur"></select></label>
+          <button class="fx-swap" id="fx-swap" type="button" aria-label="Swap direction" title="Swap direction">⇄</button>
+        </div>
+        <div class="tool-out" id="fx-out" aria-live="polite"></div>
+      </div>
+      <div class="card-foot"><span id="fx-src" data-t="srcFx">Nepal Rastra Bank official rate</span><a href="https://www.nrb.org.np/forex/" target="_blank" rel="noopener noreferrer">nrb.org.np ↗</a></div>
+    </section>
+
+    <section class="card tool" id="gold" aria-labelledby="gold-h">
+      <div class="card-head"><h2 id="gold-h" data-t="goldH">Gold &amp; silver calculator</h2><span class="stamp" id="stamp-gold" data-kind="daily"></span></div>
+      <div class="card-body">
+        <div class="tool-row">
+          <label class="grow"><span data-t="metal">Metal</span><select id="au-metal"><option value="gold" data-t="fineGold">Fine gold (hallmark)</option><option value="silver" data-t="silver">Silver</option></select></label>
+          <label><span data-t="weight">Weight</span><input id="au-w" type="text" inputmode="decimal" autocomplete="off" value="1"></label>
+          <label><span data-t="unit">Unit</span><select id="au-u"><option value="tola" data-t="tola">tola</option><option value="g" data-t="gram">gram</option><option value="10g" data-t="g10">10 grams</option><option value="lal" data-t="lal">lal</option></select></label>
+        </div>
+        <div class="tool-out" id="au-out" aria-live="polite"></div>
+        <p class="tool-note" data-t="goldNote">Official daily rate per tola (1 tola = 11.6638 g = 100 lal). Jewellers add making charges — ask for them separately.</p>
+      </div>
+      <div class="card-foot"><span data-t="srcGold">Hamro Patro / FEGOD daily rate</span><a href="https://www.hamropatro.com/gold" target="_blank" rel="noopener noreferrer">hamropatro.com ↗</a></div>
+    </section>
+
+    <section class="card tool" id="emi" aria-labelledby="emi-h">
+      <div class="card-head"><h2 id="emi-h" data-t="emiH">Loan EMI calculator</h2></div>
+      <div class="card-body">
+        <div class="tool-row">
+          <label class="grow"><span data-t="loan">Loan amount (Rs)</span><input id="emi-p" type="text" inputmode="decimal" autocomplete="off" value="1000000"></label>
+          <label><span data-t="rate">Interest (% a year)</span><input id="emi-r" type="text" inputmode="decimal" autocomplete="off" value="10"></label>
+        </div>
+        <div class="tool-row">
+          <label class="grow"><span data-t="tenure">Tenure</span><input id="emi-n" type="text" inputmode="numeric" autocomplete="off" value="5"></label>
+          <label><span data-t="unit">Unit</span><select id="emi-u"><option value="y" data-t="years">years</option><option value="m" data-t="months">months</option></select></label>
+        </div>
+        <div class="tool-out" id="emi-out" aria-live="polite"></div>
+        <p class="tool-note" data-t="emiNote">Standard reducing-balance EMI. Banks may add service fees or change rates — check your loan offer.</p>
+      </div>
+    </section>
+
+    <section class="card tool" id="electricity" aria-labelledby="el-h">
+      <div class="card-head"><h2 id="el-h" data-t="elH">Electricity bill calculator</h2></div>
+      <div class="card-body">
+        <div class="tool-row">
+          <label class="grow"><span data-t="meter">Meter</span><select id="el-m">
+            <option value="5">5 Ampere</option><option value="15">15 Ampere</option><option value="30">30 Ampere</option><option value="60">60 Ampere</option>
+            <option value="3a" data-t="threeA">Three-phase, up to 10 kVA</option><option value="3b" data-t="threeB">Three-phase, above 10 kVA</option></select></label>
+          <label><span data-t="units">Units (kWh)</span><input id="el-u" type="text" inputmode="numeric" autocomplete="off" value="120"></label>
+        </div>
+        <div class="tool-row" id="el-season-row" hidden>
+          <label class="grow"><span data-t="season">Billing month</span><select id="el-s"><option value="1" data-t="seasonA">Asar – Kartik</option><option value="2" data-t="seasonB">Mangsir – Jestha</option></select></label>
+        </div>
+        <div class="tool-out" id="el-out" aria-live="polite"></div>
+        <p class="tool-note" data-t="elNote">Domestic tariff for low-voltage consumers. Excludes late-payment fines or early-payment rebates on your bill.</p>
+      </div>
+      <div class="card-foot"><span data-t="srcElec">NEA consumer tariff · ERC decision 2078/07/08, billed from Poush 2078</span><a href="https://nea.org.np/pages/consumer-tariff-rates" target="_blank" rel="noopener noreferrer">nea.org.np ↗</a></div>
+    </section>
+
+    <section class="card tool" id="holidays" aria-labelledby="hol-h">
+      <div class="card-head"><h2 id="hol-h" data-t="holH">Upcoming public holidays</h2><span class="stamp" id="stamp-hol" data-kind="daily"></span></div>
+      <div class="card-body" id="hol-list"></div>
+      <div class="card-foot"><span data-t="srcHol">Hamro Patro calendar · official list: moha.gov.np</span><a href="/calendar" data-t="fullCal">Full calendar →</a></div>
+    </section>
+
+    <section class="card tool" id="ipo" aria-labelledby="ipo-h">
+      <div class="card-head"><h2 id="ipo-h" data-t="ipoH">IPO calendar</h2><span class="stamp" id="stamp-ipo"></span></div>
+      <div class="card-body" id="ipo-list"></div>
+      <div class="card-foot"><span data-t="srcIpo">ShareSansar issue tables (unofficial) · apply on MeroShare</span><span class="foot-links"><a href="https://www.sharesansar.com/existing-issues" target="_blank" rel="noopener noreferrer">sharesansar.com ↗</a><a href="https://meroshare.cdsc.com.np/" target="_blank" rel="noopener noreferrer">MeroShare ↗</a></span></div>
+    </section>
+
+    <section class="card tool" id="emergency" aria-labelledby="em-h">
+      <div class="card-head"><h2 id="em-h" data-t="emH">Emergency numbers</h2></div>
+      <div class="card-body">
+        <ul class="em-list"><li><a href="tel:100"><b>100</b><span data-t="emPolice">Police</span></a></li><li><a href="tel:101"><b>101</b><span data-t="emFire">Fire brigade</span></a></li><li><a href="tel:102"><b>102</b><span data-t="emAmb">Ambulance</span></a></li><li><a href="tel:103"><b>103</b><span data-t="emTraffic">Traffic police</span></a></li><li><a href="tel:1144"><b>1144</b><span data-t="emTourist">Tourist police</span></a></li></ul>
+      </div>
+      <div class="card-foot"><span data-t="govDir">Passports, licences, PAN, citizenship and more</span><a href="/government" data-t="govLink">Government services →</a></div>
+    </section>
+  </div>`,
+  },
+  '/offline': {
+    key: 'offline', noindex: true,
+    title: 'You’re offline · Nepal Live',
+    description: 'Nepal Live needs an internet connection for live news, prices and alerts.',
+    kicker: 'Offline', h1: 'You’re <em>offline</em>', sub: 'Nepal Live needs a connection for live news, prices, weather and alerts.',
+    body: `
+  <div class="offline-box">
+    <p>We don’t show saved numbers as if they were live, so there’s nothing to display until you’re back online.</p>
+    <button class="btn btn-primary" type="button" onclick="location.reload()">Try again</button>
+    <p class="small muted">Tip: your phone’s mobile data or Wi-Fi may be off, or the network may be slow.</p>
+  </div>`,
+  },
   '/search': {
     key: 'search', script: 'page-search.js', changefreq: 'weekly', priority: '0.5',
     title: 'Search Nepal Live — News, Places, Markets, Jobs & Services',
@@ -419,6 +542,13 @@ Object.assign(PAGES, {
     <label class="field-search big">${ICO.search}<input id="srch-q" name="q" type="search" autocomplete="off" maxlength="100" placeholder="Try “Pokhara”, “NEPSE”, “passport”, “Dashain”…" data-tp="ph" aria-label="Search Nepal Live"></label>
     <button class="btn btn-primary" type="submit" data-t="go">Search</button>
   </form>
+  <div class="srch-filters" id="srch-filters" role="group" aria-label="Filters">
+    <select id="sf-lang" aria-label="Language"><option value="" data-t="anyLang">Any language</option><option value="en">English</option><option value="ne">नेपाली</option></select>
+    <select id="sf-cat" aria-label="Category"><option value="" data-t="anyCat">Any category</option></select>
+    <select id="sf-days" aria-label="Date"><option value="" data-t="anyTime">Any time</option><option value="1" data-t="d1">Last 24 hours</option><option value="7" data-t="d7">Last 7 days</option><option value="30" data-t="d30">Last 30 days</option></select>
+    <select id="sf-prov" aria-label="Province"><option value="" data-t="anyProv">All provinces</option></select>
+    <button class="link-more" type="button" id="sf-clear" hidden data-t="clearF">Clear filters</button>
+  </div>
   <div class="pills" id="srch-tabs" role="tablist" aria-label="Result type"></div>
   <div id="srch-out" aria-live="polite"></div>`,
   },
@@ -478,6 +608,7 @@ const SEO = {
   '/events': ['Events in Nepal — Festivals, Holidays & Fixtures | Nepal Live', 'Upcoming festivals, public holidays, national days and Nepal team fixtures, with dates in both BS and AD.'],
   '/calendar': ['Nepali Calendar 2083 — Nepali Date Today | Nepal Live', 'Nepali calendar 2083 (BS) with English dates, public holidays, festivals and tithi. See today’s Nepali date and switch between BS and AD.'],
   '/government': ['Passport, License, PAN & Citizenship in Nepal | Nepal Live', 'Official links for Nepal passport, driving licence, PAN, citizenship, national ID, Lok Sewa and more — plus emergency numbers and holidays.'],
+  '/tools': ['Nepali Date Converter, Gold, EMI & Electricity Bill | Nepal Live', 'BS ↔ AD date converter, NPR currency converter, gold price, loan EMI and NEA electricity bill calculators, holidays, IPO calendar and emergency numbers.'],
   '/explore': ['Explore Nepal — Map of the 7 Provinces | Nepal Live', 'Interactive map of Nepal’s seven provinces with live weather, air quality, earthquakes, alerts, road closures and news for each.'],
   '/trending': ['Trending in Nepal Today | Nepal Live', 'What Nepal’s newsrooms are covering most right now — topics ranked by how many headlines and publishers mention them.'],
   '/search': ['Search Nepal Live', 'Search Nepali news, cities, NEPSE and exchange rates, fixtures, jobs, events and government services in one place.'],
@@ -541,6 +672,7 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Noto+Sans+Devanagari:wght@400..800&display=swap">

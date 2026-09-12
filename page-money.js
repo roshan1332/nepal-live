@@ -140,8 +140,8 @@
     }
     S.nepse = r[0].value;
     if (r[1].status === 'fulfilled') S.status = r[1].value;
-    if (r[2].status === 'fulfilled') S.top = r[2].value;
-    if (r[3].status === 'fulfilled') S.hist = r[3].value;
+    if (r[2].status === 'fulfilled' && !r[2].value.unavailable) S.top = r[2].value;
+    if (r[3].status === 'fulfilled' && !r[3].value.unavailable) S.hist = r[3].value;
     NL.guard('nepse', renderNepse)();
     NL.stamp('stamp-nepse', true); NL.feed('nepse', true);
   }
@@ -294,7 +294,9 @@
   }
   async function loadFuel() {
     try {
-      S.fuel = await NL.api('/api/fuel');
+      var f = await NL.api('/api/fuel');
+      if (!f || f.unavailable) throw new Error((f && f.error) || 'fuel unavailable');
+      S.fuel = f;
       NL.guard('fuel', renderFuel)();
       NL.stamp('stamp-fuel', true); NL.feed('fuel', true);
     } catch (e) {

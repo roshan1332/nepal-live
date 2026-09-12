@@ -203,6 +203,11 @@ const TOPIC_RULES = [
   ['world',
     /\b(world|international|global|China|Chinese|India|Indian|Pakistan|Bangladesh|Sri Lanka|America|American|U\.S\.|USA|United States|Trump|Biden|Iran|Israel|Gaza|Russia|Ukraine|Europe|European|UK|Britain|Japan|Korea|UN|United Nations|Philippines|Afghanistan)\b/i,
     /(विश्व|अन्तर्राष्ट्रिय|चीन|चिनियाँ|भारत|भारतीय|पाकिस्तान|बंगलादेश|अमेरिका|ट्रम्प|इरान|इजरायल|रुस|युक्रेन|युरोप|जापान|कोरिया|फिलिपिन्स|संयुक्त राष्ट्र)/],
+  /* after World, so a foreign disaster stays World; Nepal's crime, accidents,
+     disasters, health and education land here instead of the generic bucket */
+  ['society',
+    /\b(police|arrest(ed|s)?|crime|murder(ed)?|killed|dies|died|death|dead|injured|accidents?|collision|fire|floods?|flooding|landslides?|disaster|rescued?|missing|hospitals?|health|doctors?|patients?|disease|dengue|cholera|vaccin(e|ation)|education|schools?|students?|teachers?|universit(y|ies)|exams?|women|children|child|youth|migrant workers?|Dalit|festival|temple)\b/i,
+    /(प्रहरी|पक्राउ|हत्या|मृत्यु|घाइते|दुर्घटना|आगलागी|बाढी|पहिरो|विपद्|उद्धार|बेपत्ता|अस्पताल|स्वास्थ्य|चिकित्सक|बिरामी|डेंगु|हैजा|खोप|शिक्षा|विद्यालय|विद्यार्थी|शिक्षक|विश्वविद्यालय|परीक्षा|महिला|बालबालिका|युवा|वैदेशिक रोजगार|दलित|जात्रा|मन्दिर)/],
 ];
 function topicOf(title, category, summary) {
   const test = (text) => {
@@ -390,7 +395,9 @@ const P = {
       NEPAL_FEEDS.map(async (f) => {
         const r = await fetchURL(f.url);
         return parseRSS(r.body, f.name, false, 20).items
-          .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en' }));
+          .map((it) => ({ ...it, source: f.name, lang: isNepali(it.title) ? 'ne' : 'en',
+            /* the province whose places the story names (for the province filter) */
+            province: PL.provinceOf(`${it.title} ${it.summary || ''}`) }));
       })
     );
     let items = [];
@@ -447,6 +454,8 @@ function normForex(j) {
 }
 
 const S = require('./sources')({ fetchURL, cached, P, MET, weatherFallback, pauseOpenMeteo });
+/* the 7 provinces: districts, capitals, official sites; tags headlines by the places they name */
+const PL = require('./places')({ CITIES: S.CITIES });
 const site = require('./site-pages');
 
 /* ---------------- response helpers ---------------- */
@@ -516,14 +525,29 @@ const ACC = require('./accounts')({
   store: STORE, durable: STORE.kind === 'supabase' || !!process.env.DATA_DIR,
   alerts: () => S.alerts(), cities: S.CITIES,
 });
-const SEARCH = require('./search')({ P, S, SDB, site });
+const SEARCH = require('./search')({ P, S, SDB, site, PL });
 /* server-rendered landing pages for the most-searched live numbers */
 const SEOP = require('./seo-pages')({ P, S, site });
 
 /* share image, app icon and favicons (crawlable, unlike a data: URI) */
 const IMAGES = {
-  '/og.png': ['og.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'],
+  '/og.png': ['og.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'], '/icon-192.png': ['icon-192.png', 'image/png'],
   '/favicon.ico': ['favicon-48.png', 'image/png'], '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+};
+const MANIFEST = {
+  name: 'Nepal Live', short_name: 'Nepal Live', id: '/', start_url: '/?source=app', scope: '/', display: 'standalone',
+  description: 'News, markets, weather, alerts, sports and useful tools for Nepal — in one place.',
+  lang: 'en', dir: 'ltr', background_color: '#f7f6f3', theme_color: '#f7f6f3', categories: ['news', 'weather', 'finance'],
+  icons: [
+    { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+  ],
+  shortcuts: [
+    { name: 'News', url: '/news', icons: [{ src: '/icon-192.png', sizes: '192x192' }] },
+    { name: 'Markets', url: '/money', icons: [{ src: '/icon-192.png', sizes: '192x192' }] },
+    { name: 'Alerts', url: '/alerts', icons: [{ src: '/icon-192.png', sizes: '192x192' }] },
+    { name: 'Tools', url: '/tools', icons: [{ src: '/icon-192.png', sizes: '192x192' }] },
+  ],
 };
 /* Search Console / Bing ownership tags for the static homepage and sports pages */
 const VERIFY_META = [
@@ -592,10 +616,13 @@ const API = {
   '/api/gold-hamropatro': () => P.goldHP(),
   /* NEPSE index + market summary (official site API via token flow) */
   '/api/nepse': () => P.nepse(),
-  '/api/nepse/top': () => P.nepseTop(),
+  /* optional parts of the NEPSE card: when NEPSE drops these, answer "unavailable"
+     as data so the page leaves them out without a browser console error */
+  '/api/nepse/top': () => P.nepseTop().catch((e) => ({ unavailable: true, error: String((e && e.message) || e) })),
   '/api/nepse/status': () => P.nepseStatus(),
   /* NEPSE index history (for the chart) */
-  '/api/nepse/history': (u) => P.nepseHistory(Math.min(250, Math.max(10, parseInt(u.searchParams.get('size') || '90', 10) || 90))),
+  '/api/nepse/history': (u) => P.nepseHistory(Math.min(250, Math.max(10, parseInt(u.searchParams.get('size') || '90', 10) || 90)))
+    .catch((e) => ({ unavailable: true, error: String((e && e.message) || e) })),
 
   /* weather — Open-Meteo */
   '/api/weather': (u) => {
@@ -686,7 +713,13 @@ const API = {
   /* newer sections (sources.js) */
   '/api/alerts': () => S.alerts(),
   '/api/roads': () => S.roads(),
-  '/api/fuel': () => S.fuel(),
+  /* NOC blocks some hosting networks. Answer "unavailable" as data (with the
+     reason and the source) rather than a 5xx, so the pages show their
+     "unavailable" state without a browser console error. */
+  '/api/fuel': () => S.fuel().catch((e) => ({
+    unavailable: true, error: String((e && e.message) || e),
+    source: { name: 'Nepal Oil Corporation', url: 'https://noc.org.np/retailprice' },
+  })),
   '/api/aqi-stations': () => S.aqiStations(),
   '/api/trending': () => S.trending(),
   '/api/highlights': () => S.highlights(),
@@ -716,7 +749,17 @@ const API = {
   '/api/events': () => S.events(),
 
   /* global search across news, places, markets, sports, jobs, events, government */
-  '/api/search': (u) => SEARCH.search((u.searchParams.get('q') || '').slice(0, 100), (u.searchParams.get('type') || '').slice(0, 20)),
+  '/api/search': (u) => {
+    const sp = (k, n) => (u.searchParams.get(k) || '').slice(0, n);
+    return SEARCH.search(sp('q', 100), sp('type', 20), {
+      lang: ['en', 'ne'].includes(sp('lang', 2)) ? sp('lang', 2) : '', cat: sp('cat', 20).replace(/[^a-z]/g, ''),
+      days: Math.min(60, Math.max(0, parseInt(sp('days', 3), 10) || 0)), prov: /^NP0[1-7]$/.test(sp('prov', 4)) ? sp('prov', 4) : '',
+    });
+  },
+  /* the 7 provinces: districts (English + Nepali), capital, forecast city, official site */
+  '/api/provinces': async () => ({ provinces: PL.PROVINCES }),
+  /* open and upcoming share issues (ShareSansar's issue tables) */
+  '/api/ipo': () => S.ipo(),
 
   /* NRB daily rates over up to ~13 months (the API pages 100 days at a time),
      reduced to mid rates for the charts */
@@ -780,6 +823,13 @@ const server = http.createServer(async (req, res) => {
     if (SEOP.has(p)) {
       return reply(req, res, 200, await SEOP.render(p, SITE_ORIGIN), { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
     }
+    /* installable app: manifest + service worker (served from the root so its scope is the whole site) */
+    if (p === '/manifest.webmanifest') {
+      return reply(req, res, 200, JSON.stringify(MANIFEST), { 'Content-Type': 'application/manifest+json; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    }
+    if (p === '/sw.js') {
+      return reply(req, res, 200, readStatic('sw.js'), { 'Content-Type': TYPES.js, 'Cache-Control': 'no-cache', 'Service-Worker-Allowed': '/' });
+    }
     if (IMAGES[p] && fs.existsSync(path.join(__dirname, IMAGES[p][0]))) {
       res.writeHead(200, { 'Content-Type': IMAGES[p][1], 'Cache-Control': 'public, max-age=86400' });
       return res.end(req.method === 'HEAD' ? undefined : readStatic(IMAGES[p][0]));
@@ -824,7 +874,45 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Nepal Live dashboard running at http://0.0.0.0:${PORT}`);
   keepAwake();
+  warmCaches();
 });
+
+/* Keep the homepage's data warm. cached() refreshes only when someone asks after
+   a TTL has passed, and that visitor waits for the upstream call. Asking for the
+   same routes (same query strings, so the same cache keys) every few minutes
+   means visitors get an answer from memory. Each upstream is still called at
+   most once per TTL — a warm call inside the TTL is a cache hit. On by default on
+   Render; WARM=1 turns it on locally, WARM=0 off. */
+const WARM_ROUTES = [
+  '/api/news-nepal', '/api/highlights', '/api/alerts', '/api/roads', '/api/trending',
+  '/api/nepse', '/api/nepse/top', '/api/nepse/status', '/api/nepse/history?size=90',
+  '/api/gold', '/api/gold-hamropatro', '/api/forex', '/api/rates',
+  '/api/weather', '/api/air', '/api/quakes', '/api/quakes?days=7&minmag=4&limit=1',
+  '/api/jobs', '/api/events', '/api/calendar/today', '/api/fuel',
+  '/api/sport-range?s=Soccer&past=2&future=10', '/api/sport-range?s=Cricket&past=2&future=10',
+];
+function warmCaches() {
+  const on = process.env.WARM === '1' || (process.env.RENDER && process.env.WARM !== '0');
+  if (!on) return;
+  const every = Math.max(1, Number(process.env.WARM_MIN) || 4) * 60e3;
+  let runs = 0;
+  const run = async () => {
+    const t0 = Date.now(), failed = [];
+    runs++;
+    /* one at a time: gentle on the sources and on the free instance */
+    for (const r of WARM_ROUTES) {
+      const u = new URL(r, 'http://localhost');
+      const fn = API[u.pathname];
+      if (!fn) continue;
+      try { await fn(u); } catch (e) { failed.push(u.pathname); }
+    }
+    /* the first run always reports; after that only failures do */
+    if (failed.length || runs === 1) console[failed.length ? 'warn' : 'log'](`[warm] ${WARM_ROUTES.length - failed.length}/${WARM_ROUTES.length} ok in ${Date.now() - t0} ms${failed.length ? '; failed: ' + failed.join(', ') : ''}`);
+  };
+  console.log(`[warm] refreshing ${WARM_ROUTES.length} homepage routes every ${every / 60e3} min`);
+  setTimeout(run, 5e3);
+  setInterval(run, every);
+}
 
 /* Render's free plan stops the service after 15 minutes without outside
    traffic, and the next visitor waits ~30-50 s while it starts again. On

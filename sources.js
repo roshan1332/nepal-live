@@ -496,6 +496,56 @@ module.exports = function init(ctx) {
     });
   }
 
+  /* ------------------------------------------------------------ IPO calendar */
+  /* Open and upcoming share issues, from the JSON ShareSansar's own "existing
+     issues" page loads. Unofficial: SEBON publishes only PDF lists and the
+     NEPSE/CDSC APIs refuse server requests, so pages name ShareSansar and link
+     to it. Dates it leaves empty stay empty ("not announced"). */
+  const IPO_TYPES = [[1, 'ipo'], [2, 'fpo'], [3, 'right'], [4, 'mutual'], [5, 'local'], [8, 'migrant']];
+  const IPO_SRC = { name: 'ShareSansar', url: 'https://www.sharesansar.com/existing-issues' };
+  const stripTags = (s) => String(s == null ? '' : s).replace(/<[^>]+>/g, '').replace(/&amp;/g, '&')
+    .replace(/&#0?39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+  const isoDate = (s) => (/^\d{4}-\d{2}-\d{2}$/.test(String(s || '')) ? s : null);
+  function ipo() {
+    return cached('ipo', 30 * 60e3, async () => {
+      const items = [];
+      let answered = 0;
+      for (const [n, kind] of IPO_TYPES) {
+        try {
+          const r = await fetchURL(`https://www.sharesansar.com/existing-issues?type=${n}&draw=1&start=0&length=50`, 0, {
+            'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/javascript, */*; q=0.01',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
+            Referer: 'https://www.sharesansar.com/existing-issues',
+          });
+          if (r.status >= 400) continue;
+          const j = JSON.parse(r.body);
+          if (!Array.isArray(j.data)) continue;
+          answered++;
+          j.data.forEach((x) => {
+            /* the page's own script: -2/-1 = coming soon, 0 = open, anything else closed */
+            const st = Number(x.status);
+            const state = st === 0 ? 'open' : st === -1 || st === -2 ? 'soon' : '';
+            if (!state) return;
+            const co = x.company || {};
+            const company = stripTags(co.companyname);
+            if (!company) return;
+            items.push({
+              kind, state, company, symbol: stripTags(co.symbol) || null,
+              units: Number(x.total_units) || null, price: Number(x.issue_price) || null,
+              open: isoDate(x.opening_date), close: isoDate(x.closing_date),
+              manager: stripTags(x.issue_manager) || null, ratio: stripTags(x.ratio_value) || null,
+            });
+          });
+        } catch (e) { /* one issue type failing leaves the others */ }
+      }
+      if (!answered) throw new Error('ShareSansar issue tables unavailable');
+      /* open issues first (closing soonest first), then upcoming (opening soonest; undated last) */
+      const key = (i) => (i.state === 'open' ? '0' + (i.close || '9999') : '1' + (i.open || '9999'));
+      items.sort((a, b) => key(a).localeCompare(key(b)));
+      return { items, source: IPO_SRC, fetchedAt: new Date().toISOString() };
+    });
+  }
+
   /* ------------------------------------------------ multi-city weather & air */
   /* Open-Meteo accepts comma-separated coordinates, so every city costs one
      upstream request between them, not one each. */
@@ -777,6 +827,6 @@ module.exports = function init(ctx) {
     });
   };
 
-  return { alerts, roads, fuel, aqiStations, trending, highlights, weatherCities: weatherCitiesSafe, airCities, jobs, job, jobsAll,
+  return { alerts, roads, fuel, ipo, aqiStations, trending, highlights, weatherCities: weatherCitiesSafe, airCities, jobs, job, jobsAll,
     calendarBs, calendarAd, calendarToday, calendarUpcoming, events, CITIES, CORRIDORS, km, KTM };
 };
