@@ -41,3 +41,15 @@ alter table public.nl_sessions enable row level security;
 alter table public.nl_saved    enable row level security;
 revoke all on public.nl_users, public.nl_sessions, public.nl_saved from anon, authenticated;
 grant  all on public.nl_users, public.nl_sessions, public.nl_saved to service_role;
+
+-- Visit counts for the owner's /stats page: one row of anonymous totals per
+-- Nepal day (page views, visitors, pages, sources, devices, languages, hours).
+-- No IP addresses, cookies or user ids are stored.
+create table if not exists public.nl_stats (
+  day        text primary key,               -- YYYY-MM-DD, Nepal Time
+  data       jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.nl_stats enable row level security;
+revoke all on public.nl_stats from anon, authenticated;
+grant  all on public.nl_stats to service_role;

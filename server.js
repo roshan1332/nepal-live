@@ -524,6 +524,8 @@ if (STORE.ping) {
 const ACC = require('./accounts')({
   store: STORE, durable: STORE.kind === 'supabase' || !!process.env.DATA_DIR,
   alerts: () => S.alerts(), cities: S.CITIES,
+  /* owner accounts (comma-separated emails) — they alone can open /stats */
+  admins: String(process.env.ADMIN_EMAILS || '').split(','),
 });
 const SEARCH = require('./search')({ P, S, SDB, site, PL });
 /* server-rendered landing pages for the most-searched live numbers */
@@ -576,6 +578,58 @@ function clientLog(req, res) {
     } catch (e) { /* not JSON: ignore */ }
     done(204);
   });
+}
+/* Visit counts for the owner's /stats page (stats.js). The live site keeps them
+   in Supabase (table nl_stats); local runs use data/stats.json, so testing
+   never touches the real numbers. Only ADMIN_EMAILS accounts can read them. */
+const STATS = require('./stats')({
+  supabase: process.env.RENDER && SUPA_URL && SUPA_KEY ? { url: SUPA_URL, key: SUPA_KEY } : null,
+  dir: process.env.DATA_DIR || path.join(__dirname, 'data'),
+});
+console.log('[stats] counting visits in ' + (STATS.kind === 'supabase' ? 'Supabase (nl_stats)' : 'data/stats.json'));
+const BOT_UA = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python|node-fetch|axios|monitor|uptime/i;
+const hitIps = new Map();
+/* only real pages are counted (a mistyped URL shows the 404 page and isn't) */
+function countable(p) {
+  p = String(p || '').toLowerCase().slice(0, 80).replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+  if (p === '/index') p = '/';
+  return PAGE_FILES[p] || (site.PAGES[p] && p !== '/offline') || SEOP.has(p) ? p : null;
+}
+function statsHit(req, res) {
+  const done = (code) => { res.writeHead(code, { 'Cache-Control': 'no-store' }); res.end(); };
+  if (req.method !== 'POST') return done(405);
+  if (BOT_UA.test(req.headers['user-agent'] || '') || req.headers['sec-purpose'] || req.headers.purpose) return done(204);
+  const ip = String((process.env.RENDER && req.headers['x-forwarded-for']) || req.socket.remoteAddress || '').split(',')[0].trim();
+  const now = Date.now(), hits = (hitIps.get(ip) || []).filter((t) => now - t < 600e3);
+  if (hits.length >= 120) return done(429);
+  hits.push(now);
+  hitIps.set(ip, hits);
+  if (hitIps.size > 5000) hitIps.clear();
+  let body = '';
+  req.on('data', (c) => { body += c; if (body.length > 1024) req.destroy(); });
+  req.on('end', () => {
+    try {
+      const j = JSON.parse(body);
+      const p = countable(j.path);
+      if (p) {
+        STATS.hit({
+          path: p, ref: typeof j.ref === 'string' && /^[a-z0-9.-]{1,120}$/i.test(j.ref) ? j.ref : '',
+          entry: j.entry === true, first: j.first === true, fresh: j.fresh === true,
+          dev: ['m', 't', 'd'].includes(j.dev) ? j.dev : 'd', lang: j.lang === 'ne' ? 'ne' : 'en',
+        });
+      }
+    } catch (e) { /* not JSON: ignore */ }
+    done(204);
+  });
+}
+async function adminStats(req, res, u) {
+  if (req.method !== 'GET') return send(req, res, 405, { error: 'method not allowed' });
+  /* "not allowed" answers 200 with no numbers (like /api/me for a guest), so the
+     page shows its message without a failed request in the browser console */
+  const user = await ACC.currentUser(req);
+  if (!user) return send(req, res, 200, { access: 'login' });
+  if (!ACC.isAdmin(user)) return send(req, res, 200, { access: 'owner' });
+  return send(req, res, 200, await STATS.report(+u.searchParams.get('days') || 30));
 }
 const withVerify = (buf) => (VERIFY_META ? Buffer.from(buf.toString('utf8').replace('</head>', VERIFY_META + '\n</head>')) : buf);
 const isAccountRoute = (p) => p.startsWith('/api/auth/') || p === '/api/me' || p.startsWith('/api/me/');
@@ -854,6 +908,8 @@ const server = http.createServer(async (req, res) => {
     if (p === '/healthz') return send(req, res, 200, { ok: true });
 
     if (p === '/api/log') return clientLog(req, res);
+    if (p === '/api/hit') return statsHit(req, res);
+    if (p === '/api/admin/stats') return await adminStats(req, res, u);
     if (isAccountRoute(p)) return ACC.handle(req, res, p, u);
 
     const route = API[p];

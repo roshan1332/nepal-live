@@ -16,6 +16,7 @@ Env (an optional git-ignored `.env` file is read at startup; real env vars win �
 `SITE_ORIGIN` (robots/sitemap/canonical origin, default `https://nepal-live.onrender.com`),
 `SUPABASE_URL` + `SUPABASE_SECRET_KEY` (accounts in Supabase — production; `SUPABASE_SERVICE_ROLE_KEY` also accepted),
 `DATA_DIR` (file account store when Supabase isn't set — local dev; `./data` by default, wiped on Render deploys),
+`ADMIN_EMAILS` (comma-separated owner emails — only these accounts can open `/stats`),
 `TRUST_PROXY=1` (trust `X-Forwarded-*`; on automatically when `RENDER` is set),
 `KEEP_AWAKE=0` (turn off the keep-awake self-call — see Deploy; `KEEP_AWAKE_MIN` sets its interval, default 10). `data/` and `.env` are git-ignored —
 never commit them, and never put the Supabase secret key in client code.
@@ -53,6 +54,13 @@ Server
   LIVE only Sun–Thu 11:00–15:00 NPT). A failed refresh keeps the data and says "showing data from X ago".
 - Error monitoring: server logs every 5xx (`[api] …`); app.js reports front-end errors (max 5 per page view)
   to `POST /api/log` (rate-limited, 2 KB cap) which logs `[client] page — message (file:line)` — Render → Logs.
+- `stats.js` — anonymous visit counts for the owner's `/stats` page (`page-stats.js`). app.js sends one beacon per page
+  view to `POST /api/hit` (path, referrer host on the entry page, m/t/d device, language, first-today / new flags from
+  two dates in the browser's own localStorage — no cookie, no id, no IP stored). Bots, prefetches, unknown paths and
+  the owner's own visits are skipped; 120 hits / 10 min per IP. Per-day totals (Nepal date) are kept in memory and
+  added to the saved row every minute (read + add + write; failed saves retried). Storage: Supabase table `nl_stats`
+  on Render, `data/stats.json` locally (so tests never touch real numbers). `GET /api/admin/stats?days=` answers only
+  a logged-in account in `ADMIN_EMAILS` (otherwise 200 `{ access: 'login' | 'owner' }`, no numbers); `/api/me` carries `user.admin` for the account-page link.
 - `seo-pages.js` — fully server-rendered landing pages for the most-searched live numbers: `/gold-price`, `/nepse`,
   `/exchange-rate`, `/fuel-price`, `/nepali-date`, `/weather/<city>` (the 14 cities with live data). Live value in the
   `<title>`/description, data in plain HTML tables, visible breadcrumbs, related links; `page-static.js` adds the
@@ -99,7 +107,7 @@ Client
 
 ## Pages
 `/ /news /alerts /roads /trending /money /weather /earthquakes /sports /nepal-sports /football /cricket /jobs
-/events /calendar /government /tools /search /explore /account (noindex) /offline (noindex)`.
+/events /calendar /government /tools /search /explore /account (noindex) /offline (noindex) /stats (noindex, owner only)`.
 
 ## API endpoints
 Data: `/api/rates /forex /forex-history /gold /gold-hamropatro /nepse /nepse/top /nepse/status /nepse/history
@@ -143,6 +151,8 @@ explicitly not listed. Disabled chart ranges explain why (no intraday NEPSE; 60 
 Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). Accounts: run
 `supabase-schema.sql` once in the Supabase SQL editor, then set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in Render →
 Environment. The server logs "[accounts] Supabase connected" on startup (or why it couldn't connect).
+Visits page: the `nl_stats` table is in `supabase-schema.sql`; set `ADMIN_EMAILS` (the owner's login email) in Render →
+Environment, then log in and open `/stats` (also linked from the account page).
 Keep-awake: Render's free plan sleeps after 15 min without outside traffic (first visit then takes ~30-50 s). On
 Render (`RENDER_EXTERNAL_URL` is set automatically) the server calls its own public `/healthz` every 10 min so it
 never idles; it logs only when that fails. One always-on free service uses ~744 of the 750 free instance hours a

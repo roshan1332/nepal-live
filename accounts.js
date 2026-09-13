@@ -33,6 +33,8 @@ const TRUST_PROXY = process.env.TRUST_PROXY === '1' || !!process.env.RENDER;
 module.exports = function init(opts) {
   const store = opts.store;
   const durable = !!opts.durable;
+  const admins = new Set((opts.admins || []).map((e) => String(e).trim().toLowerCase()).filter(Boolean));
+  const isAdmin = (user) => !!(user && user.email && admins.has(String(user.email).toLowerCase()));
 
   const sweep = () => store.sweep().catch((e) => console.error('[accounts] session sweep failed:', e.detail || e.message));
   sweep();
@@ -198,6 +200,7 @@ module.exports = function init(opts) {
   const pub = async (u) => ({
     id: u.id, email: u.email, name: u.name, created: u.created, prefs: vPrefs(null, u.prefs),
     saved: await store.savedKeys(u.id), seenAt: u.seenAt || 0,
+    admin: isAdmin(u), /* in ADMIN_EMAILS: shows the owner-only visits link (the stats API checks again) */
   });
 
   /* --------------------------------------------------------------- routes */
@@ -332,5 +335,11 @@ module.exports = function init(opts) {
     }
   }
 
-  return { handle };
+  /* the signed-in user for other server routes (e.g. the owner's /api/admin/stats), or null */
+  async function currentUser(req) {
+    const s = await session(req);
+    return s ? s.user : null;
+  }
+
+  return { handle, currentUser, isAdmin };
 };

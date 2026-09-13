@@ -26,6 +26,7 @@
       login: 'Log in', signup: 'Create account', name: 'Name (optional)', email: 'Email', password: 'Password', pwHint: 'At least 8 characters.',
       why1: 'Save news, jobs, events and places to come back to.', why2: 'See alerts for the districts you choose — only from official sources.',
       why3: 'Keep your language, theme and home city with your account.',
+      siteVisits: 'Site visits',
       liTitle: 'Welcome back', liLead: 'Log in to see your saved items and your personal alerts.',
       suTitle: 'Create your free account', suLead: 'It takes a few seconds — just an email and a password.',
       newHere: 'New to Nepal Live?', signupShort: 'Create an account', haveAcct: 'Already have an account?',
@@ -68,6 +69,7 @@
       login: 'लग इन', signup: 'खाता बनाउनुहोस्', name: 'नाम (ऐच्छिक)', email: 'इमेल', password: 'पासवर्ड', pwHint: 'कम्तीमा ८ अक्षर।',
       why1: 'समाचार, जागिर, कार्यक्रम र ठाउँ पछि हेर्न सेभ गर्नुहोस्।', why2: 'आफूले छानेका जिल्लाका सतर्कता हेर्नुहोस् — आधिकारिक स्रोतबाट मात्र।',
       why3: 'भाषा, थिम र आफ्नो सहर खातामै राख्नुहोस्।',
+      siteVisits: 'साइट भ्रमण',
       liTitle: 'फेरि स्वागत छ', liLead: 'सेभ गरिएका कुरा र आफ्ना सतर्कता हेर्न लग इन गर्नुहोस्।',
       suTitle: 'निःशुल्क खाता बनाउनुहोस्', suLead: 'केही सेकेन्ड मात्र लाग्छ — इमेल र पासवर्ड भए पुग्छ।',
       newHere: 'नेपाल लाइभमा नयाँ हो?', signupShort: 'खाता बनाउनुहोस्', haveAcct: 'पहिले नै खाता छ?',
@@ -241,7 +243,8 @@
       + '<div class="acct-id"><h2>' + esc(u.name || t('hello')) + '</h2><p class="muted">' + esc(u.email) + ' · ' + esc(t('since', { d: NL.dfmt.dayY(Date.parse(u.created)) })) + '</p></div>'
       + '<button class="btn" type="button" data-logout>' + esc(t('logout')) + '</button></section>'
       + '<nav class="acct-nav" aria-label="' + esc(t('sections')) + '"><a href="#alerts">' + esc(t('myAlerts')) + '</a><a href="#saved">' + esc(t('saved')) + '</a>'
-      + '<a href="#prefs">' + esc(t('prefs')) + '</a><a href="#security">' + esc(t('security')) + '</a></nav>'
+      + '<a href="#prefs">' + esc(t('prefs')) + '</a><a href="#security">' + esc(t('security')) + '</a>'
+      + (u.admin ? '<a href="/stats" class="acct-owner">' + NL.icon.chart + esc(t('siteVisits')) + ' →</a>' : '') + '</nav>'
       + section('alerts', t('myAlerts'), '<div id="notes"></div>' + alertsForm(p.alerts))
       + section('saved', t('saved'), '<div id="saved-list"></div>')
       + section('prefs', t('prefs'), prefsForm(p))

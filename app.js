@@ -1261,7 +1261,29 @@
     el._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
   };
   document.addEventListener('nl:lang', function () { paintAccount(); paintSaves(); });
-  NL.me.load();
+
+  /* ------------------------------------------------------------ visit count */
+  /* One anonymous signal per page view for the owner's /stats page (stats.js):
+     no cookie and no id — only two dates this browser keeps for itself, to tell
+     "first visit today" and "new vs returning". The owner's own visits (logged
+     in with an ADMIN_EMAILS account) and automated browsers are not counted. */
+  function countVisit(d) {
+    if ((d && d.user && d.user.admin) || navigator.webdriver) return;
+    try {
+      var ls = window.localStorage, ss = window.sessionStorage;
+      var day = new Date(Date.now() + 20700e3).toISOString().slice(0, 10); /* Nepal date */
+      var first = ls.getItem('nlv-d') !== day, fresh = !ls.getItem('nlv-seen'), entry = !ss.getItem('nlv-s');
+      ls.setItem('nlv-d', day); ls.setItem('nlv-seen', '1'); ss.setItem('nlv-s', '1');
+      var ref = '';
+      if (entry && document.referrer) { try { var h = new URL(document.referrer).hostname; if (h !== location.hostname) ref = h; } catch (e) { /* bad URL */ } }
+      var w = window.innerWidth || screen.width;
+      var body = JSON.stringify({ path: location.pathname, ref: ref, entry: entry, first: first, fresh: fresh, dev: w <= 640 ? 'm' : w <= 1024 ? 't' : 'd', lang: NL.lang() });
+      if (!(navigator.sendBeacon && navigator.sendBeacon('/api/hit', new Blob([body], { type: 'application/json' })))) {
+        fetch('/api/hit', { method: 'POST', body: body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(function () {});
+      }
+    } catch (e) { /* storage blocked: skip counting rather than guess */ }
+  }
+  NL.me.load().then(countVisit);
 
   /* ------------------------------------------------------------------ share */
   /* The phone's share sheet where there is one; otherwise copy the link. */
