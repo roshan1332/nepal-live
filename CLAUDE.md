@@ -61,6 +61,10 @@ Server
   added to the saved row every minute (read + add + write; failed saves retried). Storage: Supabase table `nl_stats`
   on Render, `data/stats.json` locally (so tests never touch real numbers). `GET /api/admin/stats?days=` answers only
   a logged-in account in `ADMIN_EMAILS` (otherwise 200 `{ access: 'login' | 'owner' }`, no numbers); `/api/me` carries `user.admin` for the account-page link.
+  The report also carries the previous equal period (`prev`, for ▲▼ change), a weekday × hour `heat` grid, and `live`
+  (page views per minute for the last 30 min — memory only, restarts with the server). `page-stats.js` draws an admin
+  console: flag-blue sidebar (a scrolling tab bar ≤920px), KPI cards with sparklines, traffic chart (drawn at the box's
+  real size, hover tooltip), right-now panel, top-pages table, sources, donuts, heatmap, CSV export; Today = hourly chart.
 - `seo-pages.js` — fully server-rendered landing pages for the most-searched live numbers: `/gold-price`, `/nepse`,
   `/exchange-rate`, `/fuel-price`, `/nepali-date`, `/weather/<city>` (the 14 cities with live data). Live value in the
   `<title>`/description, data in plain HTML tables, visible breadcrumbs, related links; `page-static.js` adds the

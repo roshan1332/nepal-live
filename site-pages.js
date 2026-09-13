@@ -586,12 +586,12 @@ Object.assign(PAGES, {
   },
   '/stats': {
     key: 'stats', script: 'page-stats.js', noindex: true,
-    title: 'Site visits · Nepal Live',
+    title: 'Admin · Site analytics · Nepal Live',
     description: 'Private visit numbers for the Nepal Live owner.',
-    kicker: 'Owner only', h1: 'Site <em>visits</em>', sub: 'How many people use Nepal Live — counted by the site itself, without cookies or personal data.',
-    side: `<div class="seg" role="group" aria-label="Period"><button type="button" data-days="7" data-t="d7">7 days</button><button type="button" data-days="30" aria-pressed="true" data-t="d30">30 days</button><button type="button" data-days="90" data-t="d90">90 days</button></div>`,
+    kicker: 'Admin', h1: 'Site <em>analytics</em>', sub: 'Private visit numbers for the site owner.',
+    /* page-stats.js draws its own admin layout; the hero stays in the HTML for the title only (hidden by CSS) */
     body: `
-  <div id="st-root" class="st" aria-live="polite"></div>`,
+  <div id="st-root" class="adm adm-lock"></div>`,
   },
 });
 

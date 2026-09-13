@@ -629,7 +629,7 @@ async function adminStats(req, res, u) {
   const user = await ACC.currentUser(req);
   if (!user) return send(req, res, 200, { access: 'login' });
   if (!ACC.isAdmin(user)) return send(req, res, 200, { access: 'owner' });
-  return send(req, res, 200, await STATS.report(+u.searchParams.get('days') || 30));
+  return send(req, res, 200, { ...(await STATS.report(+u.searchParams.get('days') || 30)), viewer: user.email });
 }
 const withVerify = (buf) => (VERIFY_META ? Buffer.from(buf.toString('utf8').replace('</head>', VERIFY_META + '\n</head>')) : buf);
 const isAccountRoute = (p) => p.startsWith('/api/auth/') || p === '/api/me' || p.startsWith('/api/me/');

@@ -101,6 +101,8 @@ module.exports = function init({ supabase, dir, flushMs = 60e3 }) {
   let pending = null;       /* today's counts not yet saved */
   const backlog = [];       /* earlier batches whose save failed */
   let saving = null;
+  const recent = [];        /* { t, p } of the last 30 minutes, for the "right now" panel (memory only) */
+  const started = Date.now();
 
   function hit(h) {
     const day = nptDay();
@@ -114,6 +116,9 @@ module.exports = function init({ supabase, dir, flushMs = 60e3 }) {
     bump(d.dev, h.dev);
     bump(d.lang, h.lang);
     d.hours[nptHour()]++;
+    const now = Date.now();
+    recent.push({ t: now, p: h.path });
+    while (recent.length && (recent[0].t < now - 30 * 60e3 || recent.length > 5000)) recent.shift();
   }
 
   function save() {
@@ -142,21 +147,31 @@ module.exports = function init({ supabase, dir, flushMs = 60e3 }) {
   async function report(days) {
     days = Math.min(366, Math.max(1, days | 0 || 30));
     await save();
-    const from = nptDay(Date.now() - (days - 1) * 864e5);
+    /* this period and the one before it (for the "vs previous" change) in one read */
+    const from = nptDay(Date.now() - (2 * days - 1) * 864e5);
     const [rows, since] = await Promise.all([store.range(from), store.first().catch(() => null)]);
     const byDay = new Map(rows.map((r) => [r.day, norm(r)]));
     /* anything still unsaved (a failed save) is shown too */
     backlog.concat(pending ? [pending] : []).forEach((b) => { if (b.day >= from) byDay.set(b.day, addInto(byDay.get(b.day) || blank(b.day), b)); });
-    const list = [];
-    for (let i = days - 1; i >= 0; i--) { const d = nptDay(Date.now() - i * 864e5); list.push(byDay.get(d) || blank(d)); }
+    const span = (a, b) => { const out = []; for (let i = a; i >= b; i--) { const d = nptDay(Date.now() - i * 864e5); out.push(byDay.get(d) || blank(d)); } return out; };
+    const list = span(days - 1, 0), prev = span(2 * days - 1, days);
     const tot = list.reduce((t, d) => addInto(t, d), blank('total'));
+    const ptot = prev.reduce((t, d) => addInto(t, d), blank('prev'));
     const top = (o, n) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, n);
     const today = list[list.length - 1];
+    /* page views by weekday (0 = Sunday) and Nepal hour */
+    const heat = Array.from({ length: 7 }, () => Array(24).fill(0));
+    list.forEach((d) => { const wd = new Date(d.day + 'T12:00:00Z').getUTCDay(); d.hours.forEach((n, h) => { heat[wd][h] += n || 0; }); });
+    /* the last 30 minutes, per minute (kept in memory only, so it restarts with the server) */
+    const now = Date.now(), cut = now - 30 * 60e3, mins = Array(30).fill(0), lp = {};
+    recent.forEach((x) => { if (x.t < cut) return; mins[Math.min(29, Math.floor((x.t - cut) / 60e3))]++; lp[x.p] = (lp[x.p] || 0) + 1; });
     return {
-      days: list.map((d) => ({ day: d.day, v: d.v, u: d.u })),
+      days: list.map((d) => ({ day: d.day, v: d.v, u: d.u, n: d.n })),
       totals: { v: tot.v, u: tot.u, n: tot.n, r: tot.r },
+      prev: { v: ptot.v, u: ptot.u, n: ptot.n, r: ptot.r },
       today: { v: today.v, u: today.u },
-      pages: top(tot.pages, 20), src: top(tot.src, 14), dev: tot.dev, lang: tot.lang, hours: tot.hours,
+      pages: top(tot.pages, 20), src: top(tot.src, 14), dev: tot.dev, lang: tot.lang, hours: tot.hours, heat,
+      live: { v: mins.reduce((a, b) => a + b, 0), mins, pages: top(lp, 5), since: started },
       since, store: store.kind, generatedAt: new Date().toISOString(),
     };
   }
