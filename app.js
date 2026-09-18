@@ -38,6 +38,9 @@
   };
   NL.lang = function () { return store.get('nlive-lang') === 'ne' ? 'ne' : 'en'; };
   NL.page = root.getAttribute('data-page') || 'home';
+  /* pages with their own header/footer (the v2 homepage) opt out of the shared
+     chrome; everything else the shell provides still applies */
+  var OWN_SHELL = root.getAttribute('data-shell') === 'v2';
   var HOME = NL.page === 'home';
   /* in-page anchors on the homepage, cross-page links elsewhere */
   var home = function (hash) { return (HOME ? '' : '/') + hash; };
@@ -168,17 +171,10 @@
   /* The official flag of Nepal (Constitution, Schedule 1): fixed national colours in every
      theme, crimson #DC143C with a #003893 border, white moon and sun. Flattened from the
      standard construction into plain paths, so it can repeat on a page without duplicate ids. */
-  var FLAG = '<svg class="wm-flag" viewBox="-17.582 -4.664 71.571 87.246" aria-hidden="true">'
-    + '<path d="M-15,37.574h60L-15,0v80h60L-15,20z" fill="#DC143C" stroke="#003893" stroke-width="5.165" stroke-linejoin="round" paint-order="stroke"/>'
-    + '<g fill="#fff"><path d="M-11.95,23.483A12.84,12.84 0 0 0 11.95,23.483A11.95,11.95 0 0 1-11.95,23.483"/>'
-    + '<circle cy="29.045" r="5.561"/>'
-    + '<path d="M2.128,23.907L1.507,21.47L0,23.484ZM3.932,25.113L4.291,22.623L2.128,23.907ZM5.138,26.917L6.422,24.754L3.932,25.113ZM5.561,29.045L7.575,27.538L5.138,26.917ZM5.138,31.173L7.575,30.552L5.561,29.045ZM3.932,32.977L6.422,33.336L5.138,31.173ZM-2.128,23.907L-1.507,21.47L0,23.484ZM-3.932,25.113L-4.291,22.623L-2.128,23.907ZM-5.138,26.917L-6.422,24.754L-3.932,25.113ZM-5.561,29.045L-7.575,27.538L-5.138,26.917ZM-5.138,31.173L-7.575,30.552L-5.561,29.045ZM-3.932,32.977L-6.422,33.336L-5.138,31.173Z"/>'
-    + '<circle cy="58.787" r="8.143"/>'
-    + '<path d="M2.108,66.653L0,71.627L-2.108,66.653ZM-2.108,66.653L-6.42,69.907L-5.758,64.545ZM-5.758,64.545L-11.12,65.207L-7.866,60.895ZM-7.866,60.895L-12.84,58.787L-7.866,56.679ZM-7.866,56.679L-11.12,52.367L-5.758,53.029ZM-5.758,53.029L-6.42,47.667L-2.108,50.921ZM-2.108,50.921L0,45.947L2.108,50.921ZM2.108,50.921L6.42,47.667L5.758,53.029ZM5.758,53.029L11.12,52.367L7.866,56.679ZM7.866,56.679L12.84,58.787L7.866,60.895ZM7.866,60.895L11.12,65.207L5.758,64.545ZM5.758,64.545L6.42,69.907L2.108,66.653Z"/>'
-    + '</g></svg>';
   var wordmark = function (tag) {
     return '<' + (tag || 'a') + ' class="wordmark" href="/" aria-label="Nepal Live — home">'
-      + FLAG + '<span class="wm-text">NEPAL <b>LIVE</b></span><span class="wm-dot" aria-hidden="true"></span></' + (tag || 'a') + '>';
+      + '<img class="wm-logo" src="/logo-mark.png" alt="" width="27" height="26" decoding="async">'
+      + '<span class="wm-text">NEPAL <b>LIVE</b></span><span class="wm-dot" aria-hidden="true"></span></' + (tag || 'a') + '>';
   };
 
   /* ------------------------------------------------------------ time utils */
@@ -348,6 +344,7 @@
 
   var drawer, scrim, searchDlg;
   function renderChrome() {
+    if (OWN_SHELL) return;
     var head = document.getElementById('nl-head');
     if (head) head.innerHTML = headerHTML();
     var tk = document.getElementById('nl-ticker');
@@ -461,7 +458,10 @@
         track.querySelectorAll('[data-tk="' + k + '"]').forEach(function (el) {
           if (el.innerHTML === html) return;
           el.innerHTML = html;
-          el.classList.remove('tk-flash'); void el.offsetWidth; el.classList.add('tk-flash');
+          var dir = tkItems[k].dir;
+          el.classList.remove('tk-flash', 'flash-up', 'flash-down');
+          void el.offsetWidth;
+          el.classList.add(dir === 'up' ? 'flash-up' : dir === 'down' ? 'flash-down' : 'tk-flash');
         });
       });
       return;
@@ -1447,4 +1447,159 @@
   /* app.js loads at the end of <body>, so the placeholders already exist:
      render the chrome now rather than waiting for DOMContentLoaded. */
   init();
+})();
+
+/* =============================== motion ===============================
+ * Scroll reveals, number counters, live-value flashes, chart draw-ins and
+ * the back-to-top button. Progressive by design:
+ *   - the inline head script adds .js-motion only when the visitor has NOT
+ *     asked for reduced motion, so nothing is ever hidden for them;
+ *   - if this script fails to run, that head script drops .js-motion again
+ *     after a few seconds and the page shows normally;
+ *   - work is IntersectionObserver + CSS classes: no per-frame JS, no layout
+ *     properties animated, each block revealed once and then left alone.
+ * ====================================================================== */
+(function () {
+  'use strict';
+  var NL = window.NL;
+  if (!NL) return;
+  var root = document.documentElement;
+  var reduce = !(window.matchMedia && matchMedia('(prefers-reduced-motion: no-preference)').matches);
+  var esc = NL.esc || function (s) { return String(s); };
+
+  /* -------------------------------------------------- number counters */
+  /* Values glide from what was on screen to the new number; formatting stays
+     with the caller so Nepali/English digits and units are unchanged. */
+  var RAF = window.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); };
+  NL.countUp = function (el, to, fmt, from) {
+    if (!el) return;
+    fmt = fmt || function (v) { return String(Math.round(v)); };
+    if (from === undefined) from = parseFloat(el.getAttribute('data-mv'));
+    el.setAttribute('data-mv', to);
+    if (reduce || !isFinite(from) || !isFinite(to) || from === to) { el.textContent = fmt(to); return; }
+    var t0 = performance.now(), dur = 620;
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(from + (to - from) * e);
+      if (p < 1) RAF(step);
+    })(t0);
+  };
+  /* one soft green/red wash when a live number changes */
+  NL.flashValue = function (el, dir) {
+    if (!el || reduce || !dir) return;
+    var cls = dir > 0 ? 'flash-up' : 'flash-down';
+    el.classList.remove('flash-up', 'flash-down');
+    void el.offsetWidth; /* restart the animation */
+    el.classList.add(cls);
+    setTimeout(function () { el.classList.remove(cls); }, 1600);
+  };
+
+  if (reduce) { root.setAttribute('data-motion-ready', 'still'); return; }
+
+  /* ---------------------------------------------------- scroll reveals */
+  /* Section-sized blocks only — never nested, never every element. */
+  var SEL = '.sec, .hero, .brief, .page-hero, .card, .cp-list > .cp-item, .adm-top, .adm-kpis, .adm-row, .adm-card, .auth, .acct-card, .acct-sec, .offline-box';
+  var seen = 0;
+  var io = window.IntersectionObserver ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('is-in');
+      io.unobserve(en.target); /* once, then left alone */
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.04 }) : null;
+
+  function tag(el) {
+    if (el.hasAttribute('data-reveal')) return;
+    /* one level of motion: skip anything inside a block that already reveals */
+    if (el.parentElement && el.parentElement.closest('[data-reveal]')) return;
+    /* above the fold: fade only — a slide there is what shows up as layout movement */
+    el.setAttribute('data-reveal', el.getBoundingClientRect().top < innerHeight ? 'fade' : '');
+    /* the first screenful comes in as a short stagger, the rest on scroll */
+    var box = el.getBoundingClientRect();
+    if (box.top < innerHeight && seen < 6) el.style.setProperty('--m-delay', (seen++ * 60) + 'ms');
+    io.observe(el);
+  }
+  function scan(ctx) {
+    if (!io) return;
+    var list = (ctx || document).querySelectorAll(SEL);
+    for (var i = 0; i < list.length; i++) tag(list[i]);
+  }
+  /* safety net: never leave content hidden if an observer callback never lands */
+  function showAll() {
+    document.querySelectorAll('[data-reveal]:not(.is-in)').forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  /* ------------------------------------------------- chart draw-in */
+  /* Each chart draws once. Refreshes replace the markup, so the card it sits
+     in remembers it has already animated and later redraws stay still. */
+  function charts(ctx) {
+    var list = (ctx || document).querySelectorAll('.chart-box:not(.ch-draw)');
+    for (var i = 0; i < list.length; i++) {
+      var box = list[i], home = box.closest('.card, .sec, .tile') || box;
+      if (home.hasAttribute('data-ch-done')) continue;
+      home.setAttribute('data-ch-done', '');
+      box.classList.add('ch-draw');
+    }
+  }
+
+  /* ------------------------------------------------ back to top */
+  var TOP_LABEL = { en: 'Back to top', ne: 'सिरानमा जानुहोस्' };
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'to-top';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+  function label() {
+    var l = TOP_LABEL[NL.lang && NL.lang() === 'ne' ? 'ne' : 'en'];
+    btn.setAttribute('aria-label', l);
+    btn.title = l;
+  }
+  label();
+  document.addEventListener('nl:lang', label);
+  btn.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var skip = document.querySelector('.skip-link');
+    if (skip) skip.focus({ preventScroll: true });
+  });
+  document.body.appendChild(btn);
+
+  var ticking = false;
+  addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    RAF(function () {
+      btn.classList.toggle('show', (window.scrollY || 0) > 700);
+      ticking = false;
+    });
+  }, { passive: true });
+
+  /* ------------------------------------------------ save / share pop */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.save-btn, .share-btn');
+    if (!b) return;
+    b.classList.remove('pulse');
+    void b.offsetWidth;
+    b.classList.add('pulse');
+    setTimeout(function () { b.classList.remove('pulse'); }, 400);
+  }, true);
+
+  /* ------------------------------------------------ run + keep up */
+  scan();
+  charts();
+  root.setAttribute('data-motion-ready', '1');
+  setTimeout(showAll, 4000);
+
+  /* pages fill in asynchronously: pick up new sections and charts when the
+     DOM settles, at most once per animation frame */
+  var pending = false;
+  var mo = window.MutationObserver ? new MutationObserver(function () {
+    if (pending) return;
+    pending = true;
+    RAF(function () {
+      pending = false;
+      scan(document.getElementById('main') || document);
+      charts(document.getElementById('main') || document);
+    });
+  }) : null;
+  if (mo) mo.observe(document.getElementById('main') || document.body, { childList: true, subtree: true });
+  NL.motion = { scan: scan, charts: charts, showAll: showAll, reduced: reduce };
 })();

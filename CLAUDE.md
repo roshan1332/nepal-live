@@ -96,6 +96,9 @@ Client
 - `kit.js` also has `NL.PROVINCES`, `NL.provName(id)` and `NL.langChip(story)` ("EN" / "नेपाली").
 - `kit.js` — shared page helpers: `NL.i18n` (`[data-t]`, `[data-th]`, `[data-tp]`; `add()` re-applies), `NL.api`,
   formatting, charts, range tabs, freshness labels (`NL.fresh`), story renderers, alert cards, weather codes, AQI.
+  `NL.story.compact` (the /news list row) is an `article.cp-item`: chips + headline + standfirst + 150px thumb,
+  then a `.cp-foot` with publisher, age, a hover-only "Read original" and the save/share buttons. The headline link
+  carries `.stretch`, so the whole row opens the story while the buttons stay outside the link (never nest them in it).
 - `nepal-map.js` — generated province geometry (7 provinces, ~1.5k points), `proj`, `provinceAt(lon,lat)`,
   `provinceOfDistrict`, 77-district map. Regenerate only from the OCHA ADM1 GeoJSON with a DP simplifier.
 - `index.html` — homepage (order: hero → live bar → Nepal Today [briefing: date in English + Nepali BS, "What matters
@@ -150,6 +153,46 @@ explicitly not listed. Disabled chart ranges explain why (no intraday NEPSE; 60 
   `justify-content:space-between` — and reset it to natural height where the grid goes to one column (≤820px).
   Text-only story cards use a `.cs-cover` panel the photo's shape. Events are an agenda (one row per event).
 - Touch targets 44px on coarse pointers; `prefers-reduced-motion` respected; no horizontal page scroll.
+
+## Homepage (v2)
+The homepage is a separate visual world from the section pages: `index.html` + `page-home.css` + `page-home.js`,
+and it does NOT load `app.css`. `<html data-shell="v2">` makes app.js skip `renderChrome()` (no shared header,
+ticker, drawer or bottom nav) while still giving the page NL helpers, theme/language, accounts, the service worker
+and the visit beacon — so analytics and the PWA keep working. Identity: crimson `#c8102e` on near-black `#0b0b0d`,
+warm white `#f7f4ef` for editorial passages, Inter + Noto Sans Devanagari, tokens at the top of page-home.css.
+Sections, all fed by the real APIs (news-nepal, highlights, trending, alerts, provinces) and empty-safe:
+~1s intro (once per session, sessionStorage `nl-intro`) → hero lead story → ticker (says BREAKING only when an
+emergency-level alert exists, otherwise LIVE) → live numbers (counters) → numbered feed → scroll-pinned province
+rail (sticky + transform; a swipe list ≤860px) → drawn Nepal map from `NL.map` with province hover → six fullscreen
+category sections → trending takeover → cinematic footer. Motion is two primitives: one IntersectionObserver for
+"reveal once" and ONE rAF scroll loop (`drivers[]`) for the rail, the drifting category words and the cursor;
+the custom cursor is desktop-and-hover only. Nothing runs without `.js-motion`.
+The flag is drawn as SVG (`.flag`), never the 🇳🇵 emoji — Windows renders that as "NP".
+The section pages still use the shared shell and app.css; that rollout is unfinished.
+
+## Logo & section-page skin
+The owner's logo lives at `logo.png` (full lockup) and `logo-mark.png` (emblem, white knocked out so it sits on dark
+or light). Both are served from the `IMAGES` map in server.js. The emblem is the wordmark on every page — `.wm-logo`
+in app.js for section pages, `.brand-logo` in index.html for the homepage — and it is also the favicon
+(`favicon-48.png`), the app icons (`icon-192/512.png`) and the share card (`og.png`, 1200×630, rebuilt around the
+lockup). Never use the 🇳🇵 emoji: Windows shows it as "NP".
+Section pages keep app.css and their existing modules, and load `page-skin.css` after it. That skin re-points the
+design tokens at the homepage palette (crimson `#c8102e`, ink `#0b0b0d`, warm white `#f7f4ef`), tightens display
+type, darkens the ticker and the footer, and squares off the radii — so the sections match the v2 homepage without
+rewriting any page module. Restyle through tokens there first; only touch app.css when a token cannot express it.
+
+## Motion (animations)
+`app.css` "motion system" section + the block at the end of `app.js`. Tokens `--m-fast/--m-mid/--m-slow` with ease-out
+`--m-ease`; transform/opacity only (never layout), 180-360ms, delays capped. `.js-motion` is set by the inline head
+script before first paint — never under `prefers-reduced-motion` — and dropped again after 4s if app.js never sets
+`data-motion-ready`, so content is never left hidden. Scroll reveals: the motion block tags section-sized blocks (`SEL`)
+with `data-reveal`, one level only (never nested), shows each once via IntersectionObserver, re-scans on DOM changes,
+and fades without sliding above the fold. `NL.countUp(el, to, fmt, from)` and `NL.flashValue(el, dir)`: live numbers
+wash green up / red down (homepage tiles, ticker, admin KPIs). Charts draw once — `pathLength="1"` on `.cb-line` plus
+`.ch-draw`, with `data-ch-done` on the card so refreshes stay still. Back-to-top `.to-top` appears past 700px.
+Cross-document view transitions sit inside a `prefers-reduced-motion: no-preference` query.
+Adding motion: extend the shared layer (a token + a class), never per-page keyframes, and compare CLS with a
+reduced-motion run of the same page before and after.
 
 ## Deploy
 Upload the flat files to GitHub → Render auto-deploys (`render.yaml`, start: `node server.js`). Accounts: run

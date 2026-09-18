@@ -535,6 +535,7 @@ const SEOP = require('./seo-pages')({ P, S, site });
 const IMAGES = {
   '/og.png': ['og.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'], '/icon-192.png': ['icon-192.png', 'image/png'],
   '/favicon.ico': ['favicon-48.png', 'image/png'], '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+  '/logo.png': ['logo.png', 'image/png'], '/logo-mark.png': ['logo-mark.png', 'image/png'],
 };
 const MANIFEST = {
   name: 'Nepal Live', short_name: 'Nepal Live', id: '/', start_url: '/?source=app', scope: '/', display: 'standalone',

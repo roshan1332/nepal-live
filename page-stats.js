@@ -113,6 +113,10 @@
     return '<svg class="adm-spark" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">'
       + '<path class="a" d="M0,28 L' + pts.join(' L') + ' L100,28Z"/><path class="l" d="M' + pts.join(' L') + '"/></svg>';
   }
+  /* a number that counts up on first draw (see NL.countUp; still under reduced motion) */
+  function num(v, dec) {
+    return '<span class="adm-n" data-num="' + v + '" data-dec="' + (dec || 0) + '">' + (dec ? v.toFixed(dec) : fmt(v)) + '</span>';
+  }
   function kpi(icon, label, value, dl, vals) {
     return '<div class="adm-kpi"><div class="adm-kpi-h"><span class="adm-ico">' + IC[icon] + '</span><span>' + esc(label) + '</span></div>'
       + '<div class="adm-kpi-v">' + value + '</div><div class="adm-kpi-d">' + dl + '</div>' + spark(vals) + '</div>';
@@ -278,10 +282,10 @@
     root.innerHTML = side(d.viewer) + '<div class="adm-main">' + topBar(d)
       + (tt.v ? '' : '<p class="adm-banner">' + esc(t('noData')) + '</p>')
       + '<div class="adm-kpis">'
-      + kpi('user', t('kVisitors'), fmt(tt.u), delta(tt.u, pv.u), col('u'))
-      + kpi('doc', t('kViews'), fmt(tt.v), delta(tt.v, pv.v), hourly ? d.hours : col('v'))
-      + kpi('grid', t('kPpv'), ppv.toFixed(1), delta(ppv, pppv), hourly ? [] : days.map(function (x) { return x.u ? x.v / x.u : 0; }))
-      + kpi('compass', t('kNew'), fmt(tt.n) + ' <small>' + esc(t('newShare', { p: pct(tt.n, tt.n + tt.r) })) + '</small>', delta(tt.n, pv.n), col('n'))
+      + kpi('user', t('kVisitors'), num(tt.u), delta(tt.u, pv.u), col('u'))
+      + kpi('doc', t('kViews'), num(tt.v), delta(tt.v, pv.v), hourly ? d.hours : col('v'))
+      + kpi('grid', t('kPpv'), num(ppv, 1), delta(ppv, pppv), hourly ? [] : days.map(function (x) { return x.u ? x.v / x.u : 0; }))
+      + kpi('compass', t('kNew'), num(tt.n) + ' <small>' + esc(t('newShare', { p: pct(tt.n, tt.n + tt.r) })) + '</small>', delta(tt.n, pv.n), col('n'))
       + '</div>'
       + '<div class="adm-row">'
       + card('sec-traffic', t(hourly ? 'trafficHToday' : 'trafficH'), '<div class="adm-chart" id="adm-chart"></div>',
@@ -294,6 +298,14 @@
       + card('sec-times', t('timesH'), heatmap(d.heat || []), '<small>' + esc(t('timesSub')) + '</small>')
       + '<p class="adm-note">' + esc(t('note', { d: since })) + '</p></div>';
     drawChart();
+    /* count the headline numbers up once, not on every 30-second refresh */
+    if (!S.counted && NL.countUp) {
+      S.counted = true;
+      root.querySelectorAll('.adm-n').forEach(function (el) {
+        var to = +el.getAttribute('data-num'), dec = +el.getAttribute('data-dec') || 0;
+        NL.countUp(el, to, function (v) { return dec ? v.toFixed(dec) : fmt(Math.round(v)); }, 0);
+      });
+    }
   }
 
   function load() {

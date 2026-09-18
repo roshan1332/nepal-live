@@ -678,14 +678,15 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
 <meta name="twitter:image" content="${esc(origin)}/og.png">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/icon-512.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Noto+Sans+Devanagari:wght@400..800&display=swap">
 <link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/page-skin.css">
 <script>
   (function () {
     try {
@@ -695,6 +696,13 @@ ${opts.notFound || def.noindex ? '<meta name="robots" content="noindex">' : `<li
       d.setAttribute('data-theme', t);
       if (t === 'dark') { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = '#0b1018'; }
       if (localStorage.getItem('nlive-lang') === 'ne') { d.setAttribute('data-lang', 'ne'); d.setAttribute('lang', 'ne'); }
+      /* Motion is opt-in before first paint, so revealed sections never flash
+         into view. If app.js never runs, this drops the class again and the
+         page shows normally. */
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        d.classList.add('js-motion');
+        setTimeout(function () { if (!d.hasAttribute('data-motion-ready')) d.classList.remove('js-motion'); }, 4000);
+      }
     } catch (e) {}
   })();
 </script>

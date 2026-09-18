@@ -148,11 +148,11 @@
 
   /* A thumbnail that fails to load takes its frame with it. */
   NL.imgFail = function (img) {
-    var card = img.closest('[data-story]');
+    var card = img.closest('.cp-item') || img.closest('[data-story]');
     var frame = img.parentNode;
     if (frame && frame !== card) frame.remove(); else img.remove();
     if (!card) return;
-    card.classList.add(card.classList.contains('row-story') || card.classList.contains('cp-story') ? 'no-img' : 'text-only');
+    card.classList.add(card.classList.contains('row-story') || card.classList.contains('cp-item') ? 'no-img' : 'text-only');
   };
   var img = function (src, eager) {
     return '<img src="' + esc(src) + '" alt="" ' + (eager ? 'fetchpriority="high"' : 'loading="lazy"')
@@ -190,17 +190,22 @@
     /* dense list row for the News page: headline, standfirst, publisher, and an
        explicit "Read original article" so it's clear where the link goes */
     compact: function (i, idx) {
-      /* the save button sits beside the link, not inside it (no buttons inside <a>) */
-      return '<div class="cp-wrap"><a class="cp-story' + (i.image ? '' : ' no-img') + '" style="--i:' + ((idx || 0) % 12) + '" ' + link(i) + '>'
-        + '<div class="cp-body"><div class="cp-top"><span class="cat">' + esc(topic(i.topic)) + '</span>' + NL.langChip(i) + '</div>'
-        + '<h3 class="cp-title"' + langAttr(i.title) + '>' + esc(i.title) + '</h3>'
+      /* One row: flag line, headline, standfirst, thumbnail, then a footer with
+         publisher, age and the buttons. The headline's link is stretched over
+         the row (.stretch), so the whole row opens the story while the
+         save/share buttons stay outside the link and keep working. */
+      var when = ts(i);
+      return '<article class="cp-item' + (i.image ? '' : ' no-img') + '">'
+        + '<div class="cp-main"><div class="cp-body">'
+        + '<div class="cp-top"><span class="cat">' + esc(topic(i.topic)) + '</span>' + NL.langChip(i) + '</div>'
+        + '<h3 class="cp-title"' + langAttr(i.title) + '><a class="stretch" ' + link(i) + '>' + esc(i.title) + '</a></h3>'
         + (i.summary ? '<p class="cp-sum"' + langAttr(i.summary) + '>' + esc(i.summary) + '</p>' : '')
-        + '<div class="meta"><span class="src">' + esc(srcName(i.source)) + '</span><span class="sep">·</span>'
-        + '<span data-ago="' + ts(i) + '">' + esc(NL.ago(ts(i))) + '</span>'
-        + '<span class="read-orig">' + esc(t('readOrigArticle')) + ' <span>→</span></span></div></div>'
-        + (i.image ? '<div class="cp-img">' + img(i.image) + '</div>' : '') + '</a>'
+        + '</div>' + (i.image ? '<div class="cp-img">' + img(i.image) + '</div>' : '') + '</div>'
+        + '<div class="cp-foot"><span class="cp-src">' + esc(srcName(i.source)) + '</span><span class="sep">·</span>'
+        + '<span data-ago="' + when + '">' + esc(NL.ago(when)) + '</span>'
+        + '<span class="cp-orig">' + esc(t('readOrig')) + ' <span>↗</span></span>'
         + '<div class="cp-acts">' + (NL.shareBtn ? NL.shareBtn({ url: i.link, title: i.title }) : '')
-        + NL.saveBtn({ type: 'news', id: i.link, title: i.title, url: i.link, sub: srcName(i.source), img: i.image || '' }) + '</div></div>';
+        + NL.saveBtn({ type: 'news', id: i.link, title: i.title, url: i.link, sub: srcName(i.source), img: i.image || '' }) + '</div></div></article>';
     }
   };
 
@@ -311,8 +316,8 @@
     return '<div class="chart-box" style="--ch:' + H + 'px">'
       + '<div class="cb-plot" data-chart="' + id + '"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">'
       + '<defs><linearGradient id="g' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:' + col + ';stop-opacity:.18"/><stop offset="1" style="stop-color:' + col + ';stop-opacity:0"/></linearGradient></defs>'
-      + '<path d="' + d + ' L' + W + ',' + H + ' L0,' + H + ' Z" style="fill:url(#g' + id + ')"/>'
-      + '<path d="' + d + '" style="fill:none;stroke:' + col + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>'
+      + '<path class="cb-area" d="' + d + ' L' + W + ',' + H + ' L0,' + H + ' Z" style="fill:url(#g' + id + ')"/>'
+      + '<path class="cb-line" pathLength="1" d="' + d + '" style="fill:none;stroke:' + col + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>'
       + '<i class="cb-vline" hidden></i><i class="cb-dot" hidden style="background:' + col + '"></i><div class="cb-tip" hidden></div></div>'
       + '<div class="cb-y"><span>' + esc(fmt(max)) + '</span><span>' + esc(fmt(min)) + '</span></div>'
       + '<div class="cb-x"><span>' + esc(dfmt(pts[0].t)) + '</span><span>' + esc(dfmt(pts[pts.length - 1].t)) + '</span></div></div>';
