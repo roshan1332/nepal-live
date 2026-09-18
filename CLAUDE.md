@@ -176,6 +176,9 @@ The section pages still use the shared shell and app.css; that rollout is unfini
 the shared feed: lead story, headlines, most-covered terms for that category, the publishers carrying it and links to
 the neighbouring sections. Hero wording per topic (both languages) is registered by the script under the `kicker`/
 `h1`/`sub` i18n keys. The homepage keeps a taste of each category with an "All <category> →" link into these pages.
+The category lead (`.feature-card`) is capped and side-by-side, and the NRB currency table scrolls inside itself
+with a pinned header — both used to fill a whole screen before the list began. Section-page heroes take the same
+staggered arrival as the homepage (see page-skin.css).
 Watch out: `[data-t]` sets textContent, so never nest a live counter inside a translated heading — it gets wiped
 (that bug emptied the category lists once).
 
