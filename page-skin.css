@@ -142,3 +142,7 @@
 
 /* the homepage supplies its own chrome; never skin it from here */
 [data-shell="v2"] .nl-head, [data-shell="v2"] .nl-foot { display: none }
+
+/* category pages reuse the publisher list for their section links */
+.pub-list a { flex: 1; display: flex; align-items: center; min-height: 38px; font-size: 14px; color: var(--text-2) }
+.pub-list a:hover { color: var(--brand) }

@@ -170,6 +170,15 @@ the custom cursor is desktop-and-hover only. Nothing runs without `.js-motion`.
 The flag is drawn as SVG (`.flag`), never the 🇳🇵 emoji — Windows renders that as "NP".
 The section pages still use the shared shell and app.css; that rollout is unfinished.
 
+## Category fronts
+`/news/politics|business|technology|sports|entertainment|world|society` are generated in site-pages.js from the
+`TOPIC_FRONTS` table and all run `page-category.js`, which reads the topic from the path and fills one layout from
+the shared feed: lead story, headlines, most-covered terms for that category, the publishers carrying it and links to
+the neighbouring sections. Hero wording per topic (both languages) is registered by the script under the `kicker`/
+`h1`/`sub` i18n keys. The homepage keeps a taste of each category with an "All <category> →" link into these pages.
+Watch out: `[data-t]` sets textContent, so never nest a live counter inside a translated heading — it gets wiped
+(that bug emptied the category lists once).
+
 ## Logo & section-page skin
 The owner's logo lives at `logo.png` (full lockup) and `logo-mark.png` (emblem, white knocked out so it sits on dark
 or light). Both are served from the `IMAGES` map in server.js. The emblem is the wordmark on every page — `.wm-logo`

@@ -408,7 +408,14 @@ em { font-style: normal; color: var(--crimson) }
   white-space: nowrap; margin-left: calc(var(--gut) * -1); padding-left: var(--gut); will-change: transform;
 }
 .cat-sec.solid .cat-word { -webkit-text-stroke: 0; color: color-mix(in srgb, var(--crimson) 90%, transparent) }
-.cat-in { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gut); margin-top: clamp(-30px, -2vw, -10px) }
+.cat-in { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gut); margin-top: 10px }
+.cat-all {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; padding-bottom: 4px;
+  border-bottom: 2px solid var(--crimson); font-size: 12.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+}
+.cat-all span { transition: transform var(--t-2) var(--e) }
+.cat-all:hover span { transform: translateX(5px) }
+.cat-all:lang(ne), [data-lang="ne"] .cat-all { letter-spacing: 0; text-transform: none }
 .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(18px, 2.6vw, 34px); margin-top: 30px }
 .cat-card { display: flex; flex-direction: column }
 .cat-media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-2) }
@@ -471,6 +478,27 @@ em { font-style: normal; color: var(--crimson) }
 }
 .foot-end b { color: var(--dark-fg-2) }
 
+
+/* ------------------------- depth in the dark -------------------------
+   Near-black on its own reads flat and grey on a phone screen. Two very
+   low-contrast washes (a crimson one high left, a cold Himalayan one low
+   right) plus a fine grain give the dark sections some air. Both sit
+   behind the content and never touch text contrast. */
+.hero, .rail-sec, .cat-sec.dark, .trend, .foot, .tick { position: relative; isolation: isolate }
+.hero::after, .rail-sec::after, .cat-sec.dark::after, .trend::after, .foot::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(58% 46% at 14% 8%, color-mix(in srgb, var(--crimson) 16%, transparent), transparent 68%),
+    radial-gradient(52% 44% at 88% 82%, color-mix(in srgb, #2d4d7d 24%, transparent), transparent 72%);
+}
+/* a fine grain, so large black areas stop looking like a printing error */
+.rail-sec::before, .cat-sec.dark::before, .trend::before, .foot::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E");
+}
+/* the ridge line that opened the page, echoed faintly where dark meets light */
+.trend::after, .foot::after { background-position: center }
+
 /* ------------------------- reveal (once, on scroll) ------------------------- */
 .js-motion [data-rv] { opacity: 0; transform: translateY(28px); transition: opacity .7s var(--e), transform .7s var(--e) }
 .js-motion [data-rv].is-in { opacity: 1; transform: none }
@@ -511,6 +539,22 @@ em { font-style: normal; color: var(--crimson) }
 }
 @media (max-width: 680px) {
   body { font-size: 16px }
+  /* one tight vertical rhythm instead of desktop-sized air between sections */
+  .sec, .cat-sec, .trend { padding-block: 46px }
+  .map-sec { padding-block: 40px 46px }
+  .rail-sec { padding-block: 46px 34px }
+  .cat-in { margin-top: 6px }
+  .cat-grid { margin-top: 20px; gap: 22px }
+  .sec-head { margin-bottom: 22px }
+  .rail-head { margin-bottom: 20px }
+  .map-copy .more { margin-top: 18px }
+  .map-pop { min-height: 0; margin-top: 18px; padding: 14px 16px }
+  .foot { padding-top: 44px }
+  .foot-mark { margin-top: 22px }
+  .foot-cols { padding-block: 30px }
+  .lat-list { gap: 26px }
+  .lat-item { padding-bottom: 26px }
+  .trend-item { padding-block: 14px }
   .lat-item { grid-template-columns: minmax(0, 1fr); gap: 14px }
   .lat-n { position: absolute; top: 0; left: 0; padding-top: 0 }
   .lat-body { padding-top: 26px }

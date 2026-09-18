@@ -34,8 +34,8 @@
       footSay: 'Stay connected with Nepal.', madeBy: 'Made by', nptNote: 'All times Nepal Time (NPT, UTC+5:45)',
       navLatest: 'Latest', navNepal: 'Nepal', navPolitics: 'Politics', navBusiness: 'Business', navTech: 'Tech',
       navSports: 'Sports', navEnt: 'Entertainment', navWorld: 'World',
-      stories: '{n} stories', headlines: '{n} headlines', sources: '{n} sources', noStories: 'No stories tagged here yet.',
-      hoverProv: 'Hover a province on the map.', capital: 'Capital', readMore: 'Read',
+      allOf: 'All {c}', stories: '{n} stories', headlines: '{n} headlines', sources: '{n} sources', noStories: 'No stories tagged here yet.',
+      hoverProv: 'Hover a province on the map.', tapProv: 'Tap a province on the map.', capital: 'Capital', readMore: 'Read',
       unavailable: 'This feed is unavailable right now.', live: 'LIVE', breaking: 'BREAKING',
       secNews: 'News', secMoney: 'Markets', secWeather: 'Weather', secAlerts: 'Alerts', secSports: 'Sports',
       secTools: 'Tools', secJobs: 'Jobs', secEvents: 'Events', secExplore: 'Explore', secCalendar: 'Calendar',
@@ -54,8 +54,8 @@
       footSay: 'नेपालसँग जोडिइरहनुहोस्।', madeBy: 'बनाउने', nptNote: 'सबै समय नेपाल समय (NPT, UTC+5:45)',
       navLatest: 'ताजा', navNepal: 'नेपाल', navPolitics: 'राजनीति', navBusiness: 'बजार', navTech: 'प्रविधि',
       navSports: 'खेलकुद', navEnt: 'मनोरञ्जन', navWorld: 'विश्व',
-      stories: '{n} समाचार', headlines: '{n} शीर्षक', sources: '{n} स्रोत', noStories: 'यहाँका समाचार अहिले छैनन्।',
-      hoverProv: 'नक्सामा प्रदेश छान्नुहोस्।', capital: 'सदरमुकाम', readMore: 'पढ्नुहोस्',
+      allOf: 'सबै {c}', stories: '{n} समाचार', headlines: '{n} शीर्षक', sources: '{n} स्रोत', noStories: 'यहाँका समाचार अहिले छैनन्।',
+      hoverProv: 'नक्सामा प्रदेश छान्नुहोस्।', tapProv: 'नक्सामा प्रदेश थिच्नुहोस्।', capital: 'सदरमुकाम', readMore: 'पढ्नुहोस्',
       unavailable: 'यो फिड अहिले उपलब्ध छैन।', live: 'प्रत्यक्ष', breaking: 'ब्रेकिङ',
       secNews: 'समाचार', secMoney: 'बजार', secWeather: 'मौसम', secAlerts: 'सतर्कता', secSports: 'खेलकुद',
       secTools: 'उपकरण', secJobs: 'जागिर', secEvents: 'कार्यक्रम', secExplore: 'अन्वेषण', secCalendar: 'पात्रो',
@@ -127,8 +127,9 @@
 
   /* --------------------------------------------------------------- nav */
   var nav = $('nav');
-  var NAV = [['#latest', 'navLatest'], ['#rail-sec', 'navNepal'], ['#cat-politics', 'navPolitics'], ['#cat-business', 'navBusiness'],
-    ['#cat-technology', 'navTech'], ['#cat-sports', 'navSports'], ['#cat-entertainment', 'navEnt'], ['#cat-world', 'navWorld']];
+  /* the categories are their own pages now; the homepage only shows a taste */
+  var NAV = [['/news', 'navLatest'], ['#rail-sec', 'navNepal'], ['/news/politics', 'navPolitics'], ['/news/business', 'navBusiness'],
+    ['/news/technology', 'navTech'], ['/news/sports', 'navSports'], ['/news/entertainment', 'navEnt'], ['/news/world', 'navWorld']];
   var SECTIONS = [['/news', 'secNews'], ['/money', 'secMoney'], ['/weather', 'secWeather'], ['/alerts', 'secAlerts'],
     ['/sports', 'secSports'], ['/tools', 'secTools'], ['/jobs', 'secJobs'], ['/events', 'secEvents']];
   var TODAY = [['/gold-price', 'goldToday'], ['/nepse', 'nepseToday'], ['/exchange-rate', 'fxToday'],
@@ -384,14 +385,18 @@
         + (top ? '<a class="mp-head" ' + out(top) + '>' + esc(top.title) + '</a>' : '<p class="mp-hint">' + esc(t('noStories')) + '</p>');
       wrap.querySelectorAll('.mp-prov').forEach(function (el) { el.classList.toggle('on', el.getAttribute('data-p') === id); });
     }
+    var touch = !matchMedia('(hover: hover)').matches;
     function clear() {
-      pop.innerHTML = '<p class="mp-hint">' + esc(t('hoverProv')) + '</p>';
+      pop.innerHTML = '<p class="mp-hint">' + esc(t(touch ? 'tapProv' : 'hoverProv')) + '</p>';
       wrap.querySelectorAll('.mp-prov').forEach(function (el) { el.classList.remove('on'); });
     }
-    clear();
+    /* a finger has no hover, so the panel opens on the province with the most
+       stories rather than sitting empty until something is tapped */
+    var busiest = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0];
+    if (touch && busiest) show(busiest); else clear();
     wrap.addEventListener('mouseover', function (e) { var p = e.target.closest('[data-p]'); if (p) show(p.getAttribute('data-p')); });
     wrap.addEventListener('click', function (e) { var p = e.target.closest('[data-p]'); if (p) show(p.getAttribute('data-p')); });
-    wrap.addEventListener('mouseleave', clear);
+    if (!touch) wrap.addEventListener('mouseleave', clear);
     watch($('map-sec'));
   }
 
@@ -407,7 +412,8 @@
       var dark = n % 2 === 1;
       return '<section class="cat-sec' + (dark ? ' dark' : ' solid') + '" id="cat-' + c[0] + '" aria-labelledby="cw-' + c[0] + '">'
         + '<h2 class="cat-word" id="cw-' + c[0] + '">' + esc(ne() ? c[2] : c[1]) + '</h2>'
-        + '<div class="cat-in"><div class="cat-lead">'
+        + '<div class="cat-in"><a class="cat-all" href="/news/' + c[0] + '">' + esc(t('allOf', { c: ne() ? c[2] : c[1] })) + ' <span>→</span></a>'
+        + '<div class="cat-lead">'
         + (lead.image ? '<a class="cat-media rv-img" ' + out(lead) + '>' + img(lead.image) + '</a>' : '')
         + '<div><div class="cat-m">' + esc(srcOf(lead)) + ' · ' + esc(NL.ago(when(lead))) + '</div>'
         + '<h3 class="cat-t"><a ' + out(lead) + '>' + esc(lead.title) + '</a></h3></div></div>'

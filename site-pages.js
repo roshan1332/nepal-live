@@ -595,6 +595,85 @@ Object.assign(PAGES, {
   },
 });
 
+/* One front per news category (/news/politics …). They all run page-category.js,
+   which reads the topic from the path and fills the same layout from the shared
+   feed — a lead story, the day's headlines, what is most covered here, and who
+   is publishing it. */
+const TOPIC_FRONTS = {
+  politics: {
+    title: 'Nepal Politics News Today — Parliament, Parties, Provinces · Nepal Live',
+    description: 'Politics from Nepal’s newsrooms: parliament, the parties, the provinces and policy — in English and Nepali, updated through the day. Every story opens on the original publisher’s site.',
+    kicker: 'Politics', h1: 'Nepal <em>politics</em>',
+    sub: 'Parliament, the parties and the provinces — as Nepal’s newsrooms report it, updated through the day.',
+  },
+  business: {
+    title: 'Nepal Business & Economy News Today — Banking, Trade · Nepal Live',
+    description: 'Business and the economy from Nepali newsrooms: banking, trade, remittances, tourism and the markets, in English and Nepali, updated through the day.',
+    kicker: 'Business', h1: 'Nepal <em>business</em>',
+    sub: 'The economy as it is reported: banking, trade, remittances, tourism and the companies behind them.',
+  },
+  technology: {
+    title: 'Nepal Technology News Today — Internet, Startups, Digital · Nepal Live',
+    description: 'Technology news from Nepal: internet and telecoms, digital payments, startups and science, gathered from Nepali newsrooms in English and Nepali.',
+    kicker: 'Technology', h1: 'Nepal <em>technology</em>',
+    sub: 'Telecoms, digital payments, startups and science — the technology stories Nepali newsrooms are filing.',
+  },
+  sports: {
+    title: 'Nepal Sports News Today — Cricket, Football & More · Nepal Live',
+    description: 'Sports news from Nepali newsrooms — cricket, football, national teams and the leagues. For live scores and fixtures, see the Sports page.',
+    kicker: 'Sports', h1: 'Nepal <em>sport</em>',
+    sub: 'The sports desk, as Nepali newsrooms report it. Live scores and fixtures live on the Sports page.',
+  },
+  entertainment: {
+    title: 'Nepal Entertainment News Today — Film, Music, Culture · Nepal Live',
+    description: 'Entertainment and culture from Nepal: film, music, television and the arts, gathered from Nepali newsrooms in English and Nepali.',
+    kicker: 'Entertainment', h1: 'Nepal <em>entertainment</em>',
+    sub: 'Film, music, television and the arts — reported by Nepal’s own newsrooms.',
+  },
+  world: {
+    title: 'World News from Nepali Newsrooms · Nepal Live',
+    description: 'World news as Nepal’s newsrooms cover it — the stories abroad that Nepali publishers are reporting, in English and Nepali.',
+    kicker: 'World', h1: '<em>World</em> news',
+    sub: 'What is happening beyond Nepal, as Nepal’s own newsrooms report it.',
+  },
+  society: {
+    title: 'Nepal Society News Today — Health, Education, Daily Life · Nepal Live',
+    description: 'Society news from Nepal: health, education, migration, crime and daily life across the seven provinces, from Nepali newsrooms.',
+    kicker: 'Society', h1: 'Nepal <em>society</em>',
+    sub: 'Health, education, migration and daily life across the seven provinces.',
+  },
+};
+Object.keys(TOPIC_FRONTS).forEach((slug) => {
+  const f = TOPIC_FRONTS[slug];
+  PAGES['/news/' + slug] = {
+    key: 'news', script: 'page-category.js', changefreq: 'hourly', priority: '0.8',
+    title: f.title, description: f.description, kicker: f.kicker, h1: f.h1, sub: f.sub,
+    side: `<span class="stamp" id="stamp-cat"></span>`,
+    body: `
+  <div class="news-tools">
+    <div class="sec-actions news-filters">
+      <label class="field-search">${ICO.search}<input id="cat-q" type="search" autocomplete="off" placeholder="Filter headlines…" data-tp="filterPh" aria-label="Filter headlines"></label>
+      <div class="seg" role="group" aria-label="Headline language">
+        <button type="button" data-filter="all" aria-pressed="true" data-t="all">All</button><button type="button" data-filter="en">English</button><button type="button" data-filter="ne">नेपाली</button>
+      </div>
+      <span class="muted small" id="cat-count"></span>
+    </div>
+  </div>
+  <div class="news-layout">
+    <div>
+      <div id="cat-lead"></div>
+      <div id="cat-list"></div>
+      <div class="more-row" id="cat-more"></div>
+    </div>
+    <aside class="news-side">
+      <div class="side-block"><h2 class="label" data-t="mostCovered">Most covered</h2><div id="cat-covered"></div></div>
+      <div class="side-block"><h2 class="label" data-t="publishers">Publishers</h2><span class="muted small" id="cat-pubcount"></span><div id="cat-pubs"></div></div>
+      <div class="side-block"><h2 class="label" data-t="otherSections">Other sections</h2><div id="cat-other"></div></div>
+    </aside>
+  </div>`,
+  };
+});
+
 const NOT_FOUND = {
   key: '404', script: null, title: 'Page not found · Nepal Live', description: 'This page does not exist on Nepal Live.',
   kicker: '404', h1: 'Page not <em>found</em>', sub: 'The page you asked for isn’t here. It may have moved.',

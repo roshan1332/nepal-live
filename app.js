@@ -70,7 +70,7 @@
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
       aboutTitle: 'About Nepal Live',
       alerts: 'Alerts', roads: 'Roads', trending: 'Trending', home: 'Home', sportsNav: 'Sports', moreNav: 'More', nepalSports: 'Nepal sports',
-      tools: 'Tools', share: 'Share', copied: 'Link copied', installTitle: 'Install Nepal Live', installSub: 'Open it like an app from your home screen — no app store needed.',
+      tools: 'Tools', tpPolitics: 'Politics', tpBusiness: 'Business', tpTech: 'Technology', tpWorld: 'World news', share: 'Share', copied: 'Link copied', installTitle: 'Install Nepal Live', installSub: 'Open it like an app from your home screen — no app store needed.',
       installBtn: 'Install', notNow: 'Not now',
       jobs: 'Jobs', events: 'Events', calendar: 'Calendar', government: 'Government services', explore: 'Explore',
       stLive: 'Live', stRecent: 'Recent', stOff: 'Unavailable', staleFrom: 'Couldn’t refresh · showing data from {ago}', offText: 'Data temporarily unavailable',
@@ -103,7 +103,7 @@
       secNewsKw: 'headlines stories samachar', secMarketsKw: 'market prices rates snapshot',
       aboutTitle: 'नेपाल लाइभको बारेमा',
       alerts: 'सतर्कता', roads: 'सडक', trending: 'चर्चामा', home: 'गृहपृष्ठ', sportsNav: 'खेलकुद', moreNav: 'थप', nepalSports: 'नेपाली खेलकुद',
-      tools: 'उपकरण', share: 'सेयर', copied: 'लिंक कपी भयो', installTitle: 'नेपाल लाइभ इन्स्टल गर्नुहोस्', installSub: 'होम स्क्रिनबाट एपजस्तै खोल्नुहोस् — एप स्टोर चाहिँदैन।',
+      tools: 'उपकरण', tpPolitics: 'राजनीति', tpBusiness: 'बजार', tpTech: 'प्रविधि', tpWorld: 'विश्व समाचार', share: 'सेयर', copied: 'लिंक कपी भयो', installTitle: 'नेपाल लाइभ इन्स्टल गर्नुहोस्', installSub: 'होम स्क्रिनबाट एपजस्तै खोल्नुहोस् — एप स्टोर चाहिँदैन।',
       installBtn: 'इन्स्टल', notNow: 'अहिले होइन',
       jobs: 'जागिर', events: 'कार्यक्रम', calendar: 'पात्रो', government: 'सरकारी सेवा', explore: 'अन्वेषण',
       stLive: 'लाइभ', stRecent: 'हालैको', stOff: 'उपलब्ध छैन', staleFrom: 'ताजा हुन सकेन · {ago} को तथ्यांक देखाइँदै', offText: 'तथ्यांक अस्थायी रूपमा उपलब्ध छैन',
@@ -254,6 +254,10 @@
   };
   var MORE = function () {
     return [
+      ['/news/politics', ICON.doc, s('tpPolitics')],
+      ['/news/business', ICON.chart, s('tpBusiness')],
+      ['/news/technology', ICON.grid, s('tpTech')],
+      ['/news/world', ICON.compass, s('tpWorld')],
       ['/tools', ICON.tools, s('tools')],
       ['/football', ICON.ball, s('football')],
       ['/cricket', ICON.bat, s('cricket')],
