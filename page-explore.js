@@ -21,7 +21,8 @@
       headlines: 'Headlines mentioning places here', noNews: 'No current headlines mention these places.', newsBasis: 'Matched by the city and district names in each headline.',
       nationwide: 'Coming up nationwide', fullForecast: 'Full forecast', setMyCity: 'Set as my city', myCity: 'My city', myCitySet: 'Saved as your city',
       feels: 'Feels like', humidity: 'Humidity', wind: 'Wind', rainChance: 'Rain chance today', today: 'Today', aqi: 'Air quality (model)',
-      noWx: 'Current conditions for this city are on the Weather page.', near: '{d} km away', within: 'within 100 km',
+      noWx: 'Current conditions for this city are on the Weather page.', noWxNow: 'No update available right now.',
+      near: '{d} km away', within: 'within 100 km',
       legWeather: 'Current temperature in major cities · Open-Meteo model', legWeatherMet: 'Current temperature in major cities · MET Norway forecast', legAir: 'US AQI in major cities · Open-Meteo air-quality model',
       legQuakes: 'M4+ earthquakes, last 30 days · circle size shows magnitude · USGS', legAlerts: 'Active official alerts that have a location',
       legRoads: 'Road closures reported by the Department of Roads (BIPAD Portal)', legNew: 'last 24 h', updated: 'updated {ago}',
@@ -37,7 +38,7 @@
       allNepal: 'सम्पूर्ण नेपाल', nDistricts: '{n} जिल्ला', cities: 'सहर', districtsList: 'जिल्ला',
       noAlerts: 'यहाँ अहिले कुनै सक्रिय आधिकारिक सतर्कता छैन।', noRoads: 'यहाँ अहिले सडक अवरोध रिपोर्ट भएको छैन।', noQuakes: 'पछिल्लो ३० दिनमा यहाँ M4+ भूकम्प गएको छैन।',
       headlines: 'यहाँका ठाउँ उल्लेख भएका समाचार', noNews: 'अहिलेका समाचारमा यी ठाउँ उल्लेख छैनन्।', newsBasis: 'शीर्षकमा सहर र जिल्लाको नामका आधारमा मिलाइएको।',
-      nationwide: 'देशभर आउँदै', fullForecast: 'पूरा पूर्वानुमान', setMyCity: 'मेरो सहर बनाउनुहोस्', myCity: 'मेरो सहर', myCitySet: 'तपाईंको सहरका रूपमा सेभ भयो',
+      noWxNow: 'अहिले अपडेट उपलब्ध छैन।', nationwide: 'देशभर आउँदै', fullForecast: 'पूरा पूर्वानुमान', setMyCity: 'मेरो सहर बनाउनुहोस्', myCity: 'मेरो सहर', myCitySet: 'तपाईंको सहरका रूपमा सेभ भयो',
       feels: 'महसुस', humidity: 'आर्द्रता', wind: 'हावा', rainChance: 'आज वर्षाको सम्भावना', today: 'आज', aqi: 'हावाको गुणस्तर (मोडेल)',
       noWx: 'यो सहरको हालको मौसम मौसम पृष्ठमा छ।', near: '{d} किमी टाढा', within: '१०० किमीभित्र',
       legWeather: 'प्रमुख सहरको हालको तापक्रम · Open-Meteo मोडेल', legWeatherMet: 'प्रमुख सहरको हालको तापक्रम · MET Norway पूर्वानुमान', legAir: 'प्रमुख सहरको US AQI · Open-Meteo वायु मोडेल',
@@ -49,6 +50,12 @@
   });
 
   var LV = { emergency: 4, warning: 3, advisory: 2, info: 1 };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-wxretry]');
+    if (!b) return;
+    delete oneWx[b.getAttribute('data-wxretry')];
+    render();
+  });
   var LAYERS = ['weather', 'air', 'quakes', 'alerts', 'roads'];
   var qs = new URLSearchParams(location.search);
   var S = {
@@ -279,8 +286,32 @@
       + '<details class="ex-dists"><summary>' + esc(t('districtsList')) + ' (' + num(p.districts.length) + ')</summary><p>' + esc(p.districts.join(', ')) + '</p></details>'
       + upcoming();
   }
+  /* Cities outside the bulk forecast (Namche, Jomsom, smaller towns) get their
+     own call, so the panel shows real conditions instead of sending people away. */
+  var oneWx = {};
+  function fetchOneWx(c, box, st) {
+    if (oneWx[c.id]) return;
+    oneWx[c.id] = 'load';
+    Promise.all([
+      NL.api('/api/weather?lat=' + c.lat + '&lon=' + c.lon),
+      NL.api('/api/air?lat=' + c.lat + '&lon=' + c.lon).catch(function () { return null; })
+    ]).then(function (r) {
+      oneWx[c.id] = { wx: r[0], air: r[1], at: Date.now() };
+    }).catch(function () {
+      oneWx[c.id] = 'err';
+    }).then(function () {
+      if (S.city === c.id) cityPanel(box, c, st);
+    });
+  }
   function cityPanel(box, c, st) {
     var pid = provByName[c.province], w = wxOf(c.id), cur = w && w.current, a = airOf(c.id);
+    var solo = oneWx[c.id];
+    if (!cur && solo && solo !== 'load' && solo !== 'err') {
+      cur = solo.wx && solo.wx.current;
+      var dy = solo.wx && solo.wx.daily;
+      if (cur && dy && dy.temperature_2m_max) w = { today: { min: dy.temperature_2m_min[0], max: dy.temperature_2m_max[0], rain: dy.precipitation_probability_max ? dy.precipitation_probability_max[0] : null } };
+      if (!a && solo.air && solo.air.current) a = { us_aqi: solo.air.current.us_aqi, pm2_5: solo.air.current.pm2_5 };
+    }
     var dist = nd(c.district);
     var alerts = [], roads = [];
     if (pid) st[pid].alerts.forEach(function (x) { if (nd(x.district) === dist) alerts.push(x); });
@@ -294,12 +325,15 @@
       + '<div><b>' + num(Math.round(cur.wind_speed_10m)) + ' km/h</b><span>' + esc(t('wind')) + '</span></div>'
       + (w.today ? '<div><b>' + num(Math.round(w.today.min)) + '° / ' + num(Math.round(w.today.max)) + '°</b><span>' + esc(t('today')) + '</span></div>'
         + '<div><b>' + (w.today.rain != null ? num(w.today.rain) + '%' : '—') + '</b><span>' + esc(t('rainChance')) + '</span></div>' : '')
-      + '</div>' : '<p class="small muted">' + esc(t('noWx')) + '</p>';
+      + '</div>'
+      : solo === 'err' ? '<p class="small muted">' + esc(t('noWxNow')) + ' <button class="link-more" type="button" data-wxretry="' + esc(c.id) + '">' + esc(t('tryAgain')) + ' <span>↻</span></button></p>'
+      : '<div class="skeleton" aria-busy="true"><div class="sk sk-line"></div><div class="sk sk-line sm"></div></div>';
+    if (!cur && solo !== 'err') fetchOneWx(c, box, st);
     var air = a && a.us_aqi != null ? '<div class="ex-airrow"><span class="ex-aqi"><i style="background:' + NL.aqiInfo(a.us_aqi).color + '"></i><b>' + num(Math.round(a.us_aqi)) + '</b> · ' + esc(NL.aqiInfo(a.us_aqi).label) + '</span>'
       + (a.pm2_5 != null ? '<span class="muted small">PM2.5 ' + num(Math.round(a.pm2_5)) + ' µg/m³</span>' : '') + '</div>' + NL.aqiScale(a.us_aqi) : '';
     box.innerHTML = '<div class="ex-ph"><button class="ex-back" type="button" data-p="' + pid + '">← ' + esc(pname(pid)) + '</button>'
       + '<span class="kicker">' + esc(c.district) + ' · ' + esc(pname(pid)) + '</span><h2' + (ne() ? ' lang="ne"' : '') + '>' + esc(cname(c)) + '</h2></div>'
-      + block(t('lWeather'), now + (w ? '<p class="small muted">' + esc(t('updated', { ago: NL.ago(Date.parse(S.raw.wx.fetchedAt)) })) + ' · ' + esc((S.raw.wx.source && S.raw.wx.source.name) || 'Open-Meteo') + '</p>' : ''))
+      + block(t('lWeather'), now + (cur ? '<p class="small muted">' + esc(t('updated', { ago: NL.ago(solo && solo.at ? solo.at : Date.parse(S.raw.wx.fetchedAt)) })) + ' · ' + esc((S.raw.wx && S.raw.wx.source && S.raw.wx.source.name) || 'Open-Meteo') + '</p>' : ''))
       + (air ? block(t('aqi'), air) : '')
       + '<div class="ex-actions"><a class="btn btn-primary" href="/weather?city=' + encodeURIComponent(c.id) + '">' + esc(t('fullForecast')) + ' →</a>'
       + '<button class="btn" type="button" data-mycity="' + c.id + '" aria-pressed="' + isMine(c.id) + '">★ ' + esc(isMine(c.id) ? t('myCity') : t('setMyCity')) + '</button>'
