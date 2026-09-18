@@ -22,7 +22,8 @@
       empty: 'No stories in this section right now.',
       emptySub: 'Nepali newsrooms file all day — this page fills as they publish. Meanwhile, try all news.',
       unavailable: 'Headlines are unavailable right now.', filterPh: 'Filter headlines…',
-      inThis: 'In this section', headlines: '{n} headlines'
+      inThis: 'In this section', headlines: '{n} headlines',
+      noCovered: 'No single story is dominating this section right now.', allTrending: 'What Nepal is covering', noPubs: 'No publisher has filed here yet today.'
     },
     ne: {
       storiesToday: '{n} समाचार', pubs: '{n} प्रकाशक', updated: '{t} मा अपडेट',
@@ -31,7 +32,8 @@
       empty: 'यस खण्डमा अहिले समाचार छैन।',
       emptySub: 'नेपाली न्यूजरूमहरूले दिनभर समाचार पठाउँछन् — प्रकाशित हुँदै जाँदा यो पृष्ठ भरिन्छ। अहिले सबै समाचार हेर्नुहोस्।',
       unavailable: 'समाचार अहिले उपलब्ध छैन।', filterPh: 'शीर्षक खोज्नुहोस्…',
-      inThis: 'यस खण्डमा', headlines: '{n} शीर्षक'
+      inThis: 'यस खण्डमा', headlines: '{n} शीर्षक',
+      noCovered: 'अहिले यस खण्डमा कुनै एउटै विषय हावी छैन।', allTrending: 'नेपालमा के चर्चामा छ', noPubs: 'आज यहाँ कुनै प्रकाशकले समाचार पठाएका छैनन्।'
     }
   });
   var t = NL.i18n.t;
@@ -106,7 +108,7 @@
       ? '<ul class="pub-list">' + names.map(function (p) {
         return '<li><button type="button" data-pub="' + esc(p) + '">' + esc(NL.srcName(p)) + '</button><span class="n">' + pubs[p] + '</span></li>';
       }).join('') + '</ul>'
-      : '<p class="muted small">—</p>';
+      : '<p class="muted small">' + esc(t('noPubs')) + '</p>';
     $('cat-pubcount').textContent = t('pubs', { n: names.length });
     /* the other sections, so a reader can keep moving */
     $('cat-other').innerHTML = '<ul class="pub-list">' + TOPICS.filter(function (k) { return k !== topic; }).map(function (k) {
@@ -125,7 +127,7 @@
           + '<span class="cv-t"' + NL.langAttr(st.title || '') + '>' + esc(st.title || '') + '</span>'
           + '<span class="cv-m">' + esc(t('headlines', { n: x.headlines || 0 })) + (st.source ? ' · ' + esc(NL.srcName(st.source)) : '') + '</span></a></li>';
       }).join('') + '</ol>'
-      : '<p class="muted small">—</p>';
+      : '<p class="muted small">' + esc(t('noCovered')) + ' <a class="link-more" href="/trending">' + esc(t('allTrending')) + ' <span>→</span></a></p>';
   }
 
   function load() {
@@ -161,7 +163,9 @@
   NL.onLang(function () { render(); side(); });
   $('cat-list').innerHTML = NL.skeleton('stories');
   load();
-  NL.api('/api/trending').then(covered).catch(function () { $('cat-covered').innerHTML = '<p class="muted small">—</p>'; });
+  NL.api('/api/trending').then(covered).catch(function () {
+    $('cat-covered').innerHTML = '<p class="muted small">' + esc(t('unavailable')) + '</p>';
+  });
   setInterval(load, 5 * 60e3);
   NL.ticker.autoload();
   NL.renderFooter([
