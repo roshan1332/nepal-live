@@ -16,6 +16,7 @@
   --paper: #f7f4ef;            /* warm white for the editorial passages */
   --paper-2: #ebe6dd;
   --himal: #8aa0b8;            /* cold Himalayan haze, used sparingly */
+  --card: #fffefb;           /* module cards sit just above the page */
   --up: #0f8a52;
   --down: #c8102e;
 
@@ -41,6 +42,7 @@
   --deva: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
 }
 [data-theme="dark"] {
+  --card: #15151b;
   --bg: var(--ink);
   --bg-2: var(--ink-2);
   --fg: #f4f1ec;
@@ -586,3 +588,133 @@ em { font-style: normal; color: var(--crimson) }
   .foot-line i { transform: scaleX(1) !important }
 }
 @media print { .nav, .tick, .cursor, .srch, .sheet, .hero-scroll { display: none !important } }
+
+/* ====================== Nepal Today + live dashboard ======================
+   The briefing answers "what is happening in Nepal" in one screen, and the
+   dashboard carries every live module. Each module owns four states —
+   loading, content, empty, error — plus the time it was updated and the
+   source that published it. Nothing here ever shows an empty box. */
+.brief {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, .8fr);
+  gap: clamp(20px, 3vw, 46px); max-width: var(--maxw); margin-inline: auto;
+  padding: clamp(30px, 5vh, 56px) var(--gut); border-bottom: 1px solid var(--hair-2);
+}
+.brief-h { font-size: clamp(26px, 3.4vw, 44px); font-weight: 900; letter-spacing: -.04em; line-height: 1.02; margin-top: 10px }
+.brief-h:lang(ne), [data-lang="ne"] .brief-h { letter-spacing: -.01em; line-height: 1.3 }
+.brief-date { margin-top: 12px; font-size: 14.5px; font-weight: 600; color: var(--fg-2) }
+.brief-date b { display: block; font-weight: 600; color: var(--fg-3) }
+.brief-sum { margin-top: 12px; font-size: 15px; line-height: 1.6; color: var(--fg-2) }
+.brief-main .more { margin-top: 20px }
+.brief-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 10px }
+.brief-lbl:lang(ne), [data-lang="ne"] .brief-lbl { letter-spacing: .06em; text-transform: none; font-size: 12px }
+.brief-top li { border-top: 1px solid var(--hair-2) }
+.brief-top li:first-child { border-top: 0 }
+.brief-top a { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding: 11px 0; align-items: start }
+.brief-top .n { font-size: 11.5px; font-weight: 800; color: var(--crimson); padding-top: 2px }
+.brief-top .h { font-size: 15px; font-weight: 700; line-height: 1.36; transition: color var(--t-2) var(--e) }
+.brief-top .h:lang(ne) { line-height: 1.5 }
+.brief-top a:hover .h { color: var(--crimson) }
+.brief-top .m { margin-top: 3px; font-size: 12px; color: var(--fg-3) }
+.brief-alerts { display: flex; flex-direction: column; gap: 8px }
+.al-row {
+  display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; align-items: start;
+  padding: 10px 12px; border: 1px solid var(--hair-2); border-radius: 8px; background: var(--card);
+}
+.al-row i { width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--lv, var(--fg-3)) }
+.al-row .t { font-size: 13.5px; font-weight: 600; line-height: 1.4 }
+.al-row .m { margin-top: 3px; font-size: 11.5px; color: var(--fg-3) }
+.lv-emergency { --lv: #c8102e } .lv-warning { --lv: #ea7a1e } .lv-advisory { --lv: #e3b008 } .lv-info { --lv: #3b82c4 }
+.brief-count { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px }
+.brief-count span {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px;
+  border: 1px solid var(--hair-2); font-size: 11.5px; font-weight: 700;
+}
+.brief-count i { width: 7px; height: 7px; border-radius: 50%; background: var(--lv, var(--fg-3)) }
+
+/* ------------------------------ feed status ------------------------------ */
+.feeds { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-left: auto; font-size: 12px; color: var(--fg-3) }
+.feed { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap }
+.feed i { width: 7px; height: 7px; border-radius: 50%; background: var(--fg-3); transition: background var(--t-2) var(--e) }
+.feed.ok i { background: #2fb36d }
+.feed.ok.beat i { animation: beat 2.4s var(--e) infinite }
+.feed.bad i { background: var(--crimson) }
+.feed.wait i { background: var(--fg-3); opacity: .5 }
+
+/* ------------------------------- modules ------------------------------- */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); gap: clamp(12px, 1.6vw, 18px) }
+.mod {
+  display: flex; flex-direction: column; min-height: 210px; padding: 16px 16px 12px;
+  border: 1px solid var(--hair-2); border-radius: 12px; background: var(--card);
+  transition: border-color var(--t-2) var(--e), transform var(--t-2) var(--e);
+}
+@media (hover: hover) { .mod:hover { border-color: var(--hair) } }
+.mod-h { display: flex; align-items: center; gap: 10px; margin-bottom: 12px }
+.mod-h h3 { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-2) }
+.mod-h h3:lang(ne), [data-lang="ne"] .mod-h h3 { letter-spacing: .04em; text-transform: none; font-size: 14px }
+.mod-all { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--crimson); white-space: nowrap }
+.mod-all span { display: inline-block; transition: transform var(--t-2) var(--e) }
+.mod-all:hover span { transform: translateX(4px) }
+.mod-b { flex: 1; min-width: 0 }
+.mod-f {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--hair-2); font-size: 11.5px; color: var(--fg-3);
+}
+.mod-f a { color: var(--fg-3); text-decoration: underline; text-underline-offset: 2px }
+.mod-f a:hover { color: var(--crimson) }
+.mod-f .when { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums }
+/* the big number a module leads with */
+.mod-v { font-size: clamp(30px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums }
+.mod-v small { font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--fg-3) }
+.mod-sub { margin-top: 6px; font-size: 13.5px; color: var(--fg-2) }
+.mod-kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-top: 14px }
+.mod-kv div { min-width: 0 }
+.mod-kv dt { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3) }
+.mod-kv dd { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums }
+.mod-list { display: flex; flex-direction: column }
+.mod-list li { border-top: 1px solid var(--hair-2) }
+.mod-list li:first-child { border-top: 0 }
+.mod-list a, .mod-list .row { display: block; padding: 9px 0 }
+.mod-list .t { font-size: 13.5px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.mod-list .m { margin-top: 2px; font-size: 11.5px; color: var(--fg-3) }
+.mod-list a:hover .t { color: var(--crimson) }
+.mod-sel {
+  appearance: none; padding: 5px 26px 5px 10px; border: 1px solid var(--hair-2); border-radius: 999px;
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23777787' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 9px center/10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.mod-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px }
+.mod-chips a {
+  padding: 6px 11px; border: 1px solid var(--hair-2); border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  transition: border-color var(--t-1) var(--e), color var(--t-1) var(--e);
+}
+.mod-chips a:hover { border-color: var(--crimson); color: var(--crimson) }
+/* empty and error, never a blank box */
+.mod-state { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 13.5px; color: var(--fg-3) }
+.mod-state .retry {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid var(--hair);
+  border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--fg); cursor: pointer;
+}
+.mod-state .retry:hover { border-color: var(--crimson); color: var(--crimson) }
+.mod-sk { display: flex; flex-direction: column; gap: 9px }
+.mod-sk i { display: block; height: 12px; border-radius: 3px; background: var(--bg-2); animation: sk 1.8s ease-in-out infinite }
+.mod-sk i:first-child { height: 28px; width: 55% }
+.mod-sk i:nth-child(3) { width: 80% }
+.mod-sk i:nth-child(4) { width: 62% }
+@media (max-width: 980px) {
+  .brief { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 30px }
+  .brief-main { grid-column: 1 / -1 }
+}
+@media (max-width: 680px) {
+  .brief { grid-template-columns: minmax(0, 1fr); gap: 22px; padding-block: 30px }
+  .dash-grid { grid-template-columns: minmax(0, 1fr) }
+  .mod { min-height: 0 }
+  .feeds { margin-left: 0; width: 100% }
+}
+
+/* rise and fall keep their colours inside a module */
+.mod-sub.up { color: var(--up) }
+.mod-sub.down { color: var(--down) }
+.mod-top { margin-bottom: 10px }
+
+.feed.part i { background: #e3b008 }
+.feed.head { font-weight: 700; color: var(--fg-2) }

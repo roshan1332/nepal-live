@@ -34,7 +34,23 @@
       footSay: 'Stay connected with Nepal.', madeBy: 'Made by', nptNote: 'All times Nepal Time (NPT, UTC+5:45)',
       navLatest: 'Latest', navNepal: 'Nepal', navPolitics: 'Politics', navBusiness: 'Business', navTech: 'Tech',
       navSports: 'Sports', navEnt: 'Entertainment', navWorld: 'World',
-      allOf: 'All {c}', stories: '{n} stories', headlines: '{n} headlines', sources: '{n} sources', noStories: 'No stories tagged here yet.',
+      allOf: 'All {c}', stories: '{n} stories', headlines: '{n} headlines',
+      ebToday: 'NEPAL TODAY', hToday: 'Today in <em>Nepal</em>', topStories: 'Top stories', alertsNow: 'Official alerts',
+      ebNow: 'LIVE ACROSS NEPAL', hNow: 'Nepal, <em>right now</em>', viewAll: 'View all', refresh: 'Refresh',
+      lastUpd: 'Updated {t}', updAt: '{t} NPT', noUpdate: 'No update available right now', noAlerts: 'No official alerts active right now.',
+      retry: 'Try again', allLive: 'Live data connected', someDown: 'Some sources unavailable',
+      st_ok: 'Connected', st_part: 'Some sources unavailable', st_bad: 'Unavailable', st_wait: 'Connecting…',
+      worldFixtures: 'Worldwide fixtures', f_news: 'News', f_markets: 'Markets', f_weather: 'Weather', f_sports: 'Sport', f_alerts: 'Alerts',
+      sNepse: 'NEPSE {v} ({p}%)', sGold: 'gold Rs {v}/tola', sUsd: 'dollar Rs {v}', sAqi: 'air {v} at {s}', sAlerts: '{n} active alerts',
+      mWeather: 'Weather', mAqi: 'Air quality', mNepse: 'NEPSE index', mGold: 'Gold & silver', mFx: 'Exchange rates',
+      mQuake: 'Earthquakes', mRoads: 'Roads & highways', mSports: 'Football & cricket', mJobs: 'Jobs', mEvents: 'Events & festivals',
+      mGov: 'Government services', high: 'High', low: 'Low', humidity: 'Humidity', wind: 'Wind', worstNow: 'worst air right now',
+      closed: 'Market closed', open: 'Market open', tola: 'tola', fineGold: 'Fine gold (hallmark)', silver: 'Silver / tola',
+      rateFor: 'Rate for', when: 'When', depth: 'Depth', dayHigh: 'Day high', dayLow: 'Day low', sellingRate: 'selling', usgsPage: 'USGS report', closures: 'closures reported',
+      noQuake: 'No recent earthquake data.', quakeRule: 'USGS lists no magnitude 2.5+ quake near Nepal in the last 30 days.', nepalTeams: 'Nepal national teams', noRoads: 'No road closures reported right now.', noFixtures: 'No fixtures listed right now.',
+      noJobs: 'No job listings right now.', noEvents: 'Nothing listed for the days ahead.', openJobs: '{n} open vacancies',
+      govSub: 'Official portals for the services people look up most.',
+      g_passport: 'Passport', g_licence: 'Driving licence', g_pan: 'PAN', g_citizenship: 'Citizenship', g_loksewa: 'Lok Sewa', g_emergency: 'Emergency numbers', sources: '{n} sources', noStories: 'No stories tagged here yet.',
       hoverProv: 'Hover a province on the map.', tapProv: 'Tap a province on the map.', capital: 'Capital', readMore: 'Read',
       unavailable: 'This feed is unavailable right now.', live: 'LIVE', breaking: 'BREAKING',
       secNews: 'News', secMoney: 'Markets', secWeather: 'Weather', secAlerts: 'Alerts', secSports: 'Sports',
@@ -54,7 +70,23 @@
       footSay: 'नेपालसँग जोडिइरहनुहोस्।', madeBy: 'बनाउने', nptNote: 'सबै समय नेपाल समय (NPT, UTC+5:45)',
       navLatest: 'ताजा', navNepal: 'नेपाल', navPolitics: 'राजनीति', navBusiness: 'बजार', navTech: 'प्रविधि',
       navSports: 'खेलकुद', navEnt: 'मनोरञ्जन', navWorld: 'विश्व',
-      allOf: 'सबै {c}', stories: '{n} समाचार', headlines: '{n} शीर्षक', sources: '{n} स्रोत', noStories: 'यहाँका समाचार अहिले छैनन्।',
+      allOf: 'सबै {c}', stories: '{n} समाचार', headlines: '{n} शीर्षक',
+      ebToday: 'आजको नेपाल', hToday: 'आज <em>नेपालमा</em>', topStories: 'मुख्य समाचार', alertsNow: 'आधिकारिक सतर्कता',
+      ebNow: 'देशभर प्रत्यक्ष', hNow: 'नेपाल, <em>अहिले</em>', viewAll: 'सबै हेर्नुहोस्', refresh: 'ताजा गर्नुहोस्',
+      lastUpd: '{t} मा अपडेट', updAt: '{t} NPT', noUpdate: 'अहिले अपडेट उपलब्ध छैन', noAlerts: 'अहिले कुनै आधिकारिक सतर्कता छैन।',
+      retry: 'फेरि प्रयास', allLive: 'प्रत्यक्ष डेटा जोडिएको', someDown: 'केही स्रोत उपलब्ध छैनन्',
+      st_ok: 'जोडिएको', st_part: 'केही स्रोत उपलब्ध छैनन्', st_bad: 'उपलब्ध छैन', st_wait: 'जोडिँदै…',
+      worldFixtures: 'विश्वका खेल', f_news: 'समाचार', f_markets: 'बजार', f_weather: 'मौसम', f_sports: 'खेल', f_alerts: 'सतर्कता',
+      sNepse: 'नेप्से {v} ({p}%)', sGold: 'सुन रु {v}/तोला', sUsd: 'डलर रु {v}', sAqi: '{s} मा वायु {v}', sAlerts: '{n} सक्रिय सतर्कता',
+      mWeather: 'मौसम', mAqi: 'वायु गुणस्तर', mNepse: 'नेप्से सूचक', mGold: 'सुन र चाँदी', mFx: 'विनिमय दर',
+      mQuake: 'भूकम्प', mRoads: 'सडक', mSports: 'फुटबल र क्रिकेट', mJobs: 'जागिर', mEvents: 'कार्यक्रम र चाडपर्व',
+      mGov: 'सरकारी सेवा', high: 'अधिकतम', low: 'न्यूनतम', humidity: 'आर्द्रता', wind: 'हावा', worstNow: 'अहिलेको सबैभन्दा प्रदूषित',
+      closed: 'बजार बन्द', open: 'बजार खुला', tola: 'तोला', fineGold: 'छापावाल सुन', silver: 'चाँदी / तोला',
+      rateFor: 'मिति', when: 'कहिले', depth: 'गहिराइ', dayHigh: 'दिनको उच्च', dayLow: 'दिनको न्यून', sellingRate: 'बिक्री दर', usgsPage: 'USGS विवरण', closures: 'सडक अवरोध',
+      noQuake: 'हालै भूकम्पको तथ्यांक छैन।', quakeRule: 'पछिल्ला ३० दिनमा नेपाल वरिपरि २.५+ म्याग्निच्युडको भूकम्प USGS मा छैन।', nepalTeams: 'नेपाली राष्ट्रिय टोली', noRoads: 'अहिले कुनै सडक अवरोध रिपोर्ट भएको छैन।', noFixtures: 'अहिले कुनै खेल सूचीबद्ध छैन।',
+      noJobs: 'अहिले जागिरको सूची छैन।', noEvents: 'आउँदा दिनका लागि केही सूचीबद्ध छैन।', openJobs: '{n} खुला पद',
+      govSub: 'सबैभन्दा धेरै खोजिने सेवाका आधिकारिक पोर्टल।',
+      g_passport: 'राहदानी', g_licence: 'सवारी लाइसेन्स', g_pan: 'प्यान', g_citizenship: 'नागरिकता', g_loksewa: 'लोक सेवा', g_emergency: 'आपतकालीन नम्बर', sources: '{n} स्रोत', noStories: 'यहाँका समाचार अहिले छैनन्।',
       hoverProv: 'नक्सामा प्रदेश छान्नुहोस्।', tapProv: 'नक्सामा प्रदेश थिच्नुहोस्।', capital: 'सदरमुकाम', readMore: 'पढ्नुहोस्',
       unavailable: 'यो फिड अहिले उपलब्ध छैन।', live: 'प्रत्यक्ष', breaking: 'ब्रेकिङ',
       secNews: 'समाचार', secMoney: 'बजार', secWeather: 'मौसम', secAlerts: 'सतर्कता', secSports: 'खेलकुद',
@@ -456,6 +488,405 @@
     list.querySelectorAll('.trend-item').forEach(function (el, n) { rv(el, '', n % 5); });
   }
 
+
+  /* ==================== Nepal Today + the live modules ====================
+   * Every module owns four states — loading, content, empty, error — and
+   * always names its source and the time it was updated. Each one fetches
+   * on its own, only when it comes into view, so a slow or failed feed can
+   * never take the page (or another module) down with it.
+   * ===================================================================== */
+  var NE_D = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  var neNum = function (n) { return String(n).replace(/\d/g, function (d) { return NE_D[+d]; }); };
+  var NE_DOW = ['आइतबार', 'सोमबार', 'मङ्गलबार', 'बुधबार', 'बिहीबार', 'शुक्रबार', 'शनिबार'];
+  var hm = function (ms) { return NL.nptHM ? NL.nptHM(new Date(ms)) : ''; };
+
+  /* ------------------------------ feed status ------------------------------ */
+  var FEED_KEYS = ['news', 'markets', 'weather', 'sports', 'alerts'];
+  var FEEDS = {};
+  FEED_KEYS.forEach(function (k) { FEEDS[k] = { ok: 0, bad: 0 }; });
+  var lastOk = 0;
+  function setFeed(k, ok) {
+    if (!k || !FEEDS[k]) return;
+    FEEDS[k][ok ? 'ok' : 'bad']++;
+    if (ok) lastOk = Date.now();
+    paintFeeds();
+  }
+  var feedState = function (k) {
+    var f = FEEDS[k];
+    return f.bad && f.ok ? 'part' : f.bad ? 'bad' : f.ok ? 'ok' : 'wait';
+  };
+  function paintFeeds() {
+    var el = $('feeds');
+    if (!el) return;
+    var any = FEED_KEYS.some(function (k) { return feedState(k) === 'bad' || feedState(k) === 'part'; });
+    var done = FEED_KEYS.some(function (k) { return feedState(k) !== 'wait'; });
+    el.innerHTML = FEED_KEYS.map(function (k) {
+      var st = feedState(k);
+      return '<span class="feed ' + st + (st === 'ok' ? ' beat' : '') + '" title="' + esc(t('st_' + st)) + '"><i></i>' + esc(t('f_' + k)) + '</span>';
+    }).join('')
+      + (done ? '<span class="feed head">' + esc(any ? t('someDown') : t('allLive')) + '</span>' : '')
+      + (lastOk ? '<span class="feed">' + esc(t('lastUpd', { t: hm(lastOk) })) + '</span>' : '')
+      + '<button class="feed" type="button" data-refresh-all>' + esc(t('refresh')) + '</button>';
+  }
+
+  /* ------------------------------- briefing ------------------------------- */
+  function paintBriefDate(cal) {
+    var el = $('brief-date');
+    if (!el) return;
+    var en = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kathmandu', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+    var np = '';
+    var day = cal && cal.day;
+    if (day && day.bs) {
+      var mn = day.monthNameNp || day.monthNameNe || day.monthName || '';
+      np = neNum(day.bs[0]) + (mn ? ' ' + mn : '') + ' ' + (day.bsNp || neNum(day.bs[2])) + ', ' + NE_DOW[day.dow || 0];
+      if (day.tithi) np += ' · ' + day.tithi;
+    }
+    el.innerHTML = esc(en) + (np ? '<b lang="ne">' + esc(np) + '</b>' : '');
+  }
+  /* the summary is assembled from the numbers themselves — never written ahead */
+  function paintBriefSum(h) {
+    var el = $('brief-sum');
+    if (!el) return;
+    var bits = [];
+    (h && h.items || []).forEach(function (i) {
+      if (i.type === 'nepse' && isFinite(i.value)) bits.push(t('sNepse', { v: num(i.value, 2), p: (i.pct > 0 ? '+' : '') + num(i.pct, 2) }));
+      if (i.type === 'gold' && isFinite(i.price)) bits.push(t('sGold', { v: num(i.price) }));
+      if (i.type === 'usd' && isFinite(i.value)) bits.push(t('sUsd', { v: num(i.value, 2) }));
+      if (i.type === 'aqi' && isFinite(i.aqi)) bits.push(t('sAqi', { s: i.station || '', v: i.aqi }));
+      if (i.type === 'alerts' && isFinite(i.active)) bits.push(t('sAlerts', { n: i.active }));
+    });
+    el.textContent = bits.length ? bits.join(' · ') : t('noUpdate');
+  }
+  function paintBriefTop() {
+    var el = $('brief-top');
+    if (!el) return;
+    var items = S.news.slice(0, 5);
+    if (!items.length) { el.innerHTML = '<li class="mod-state">' + esc(t('noUpdate')) + '</li>'; return; }
+    el.innerHTML = items.map(function (i, n) {
+      return '<li><a ' + out(i) + '><span class="n">' + (n + 1 < 10 ? '0' : '') + (n + 1) + '</span>'
+        + '<span><span class="h"' + NL.langAttr(i.title) + '>' + esc(i.title) + '</span>'
+        + '<span class="m">' + esc(srcOf(i)) + ' · ' + esc(NL.ago(when(i))) + '</span></span></a></li>';
+    }).join('');
+  }
+  function paintBriefAlerts(d) {
+    var el = $('brief-alerts');
+    if (!el) return;
+    if (!d) { el.innerHTML = '<p class="mod-state">' + esc(t('noUpdate')) + '</p>'; return; }
+    var items = (d.items || []).slice(0, 3);
+    var counts = d.counts || {};
+    var chips = ['emergency', 'warning', 'advisory', 'info'].filter(function (k) { return counts[k]; })
+      .map(function (k) { return '<span class="lv-' + k + '"><i></i>' + counts[k] + ' ' + esc(t('lv_' + k)) + '</span>'; }).join('');
+    if (!items.length) {
+      el.innerHTML = '<p class="mod-state">' + esc(t('noAlerts')) + '</p>';
+      return;
+    }
+    el.innerHTML = (chips ? '<div class="brief-count">' + chips + '</div>' : '')
+      + items.map(function (a) {
+        return '<div class="al-row lv-' + esc(a.level) + '"><i></i><div><div class="t"' + (ne() && a.titleNe ? ' lang="ne"' : '') + '>'
+          + esc(ne() && a.titleNe ? a.titleNe : a.title) + '</div>'
+          + '<div class="m">' + esc([a.district || a.location || '', a.time ? NL.ago(Date.parse(a.time)) : ''].filter(Boolean).join(' · ')) + '</div></div></div>';
+      }).join('')
+      + '<a class="mod-all" href="/alerts">' + esc(t('viewAll')) + ' <span>→</span></a>';
+  }
+
+  /* -------------------------------- modules -------------------------------- */
+  function skel() { return '<div class="mod-sk"><i></i><i></i><i></i><i></i></div>'; }
+  function shell(m) {
+    return '<section class="mod" id="mod-' + m.key + '" aria-labelledby="mh-' + m.key + '">'
+      + '<div class="mod-h"><h3 id="mh-' + m.key + '">' + esc(t(m.title)) + '</h3>'
+      + (m.href ? '<a class="mod-all" href="' + m.href + '">' + esc(t('viewAll')) + ' <span>→</span></a>' : '') + '</div>'
+      + '<div class="mod-b" id="mb-' + m.key + '">' + skel() + '</div>'
+      + '<div class="mod-f" id="mf-' + m.key + '"></div></section>';
+  }
+  function foot(key, src, ms) {
+    var f = $('mf-' + key);
+    if (!f) return;
+    f.innerHTML = (src ? (src.url ? '<a href="' + esc(src.url) + '" target="_blank" rel="noopener noreferrer">' + esc(src.name) + ' ↗</a>' : esc(src.name)) : '')
+      + (ms ? '<span class="when">' + esc(t('updAt', { t: hm(ms) })) + '</span>' : '');
+  }
+  function put(m, html, ms) {
+    var b = $('mb-' + m.key);
+    if (b) b.innerHTML = html;
+    foot(m.key, m.src, ms || Date.now());
+    setFeed(m.feed, true);
+  }
+  function none(m, msg) {
+    var b = $('mb-' + m.key);
+    if (b) b.innerHTML = '<p class="mod-state">' + esc(msg || t('noUpdate')) + '</p>';
+    foot(m.key, m.src, 0);
+  }
+  function oops(m) {
+    var b = $('mb-' + m.key);
+    if (b) {
+      b.innerHTML = '<div class="mod-state">' + esc(t('noUpdate'))
+        + '<button class="retry" type="button" data-remod="' + m.key + '">' + esc(t('retry')) + '</button></div>';
+    }
+    foot(m.key, m.src, 0);
+    setFeed(m.feed, false);
+  }
+
+  var WX_CITIES = [
+    ['Kathmandu', 'काठमाडौँ', 27.7172, 85.324], ['Pokhara', 'पोखरा', 28.2096, 83.9856],
+    ['Biratnagar', 'विराटनगर', 26.4525, 87.2718], ['Birgunj', 'वीरगन्ज', 27.0104, 84.877],
+    ['Butwal', 'बुटवल', 27.7006, 83.4484], ['Nepalgunj', 'नेपालगन्ज', 28.05, 81.6167],
+    ['Dhangadhi', 'धनगढी', 28.7, 80.6], ['Janakpur', 'जनकपुर', 26.7288, 85.9266]
+  ];
+  var wxCity = 0;
+
+  var MODS = [
+    {
+      key: 'weather', title: 'mWeather', href: '/weather', feed: 'weather',
+      src: { name: 'Open-Meteo', url: 'https://open-meteo.com/' },
+      load: function (m) {
+        var c = WX_CITIES[wxCity];
+        return get('/api/weather?lat=' + c[2] + '&lon=' + c[3]).then(function (d) {
+          var cur = d && d.current;
+          if (!cur || cur.temperature_2m == null) return none(m);
+          var w = NL.wx(cur.weather_code);
+          var day = d.daily || {};
+          var hi = day.temperature_2m_max && day.temperature_2m_max[0], lo = day.temperature_2m_min && day.temperature_2m_min[0];
+          put(m, '<div class="mod-top"><select class="mod-sel" id="wx-city" aria-label="' + esc(t('mWeather')) + '">'
+            + WX_CITIES.map(function (x, i) { return '<option value="' + i + '"' + (i === wxCity ? ' selected' : '') + '>' + esc(ne() ? x[1] : x[0]) + '</option>'; }).join('')
+            + '</select></div>'
+            + '<div class="mod-v">' + Math.round(cur.temperature_2m) + '°<small> ' + esc(w.icon) + '</small></div>'
+            + '<div class="mod-sub">' + esc(w.desc) + '</div>'
+            + '<dl class="mod-kv">'
+            + (isFinite(hi) ? '<div><dt>' + esc(t('high')) + '</dt><dd>' + Math.round(hi) + '°</dd></div>' : '')
+            + (isFinite(lo) ? '<div><dt>' + esc(t('low')) + '</dt><dd>' + Math.round(lo) + '°</dd></div>' : '')
+            + '<div><dt>' + esc(t('humidity')) + '</dt><dd>' + Math.round(cur.relative_humidity_2m) + '%</dd></div>'
+            + '<div><dt>' + esc(t('wind')) + '</dt><dd>' + Math.round(cur.wind_speed_10m) + ' km/h</dd></div>'
+            + '</dl>', Date.parse(cur.time) || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'aqi', title: 'mAqi', href: '/weather#air', feed: 'weather',
+      src: { name: 'Department of Environment', url: 'https://pollution.gov.np/' },
+      load: function (m) {
+        return get('/api/aqi-stations').then(function (d) {
+          var st = (d && d.stations || []).filter(function (s) { return isFinite(s.aqi); });
+          if (!st.length) return none(m);
+          /* the Kathmandu valley station if it is reporting, else the worst air in the country */
+          var ktm = st.filter(function (s) { return /kathmandu|ratnapark|bhaktapur|lalitpur|kirtipur|pulchowk/i.test(s.name); })[0];
+          var s = ktm || st.slice().sort(function (a, b) { return b.aqi - a.aqi; })[0];
+          var info = NL.aqiInfo(s.aqi);
+          put(m, '<div class="mod-v" style="color:' + info.color + '">' + s.aqi + '<small> US AQI</small></div>'
+            + '<div class="mod-sub"><b>' + esc(info.label) + '</b> · ' + esc(s.name) + (ktm ? '' : ' — ' + esc(t('worstNow'))) + '</div>'
+            + NL.aqiScale(s.aqi)
+            + '<p class="mod-sub">' + esc(info.tip) + '</p>', Date.parse(s.time) || (d && Date.parse(d.fetchedAt)));
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'nepse', title: 'mNepse', href: '/nepse', feed: 'markets',
+      src: { name: 'Nepal Stock Exchange', url: 'https://www.nepalstock.com/' },
+      load: function (m) {
+        return get('/api/nepse').then(function (d) {
+          var list = (d && d.indices) || [];
+          var row = list.filter(function (x) { return /^nepse/i.test(x.index || ''); })[0] || list[0];
+          if (!row) return none(m);
+          var v = +(row.currentValue != null ? row.currentValue : row.close);
+          var ch = +row.change, pct = +row.perChange;
+          if (!isFinite(v)) return none(m);
+          var dir = ch > 0 ? 'up' : ch < 0 ? 'down' : '';
+          var body = '<div class="mod-v">' + num(v, 2) + '</div>'
+            + '<div class="mod-sub ' + dir + '">' + (ch > 0 ? '▲ ' : ch < 0 ? '▼ ' : '') + num(Math.abs(ch || 0), 2)
+            + (isFinite(pct) ? ' (' + num(Math.abs(pct), 2) + '%)' : '') + '</div>'
+            + '<dl class="mod-kv">'
+            + (isFinite(row.high) ? '<div><dt>' + esc(t('dayHigh')) + '</dt><dd>' + num(row.high, 2) + '</dd></div>' : '')
+            + (isFinite(row.low) ? '<div><dt>' + esc(t('dayLow')) + '</dt><dd>' + num(row.low, 2) + '</dd></div>' : '')
+            + '</dl>';
+          put(m, body, Date.parse((row.generatedTime || '') + '+05:45') || Date.now());
+          /* the chart is a bonus: it only appears when the history feed answers */
+          get('/api/nepse/history?size=60').then(function (h) {
+            var raw = (h && (h.points || h.items || h.history)) || (Array.isArray(h) ? h : []);
+            var pts = (raw || []).map(function (p) {
+              return { t: Date.parse(p.date || p.t || p.time || p.businessDate), v: +(p.close != null ? p.close : (p.value != null ? p.value : p.v)) };
+            }).filter(function (p) { return isFinite(p.t) && isFinite(p.v); });
+            if (pts.length > 4 && $('mb-nepse')) $('mb-nepse').insertAdjacentHTML('beforeend', NL.chart(pts, { h: 62, dir: ch < 0 ? 'down' : 'up' }));
+          }).catch(function () { /* the number alone is still useful */ });
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'gold', title: 'mGold', href: '/gold-price', feed: 'markets',
+      src: { name: 'Hamro Patro / FEGOD', url: 'https://www.hamropatro.com/gold' },
+      load: function (m) {
+        return get('/api/gold-hamropatro').then(function (d) {
+          var items = (d && d.items) || [];
+          var pick = function (re) {
+            var it = items.filter(function (x) { return re.test(x.name || x.symbol || ''); })[0];
+            if (!it) return null;
+            var p = (it.prices || []).filter(function (x) { return /tola/i.test(x.unit || ''); })[0] || (it.prices || [])[0];
+            return p && isFinite(+p.price) ? { price: +p.price, prev: +p.prevPrice } : null;
+          };
+          var gold = pick(/fine|hallmark/i) || pick(/gold/i), sil = pick(/silver/i);
+          var gv = gold && gold.price, sv = sil && sil.price;
+          var gch = gold && isFinite(gold.prev) ? gv - gold.prev : NaN;
+          if (!isFinite(gv)) return none(m);
+          put(m, '<div class="mod-v">Rs ' + num(gv) + '<small> / ' + esc(t('tola')) + '</small></div>'
+            + '<div class="mod-sub' + (gch > 0 ? ' up' : gch < 0 ? ' down' : '') + '">' + esc(t('fineGold'))
+            + (isFinite(gch) && gch !== 0 ? ' · ' + (gch > 0 ? '▲ ' : '▼ ') + num(Math.abs(gch)) : '') + '</div>'
+            + (isFinite(sv) ? '<dl class="mod-kv"><div><dt>' + esc(t('silver')) + '</dt><dd>Rs ' + num(sv) + '</dd></div>'
+              + (d.date ? '<div><dt>' + esc(t('rateFor')) + '</dt><dd>' + esc(NL.dfmt.day(Date.parse(d.date + 'T12:00:00+05:45'))) + '</dd></div>' : '') + '</dl>' : ''),
+            Date.parse(d.fetchedAt || d.date) || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'fx', title: 'mFx', href: '/exchange-rate', feed: 'markets',
+      src: { name: 'Nepal Rastra Bank', url: 'https://www.nrb.org.np/forex/' },
+      load: function (m) {
+        return get('/api/forex').then(function (d) {
+          var days = (d && d.days) || [];
+          var day = days[days.length - 1];
+          var rates = day && day.rates;
+          if (!rates) return none(m);
+          var NAMES = { USD: 'US dollar', EUR: 'Euro', GBP: 'British pound', INR: 'Indian rupee' };
+          var rows = ['USD', 'EUR', 'GBP', 'INR'].map(function (c) { return rates[c] ? { c: c, r: rates[c] } : null; }).filter(Boolean);
+          if (!rows.length) return none(m);
+          put(m, '<ul class="mod-list">' + rows.map(function (x) {
+            var unit = +(x.r.unit || 1), sell = +(x.r.sell != null ? x.r.sell : x.r.mid);
+            return '<li><div class="row"><div class="t">' + esc(x.c) + (unit > 1 ? ' × ' + unit : '') + ' · Rs ' + num(sell, unit > 1 ? 3 : 2) + '</div>'
+              + '<div class="m">' + esc(NAMES[x.c] || '') + ' · ' + esc(t('sellingRate')) + '</div></div></li>';
+          }).join('') + '</ul>', Date.parse((day.date || '') + 'T12:00:00+05:45') || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'quake', title: 'mQuake', href: '/earthquakes', feed: 'alerts',
+      src: { name: 'USGS', url: 'https://earthquake.usgs.gov/' },
+      load: function (m) {
+        return get('/api/quakes').then(function (d) {
+          var f = (d && d.features || []).slice().sort(function (a, b) { return b.properties.time - a.properties.time; })[0];
+          if (!f) return none(m, t('noQuake') + ' ' + t('quakeRule'));
+          var p = f.properties, depth = f.geometry && f.geometry.coordinates && f.geometry.coordinates[2];
+          put(m, '<div class="mod-v">M ' + num(p.mag, 1) + '</div>'
+            + '<div class="mod-sub">' + esc(p.place || '') + '</div>'
+            + '<dl class="mod-kv"><div><dt>' + esc(t('when')) + '</dt><dd>' + esc(NL.ago(p.time)) + '</dd></div>'
+            + (isFinite(depth) ? '<div><dt>' + esc(t('depth')) + '</dt><dd>' + Math.round(depth) + ' km</dd></div>' : '') + '</dl>'
+            + (p.url ? '<div class="mod-chips"><a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(t('usgsPage')) + ' ↗</a></div>' : ''),
+            p.time);
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'roads', title: 'mRoads', href: '/roads', feed: 'alerts',
+      src: { name: 'Department of Roads via BIPAD', url: 'https://bipadportal.gov.np/' },
+      load: function (m) {
+        return get('/api/roads').then(function (d) {
+          var cl = (d && d.closures) || [];
+          if (!cl.length) return none(m, t('noRoads'));
+          put(m, '<div class="mod-v">' + cl.length + '<small> ' + esc(t('closures')) + '</small></div>'
+            + '<ul class="mod-list">' + cl.slice(0, 3).map(function (c) {
+              return '<li><div class="row"><div class="t">' + esc(ne() && c.titleNe ? c.titleNe : c.title) + '</div>'
+                + '<div class="m">' + esc([c.district || c.location || '', c.time ? NL.ago(Date.parse(c.time)) : ''].filter(Boolean).join(' · ')) + '</div></div></li>';
+            }).join('') + '</ul>', Date.parse(d.fetchedAt) || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'sports', title: 'mSports', href: '/sports', feed: 'sports',
+      src: { name: 'TheSportsDB', url: 'https://www.thesportsdb.com/' },
+      load: function (m) {
+        var show = function (ev, ms, nepal) {
+          if (!ev.length) return none(m, t('noFixtures'));
+          put(m, '<p class="mod-sub">' + esc(nepal ? t('nepalTeams') : t('worldFixtures')) + '</p><ul class="mod-list">' + ev.map(function (e) {
+            var ts = Date.parse((e.strTimestamp || '').replace(' ', 'T') + (/(Z|[+-]\d\d:?\d\d)$/.test(e.strTimestamp || '') ? '' : 'Z'));
+            return '<li><div class="row"><div class="t">' + esc(e.strEvent) + '</div>'
+              + '<div class="m">' + esc([e.strLeague || '', isFinite(ts) ? NL.dfmt.day(ts) + ' · ' + NL.dfmt.hour(ts) : ''].filter(Boolean).join(' · ')) + '</div></div></li>';
+          }).join('') + '</ul>', ms || Date.now());
+        };
+        /* Nepal's national fixtures matter here; world football is the fallback */
+        return get('/api/nepal-sports').then(function (d) {
+          var np = (d && d.fixtures || []).filter(function (e) { return e.strEvent; }).slice(0, 4);
+          if (np.length) return show(np, Date.parse(d.fetchedAt), true);
+          return get('/api/sport').then(function (g) {
+            show((g && g.events || []).filter(function (e) { return e.strEvent; }).slice(0, 4), Date.now(), false);
+          });
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'jobs', title: 'mJobs', href: '/jobs', feed: 'news',
+      src: { name: 'merojob', url: 'https://merojob.com/' },
+      load: function (m) {
+        return get('/api/jobs').then(function (d) {
+          var it = (d && d.items || []).slice(0, 3);
+          if (!it.length) return none(m, t('noJobs'));
+          put(m, '<ul class="mod-list">' + it.map(function (j) {
+            return '<li><a href="' + esc(j.url || j.link || '/jobs') + '" target="_blank" rel="noopener noreferrer">'
+              + '<div class="t">' + esc(j.title) + '</div>'
+              + '<div class="m">' + esc([j.company || '', j.location || ''].filter(Boolean).join(' · ')) + '</div></a></li>';
+          }).join('') + '</ul>'
+            + (d.total ? '<p class="mod-sub">' + esc(t('openJobs', { n: d.total })) + '</p>' : ''), Date.parse(d.fetchedAt) || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'events', title: 'mEvents', href: '/events', feed: 'news',
+      src: { name: 'Hamro Patro', url: 'https://www.hamropatro.com/calendar' },
+      load: function (m) {
+        return get('/api/events').then(function (d) {
+          var it = (d && d.items || []).slice(0, 4);
+          if (!it.length) return none(m, t('noEvents'));
+          put(m, '<ul class="mod-list">' + it.map(function (e) {
+            var ms = Date.parse((e.date || '') + 'T12:00:00+05:45');
+            return '<li><div class="row"><div class="t">' + esc(ne() && e.titleNe ? e.titleNe : e.title) + '</div>'
+              + '<div class="m">' + esc([isFinite(ms) ? NL.dfmt.day(ms) : e.date, e.category || ''].filter(Boolean).join(' · ')) + '</div></div></li>';
+          }).join('') + '</ul>', Date.parse(d.fetchedAt) || Date.now());
+        }).catch(function () { oops(m); });
+      }
+    },
+    {
+      key: 'gov', title: 'mGov', href: '/government', feed: null,
+      src: { name: 'Official government portals' },
+      load: function (m) {
+        var links = [['passport', '/government#passport'], ['licence', '/government#transport'], ['pan', '/government#tax'],
+          ['citizenship', '/government#citizenship'], ['loksewa', '/government#loksewa'], ['emergency', '/tools#emergency']];
+        put(m, '<p class="mod-sub">' + esc(t('govSub')) + '</p><div class="mod-chips">'
+          + links.map(function (l) { return '<a href="' + l[1] + '">' + esc(t('g_' + l[0])) + '</a>'; }).join('') + '</div>', 0);
+        foot(m.key, m.src, 0);
+      }
+    }
+  ];
+
+  function runMod(m) { try { m.load(m); } catch (e) { oops(m); } }
+  function initDash() {
+    var grid = $('dash-grid');
+    if (!grid) return;
+    grid.innerHTML = MODS.map(shell).join('');
+    paintFeeds();
+    /* each module waits until it is nearly in view, so the first screen stays light */
+    if (window.IntersectionObserver && motion) {
+      var mo = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          mo.unobserve(e.target);
+          var m = MODS.filter(function (x) { return 'mod-' + x.key === e.target.id; })[0];
+          if (m) runMod(m);
+        });
+      }, { rootMargin: '300px 0px' });
+      MODS.forEach(function (m) { var el = $('mod-' + m.key); if (el) mo.observe(el); });
+    } else MODS.forEach(runMod);
+  }
+  document.addEventListener('click', function (e) {
+    var r = e.target.closest('[data-remod]');
+    if (r) {
+      var m = MODS.filter(function (x) { return x.key === r.getAttribute('data-remod'); })[0];
+      if (m) { $('mb-' + m.key).innerHTML = skel(); runMod(m); }
+      return;
+    }
+    if (e.target.closest('[data-refresh-all]')) MODS.forEach(function (m) { $('mb-' + m.key).innerHTML = skel(); runMod(m); });
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.id !== 'wx-city') return;
+    wxCity = +e.target.value || 0;
+    var m = MODS[0];
+    $('mb-' + m.key).innerHTML = skel();
+    runMod(m);
+  });
+
   /* --------------------------------------------------------------- go */
   function get(path) {
     return fetch(path, { headers: { Accept: 'application/json' } }).then(function (r) {
@@ -499,12 +930,16 @@
     paintLatest();
     paintRail();
     paintCats();
+    paintBriefTop();
+    setFeed('news', true);
     if (S.prov.length) paintMap();
     $('srch-list').innerHTML = S.news.slice(0, 5).map(function (i) {
       return '<li><a ' + out(i) + '>' + esc(i.title) + '</a></li>';
     }).join('');
   }).catch(function () {
     $('lat-list').innerHTML = '<p class="state">' + esc(t('unavailable')) + '</p>';
+    paintBriefTop();
+    setFeed('news', false);
   });
 
   get('/api/provinces').then(function (d) {
@@ -512,9 +947,17 @@
     if (S.news.length) paintMap();
   }).catch(function () { $('map-sec').remove(); });
 
-  get('/api/highlights').then(paintPulse).catch(function () { $('pulse').remove(); });
+  get('/api/highlights').then(function (d) { paintPulse(d); paintBriefSum(d); setFeed('markets', true); })
+    .catch(function () { $('pulse').remove(); paintBriefSum(null); setFeed('markets', false); });
+  get('/api/calendar/today').then(paintBriefDate).catch(function () { paintBriefDate(null); });
   get('/api/trending').then(paintTrend).catch(function () { $('trend').remove(); });
-  get('/api/alerts').then(function (d) { S.alerts = d; if (S.news.length) paintTicker(); }).catch(function () {});
+  get('/api/alerts').then(function (d) {
+    S.alerts = d;
+    paintBriefAlerts(d);
+    setFeed('alerts', true);
+    if (S.news.length) paintTicker();
+  }).catch(function () { paintBriefAlerts(null); setFeed('alerts', false); });
+  initDash();
 
   onScroll();
 })();

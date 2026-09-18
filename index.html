@@ -144,6 +144,35 @@
   <!-- 3 — live numbers -->
   <section class="pulse" id="pulse" aria-label="Nepal in numbers right now"></section>
 
+  <!-- 3b — Nepal Today: the day in one screen -->
+  <section class="brief" id="brief" aria-labelledby="brief-h">
+    <div class="brief-main">
+      <p class="eyebrow" data-t="ebToday">NEPAL TODAY</p>
+      <h2 class="brief-h" id="brief-h" data-th="hToday">Today in <em>Nepal</em></h2>
+      <p class="brief-date" id="brief-date"></p>
+      <p class="brief-sum" id="brief-sum"></p>
+      <a class="more" href="/news" data-t="allNews">All news <span>→</span></a>
+    </div>
+    <div class="brief-col">
+      <p class="brief-lbl" data-t="topStories">Top stories</p>
+      <ol class="brief-top" id="brief-top"></ol>
+    </div>
+    <div class="brief-col">
+      <p class="brief-lbl" data-t="alertsNow">Official alerts</p>
+      <div class="brief-alerts" id="brief-alerts"></div>
+    </div>
+  </section>
+
+  <!-- 3c — every live module, each with its own state -->
+  <section class="sec dash" id="dash" aria-labelledby="dash-h">
+    <div class="sec-head">
+      <p class="eyebrow" data-t="ebNow">LIVE ACROSS NEPAL</p>
+      <h2 class="sec-h" id="dash-h" data-th="hNow">Nepal, <em>right now</em></h2>
+      <div class="feeds" id="feeds" aria-live="polite"></div>
+    </div>
+    <div class="dash-grid" id="dash-grid"></div>
+  </section>
+
   <!-- 4 — latest, as an editorial feed -->
   <section class="sec latest" id="latest" aria-labelledby="latest-h">
     <div class="sec-head">

@@ -170,6 +170,17 @@ the custom cursor is desktop-and-hover only. Nothing runs without `.js-motion`.
 The flag is drawn as SVG (`.flag`), never the 🇳🇵 emoji — Windows renders that as "NP".
 The section pages still use the shared shell and app.css; that rollout is unfinished.
 
+### Homepage modules
+The v2 homepage carries a Nepal Today briefing (English + BS date from `/api/calendar/today`, a summary assembled
+from the real numbers, top five stories, official alerts) and a `MODS` table in page-home.js: weather, air quality,
+NEPSE, gold, forex, earthquakes, roads, fixtures, jobs, events and government links. Every module owns four states —
+skeleton, content, empty, error with retry — plus a source link and the time it was updated, and each fetches only
+when it scrolls into view, so one slow feed never blocks the page. Feed health per group (news/markets/weather/
+sports/alerts): all sources answered reads "Live data connected", one failure reads "Some sources unavailable".
+A failed feed must say "No update available right now" — never "nothing to report", which would be a claim about Nepal.
+Field shapes that bite: `/api/nepse` returns `indices[]` (match `index` = NEPSE), gold returns `items[].prices[]` per
+tola, forex returns `days[].rates{CUR:{buy,sell,unit}}` (last day is today), quakes is USGS GeoJSON `features[]`.
+
 ## Category fronts
 `/news/politics|business|technology|sports|entertainment|world|society` are generated in site-pages.js from the
 `TOPIC_FRONTS` table and all run `page-category.js`, which reads the topic from the path and fills one layout from
