@@ -312,7 +312,7 @@ kbd {
 
 /* mobile drawer */
 .nl-drawer {
-  position: fixed; inset: 0 0 auto 0; z-index: 95; max-height: 100dvh; overflow-y: auto;
+  position: fixed; inset: 0 0 auto 0; z-index: 95; max-height: 85dvh; overflow-y: auto; overscroll-behavior: contain;
   background: var(--bg-elev); border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-md); padding: 6px var(--gutter) 22px;
   transform: translateY(-102%); visibility: hidden;
@@ -320,10 +320,11 @@ kbd {
 }
 .nl-drawer.open { transform: none; visibility: visible; transition: transform .3s var(--ease) }
 .drawer-top { display: flex; align-items: center; justify-content: space-between; height: 56px; margin-bottom: 4px }
-.drawer-links { display: flex; flex-direction: column; border-top: 1px solid var(--sep) }
+/* two columns of short rows, so the menu covers only the top of the screen */
+.drawer-links { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; border-top: 1px solid var(--sep) }
 .drawer-links a {
-  display: flex; align-items: center; justify-content: space-between; min-height: 52px;
-  font-size: 17px; font-weight: 700; letter-spacing: -.01em; border-bottom: 1px solid var(--sep);
+  display: flex; align-items: center; justify-content: space-between; min-height: 44px; min-width: 0;
+  font-size: 15px; font-weight: 700; letter-spacing: -.01em; border-bottom: 1px solid var(--sep);
 }
 .drawer-links a.active { color: var(--brand) }
 .drawer-links a span { color: var(--text-3); font-weight: 400 }
