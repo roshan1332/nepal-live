@@ -185,6 +185,14 @@
   var fmtClock = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   var fmtHM = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false });
   NL.nptHM = function (d) { return fmtHM.format(d || new Date()); };
+  /* header date: Gregorian date plus the Nepali (BS) date, beside the wordmark */
+  var BS_MON_EN = ['Baisakh', 'Jestha', 'Asar', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'];
+  var BS_MON_NE = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'];
+  var fmtHeadAd = {
+    en: new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+    ne: new Intl.DateTimeFormat('ne-NP', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  };
+  var bsToday = null;
   NL.ago = function (ts) {
     var sec = Math.max(0, (Date.now() - ts) / 1000);
     if (!isFinite(sec)) return '';
@@ -281,6 +289,7 @@
     var active = { football: 'sports', cricket: 'sports', 'nepal-sports': 'sports' }[NL.page] || NL.page;
     return '<div class="wrap nl-head-in">'
       + wordmark()
+      + '<div class="head-date" id="head-date"></div>'
       + '<nav class="nl-nav" aria-label="Primary">'
       + NAV().map(function (n) {
           var on = n[0] === active;
@@ -427,7 +436,32 @@
   }
 
   /* ------------------------------------------------------------------ clock */
+  function paintHeadDate() {
+    var el = document.getElementById('head-date');
+    if (!el) return;
+    var ne = NL.lang() === 'ne';
+    var ad = (ne ? fmtHeadAd.ne : fmtHeadAd.en).format(new Date());
+    var bs = '';
+    if (bsToday && bsToday.day && bsToday.day.bs) {
+      var b = bsToday.day.bs;
+      bs = ne ? (bsToday.day.bsNp || b[2]) + ' ' + BS_MON_NE[b[1] - 1] + ' ' + b[0]
+              : b[2] + ' ' + BS_MON_EN[b[1] - 1] + ' ' + b[0] + ' BS';
+    }
+    var key = ad + '|' + bs;
+    if (el.getAttribute('data-k') === key) return;
+    el.setAttribute('data-k', key);
+    el.innerHTML = '<span class="hd-ad">' + esc(ad) + '</span>'
+      + (bs ? '<span class="hd-bs"' + (ne ? ' lang="ne"' : '') + '>' + esc(bs) + '</span>' : '');
+  }
+  function loadBsToday() {
+    fetch('/api/calendar/today', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) { if (j && j.day && j.day.bs) { bsToday = j; paintHeadDate(); } })
+      .catch(function () { /* the header just shows the Gregorian date */ });
+  }
+
   function tickClock() {
+    paintHeadDate();
     var el = document.getElementById('tk-clock');
     if (!el) return;
     var t = fmtClock.format(new Date());
@@ -1430,6 +1464,8 @@
       else if (mq.addListener) mq.addListener(onChange);
     }
     setInterval(tickClock, 1000);
+    loadBsToday();
+    setInterval(loadBsToday, 30 * 60e3);
     setInterval(refreshStamps, 30e3);
 
     var head = document.getElementById('nl-head');
